@@ -1,0 +1,19 @@
+{
+  "name": "sal-9000",
+  "description": "Multi-agent orchestration system for Claude Code. SAL coordinates Pods, Crew, Eye, Airlock, and Maintenance agents to work on complex tasks in parallel.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Fraser Brown"
+  },
+  "homepage": "https://github.com/fraserbrown/sal-9000",
+  "repository": "https://github.com/fraserbrown/sal-9000",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "orchestration",
+    "multi-agent",
+    "automation",
+    "swarm",
+    "2001"
+  ]
+}
