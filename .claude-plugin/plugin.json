@@ -1,12 +1,12 @@
 {
-  "name": "sal-9000",
-  "description": "Multi-agent orchestration system for Claude Code. SAL coordinates Pods, Crew, Eye, Airlock, and Maintenance agents to work on complex tasks in parallel.",
+  "name": "space-agents",
+  "description": "Multi-agent orchestration system for Claude Code. HOUSTON coordinates Voyages, Missions, and Objectives while fresh Pods execute work autonomously.",
   "version": "0.1.0",
   "author": {
     "name": "Fraser Brown"
   },
-  "homepage": "https://github.com/fraserbrown/sal-9000",
-  "repository": "https://github.com/fraserbrown/sal-9000",
+  "homepage": "https://github.com/fraserbrown/space-agents",
+  "repository": "https://github.com/fraserbrown/space-agents",
   "license": "MIT",
   "keywords": [
     "agents",
@@ -14,6 +14,7 @@
     "multi-agent",
     "automation",
     "swarm",
-    "2001"
+    "nasa",
+    "houston"
   ]
 }

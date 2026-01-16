@@ -18,7 +18,7 @@ Space-Agents is a Claude Code plugin for multi-agent orchestration. It merges th
 |----------|--------|-----------|
 | Installation | Plugin install (`/plugin install space-agents`) | Portable, reusable across projects |
 | Project structure | Everything in `.space-agents/` | Self-contained, clean for users |
-| Session management | Explicit `/login` and `/logout` | Clear boundaries, state persistence on logout |
+| Session management | Explicit `/launch` and `/dock` | Clear boundaries, state persistence on dock |
 | Memory system | 3-tier (staging, CAPCOM, mission logs) | Prevents context bloat, grep-only for master log |
 | Notifications | Both macOS + file-based hook | Alert when tabbed away + in-session updates |
 | Terminology | Space-Agents (NASA theme) | HOUSTON, Voyage, Mission, Objective, Pod |
@@ -36,7 +36,7 @@ When Space-Agents is used in a project, it creates:
 .space-agents/
 ├── space-agents.db          # SQLite state (includes alerts table)
 ├── capcom.md                # Master CAPCOM log (append-only, grep-only)
-├── staging.md               # Session buffer (full read, cleared on logout)
+├── staging.md               # Session buffer (full read, cleared on dock)
 ├── notifications            # Cross-session notification file
 ├── scripts/
 │   ├── ralph.sh             # Execution loop (copied from plugin)
@@ -63,8 +63,8 @@ space-agents/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── skills/
-│   ├── login/SKILL.md            # /login - session start, show welcome screen
-│   ├── logout/SKILL.md           # /logout - session end, save to CAPCOM
+│   ├── launch/SKILL.md           # /launch - session start, show welcome screen
+│   ├── dock/SKILL.md             # /dock - session end, save to CAPCOM
 │   ├── handover/SKILL.md         # /handover - mid-session context dump
 │   ├── brainstorming/SKILL.md    # /brainstorming - explore ideas
 │   ├── planning/SKILL.md         # /planning - mission breakdown
@@ -87,7 +87,7 @@ space-agents/
 │   ├── on-agent-complete.sh     # Post-Task hook
 │   └── init-db.sql              # SQLite schema
 └── assets/
-    └── login-screen.txt          # Welcome screen ASCII art
+    └── launch-screen.txt         # Welcome screen ASCII art
 ```
 
 ---
@@ -130,8 +130,8 @@ space-agents/
 
 | Command | Purpose |
 |---------|---------|
-| `/login` | Start session, display welcome screen, load state from SQLite/staging |
-| `/logout` | End session, append summary to CAPCOM, optionally compress old entries |
+| `/launch` | Start session, display welcome screen, load state from SQLite/staging |
+| `/dock` | End session, append summary to CAPCOM, optionally compress old entries |
 | `/handover` | Mid-session context dump - generates prompt for next fresh session |
 | `/brainstorming` | Explore ideas before implementation (Superpowers-style) |
 | `/planning` | Break voyage into missions and objectives |
@@ -207,11 +207,11 @@ Ralph Loop: Running (iteration 3)
 
 | Tier | File | Read Pattern | Write Pattern | Lifecycle |
 |------|------|--------------|---------------|-----------|
-| **Staging** | `.space-agents/staging.md` | Full read | Overwrite | Per-session (cleared on /logout) |
+| **Staging** | `.space-agents/staging.md` | Full read | Overwrite | Per-session (cleared on /dock) |
 | **Master CAPCOM** | `.space-agents/capcom.md` | Grep only | Append only | Permanent (grows indefinitely) |
 | **Mission CAPCOM** | `missions/.../capcom.log` | Full or grep | Append | Per-mission (archived on complete) |
 
-**Compression:** `/logout --compress` compresses entries older than 30 days into summaries.
+**Compression:** `/dock --compress` compresses entries older than 30 days into summaries.
 
 ---
 
@@ -485,7 +485,7 @@ WHERE status = 'active';
 
 ---
 
-## Login Screen
+## Launch Screen
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -518,8 +518,8 @@ WHERE status = 'active';
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Session                                                        │
-│    /login              Start session, load state                │
-│    /logout             End session, save to CAPCOM              │
+│    /launch             Start session, load state                │
+│    /dock               End session, save to CAPCOM              │
 │    /handover           Mid-session context dump                 │
 │                                                                 │
 │  Planning                                                       │
@@ -544,15 +544,15 @@ WHERE status = 'active';
 ## Implementation Phases
 
 ### Phase 1: Core (MVP)
-- [ ] Plugin structure (plugin.json, folders)
-- [ ] SQLite schema + init script (including alerts table)
-- [ ] `/login` skill with welcome screen
-- [ ] `/logout` skill with CAPCOM append
-- [ ] HOUSTON agent prompt
-- [ ] Ralph loop script (with Attended/Background options)
-- [ ] Pod agent prompt
-- [ ] Worker/Inspector/Analyst prompts
-- [ ] Airlock script
+- [x] Plugin structure (plugin.json, folders)
+- [x] SQLite schema + init script (including alerts table)
+- [x] `/launch` skill with welcome screen
+- [x] `/dock` skill with CAPCOM append
+- [x] HOUSTON agent prompt
+- [x] Ralph loop script (with Attended/Background options)
+- [x] Pod agent prompt
+- [x] Worker/Inspector/Analyst prompts
+- [x] Airlock script
 
 ### Phase 2: Planning & Status
 - [ ] `/brainstorming` skill
@@ -569,7 +569,7 @@ WHERE status = 'active';
 - [ ] notify.sh (macOS notification)
 
 ### Phase 4: Polish
-- [ ] `/logout --compress` compression
+- [ ] `/dock --compress` compression
 - [ ] `/maintenance` skill
 - [ ] Launch options UI for /mission-run
 - [ ] Documentation / README

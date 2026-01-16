@@ -42,7 +42,7 @@ YOU (Human)
     ▼
 HOUSTON (Flight Director) ─── THIS SESSION ─── Plans, never codes
     │
-    ├── /login, /logout      Session management
+    ├── /launch, /dock      Session management
     ├── /brainstorming       Explore ideas
     ├── /planning            Break down work
     ├── /mission-run         Launch Ralph loop
@@ -74,7 +74,7 @@ When Space-Agents is used in a project:
 .space-agents/
 ├── space-agents.db          # SQLite state (voyages, missions, objectives, alerts)
 ├── capcom.md                # Master log (append-only, grep-only)
-├── staging.md               # Session buffer (cleared on /logout)
+├── staging.md               # Session buffer (cleared on /dock)
 ├── notifications            # Cross-session alerts
 ├── scripts/
 │   ├── ralph.sh             # Execution loop
@@ -118,8 +118,8 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 
 | Command | Purpose |
 |---------|---------|
-| `/login` | Start session, show welcome, load state |
-| `/logout` | End session, save to CAPCOM, optionally compress |
+| `/launch` | Start session, show welcome, load state |
+| `/dock` | End session, save to CAPCOM, optionally compress |
 | `/handover` | Mid-session context dump for fresh session |
 | `/brainstorming` | Explore ideas before implementation |
 | `/planning` | Break voyage into missions/objectives |
@@ -129,7 +129,7 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 
 ## Workflow
 
-1. User runs `/login` → HOUSTON displays welcome screen, loads state
+1. User runs `/launch` → HOUSTON displays welcome screen, loads state
 2. User describes goal → HOUSTON plans voyage/missions/objectives
 3. User runs `/mission-run` → Choose Attended or Background mode
 4. Ralph loop spawns fresh Pod for each objective
@@ -138,7 +138,7 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 7. Pod exits, Ralph spawns next Pod
 8. User checks progress via `/capcom`
 9. Mission complete → notification sent
-10. User runs `/logout` → session summary saved to CAPCOM
+10. User runs `/dock` → session summary saved to CAPCOM
 
 ## Key Principles
 

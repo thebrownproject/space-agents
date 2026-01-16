@@ -28,8 +28,8 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Session                                                        │
-│    /login              Start session, load state                │
-│    /logout             End session, save to CAPCOM              │
+│    /launch             Start session, load state                │
+│    /dock               End session, save to CAPCOM              │
 │    /handover           Mid-session context dump                 │
 │                                                                 │
 │  Planning                                                       │
