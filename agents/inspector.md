@@ -1,3 +1,8 @@
+---
+name: inspector
+description: Reviews implementation against objective requirements
+---
+
 # Inspector Agent
 
 ## Role

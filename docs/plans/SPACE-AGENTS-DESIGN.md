@@ -109,21 +109,30 @@ YOU ↔ HOUSTON (persistent session, Flight Director)
 
 ### Where It Lives
 
-Skills in `~/.claude/skills/space-agents/`:
+**Updated (2026-01-16):** Skills are now project-local, distributed as a plugin:
 
 ```
-~/.claude/skills/space-agents/
-├── houston.md            # Flight Director persona + core behavior
-├── brainstorming.md      # Pre-implementation exploration
-├── planning.md           # Mission/objective breakdown
-├── capcom.md             # Status check via subagent
-├── mission-run.md        # Launch Ralph loop
-├── install.md            # Setup wizard
-└── prompts/
-    ├── pod.md
-    ├── worker.md
-    ├── inspector.md
-    └── analyst.md
+space-agents/                    # Plugin repository
+├── skills/
+│   ├── launch/                  # Session start + HOUSTON persona
+│   │   └── SKILL.md
+│   ├── dock/                    # Session end + logout screen
+│   │   └── SKILL.md
+│   ├── install/                 # Setup wizard
+│   │   ├── SKILL.md
+│   │   └── init-db.sql
+│   ├── airlock/                 # Test/lint validation
+│   │   ├── SKILL.md
+│   │   └── airlock.sh
+│   └── mission-run/             # Launch Ralph loop
+│       ├── SKILL.md
+│       └── ralph.sh
+├── agents/                      # Agent prompts
+│   ├── pod.md
+│   ├── worker.md
+│   ├── inspector.md
+│   └── analyst.md
+└── docs/                        # Documentation
 ```
 
 ---
@@ -514,18 +523,23 @@ When running 20-30+ agents with complex coordination needs.
 
 ## MVP Checklist
 
+**Updated 2026-01-16:** Phase 1 complete!
+
 ```
-□ /install skill: sets up everything with one command
-□ HOUSTON skill with /brainstorming, /planning
-□ SQLite: voyages, missions, objectives tables
-□ ralph.sh: loop that spawns Pods
-□ pod.md: prompt that orchestrates crew
-□ worker.md: implements
-□ inspector.md: reviews requirements
-□ analyst.md: reviews quality
-□ airlock.sh: runs tests/lint
-□ CAPCOM log format
-□ /capcom skill: status check
+✅ /install skill: sets up everything with one command
+✅ /launch skill: HOUSTON persona + session start
+✅ /dock skill: session end + ASCII logout screen
+✅ SQLite: voyages, missions, objectives, messages, alerts tables
+✅ ralph.sh: loop that spawns Pods (in /mission-run skill)
+✅ pod.md: prompt that orchestrates crew
+✅ worker.md: implements (with structured output for alerts)
+✅ inspector.md: reviews requirements
+✅ analyst.md: reviews quality
+✅ airlock.sh: runs tests/lint (in /airlock skill)
+✅ CAPCOM log format
+□ /capcom skill: status check (TODO)
+□ /brainstorming skill (TODO)
+□ /planning skill (TODO)
 ```
 
 ---

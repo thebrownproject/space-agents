@@ -1,11 +1,11 @@
 ---
 name: dock
-description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, clears staging buffer, displays session statistics."
+description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, clears staging buffer, displays ASCII logout screen with session statistics."
 ---
 
 # /dock - End Session
 
-End the current Space-Agents session. Save summary to CAPCOM, clear staging.
+End the current Space-Agents session. Save summary to CAPCOM, clear staging, display logout screen.
 
 ## Trigger
 
@@ -16,10 +16,11 @@ User runs `/dock` or indicates they're ending the session.
 You are HOUSTON, the Flight Director. Calm, professional, NASA-style communication.
 
 This skill ends a Space-Agents session by:
-1. Generating a session summary
-2. Appending the summary to the master CAPCOM log
-3. Clearing the staging buffer
-4. Displaying session statistics
+1. Querying session statistics from SQLite
+2. Reading staging buffer for context
+3. Generating and appending session summary to CAPCOM
+4. Clearing the staging buffer
+5. Displaying ASCII logout screen with statistics
 
 ## Memory Architecture
 
@@ -44,8 +45,16 @@ sqlite3 .space-agents/space-agents.db "SELECT COUNT(*) FROM objectives WHERE sta
 # Get cleared alerts count (today)
 sqlite3 .space-agents/space-agents.db "SELECT COUNT(*) FROM alerts WHERE status = 'cleared' AND date(cleared_at) = date('now');"
 
-# Get active voyages
-sqlite3 .space-agents/space-agents.db "SELECT id, title, status FROM voyages WHERE status = 'active';"
+# Get active voyages with progress
+sqlite3 .space-agents/space-agents.db "
+SELECT v.title,
+       (SELECT COUNT(*) FROM objectives o
+        JOIN missions m ON o.mission_id = m.id
+        WHERE m.voyage_id = v.id AND o.status = 'complete') as done,
+       (SELECT COUNT(*) FROM objectives o
+        JOIN missions m ON o.mission_id = m.id
+        WHERE m.voyage_id = v.id) as total
+FROM voyages v WHERE v.status = 'active';"
 
 # Get in-progress objectives (may need status update)
 sqlite3 .space-agents/space-agents.db "SELECT o.id, o.title, m.title as mission FROM objectives o JOIN missions m ON o.mission_id = m.id WHERE o.status = 'in_progress';"
@@ -117,20 +126,86 @@ Overwrite `.space-agents/staging.md` with empty state:
 [No active session]
 ```
 
-### Step 7: Display Goodbye
+### Step 7: Display ASCII Logout Screen
 
-Show the session-end message:
+Display the logout screen with session statistics. Replace placeholders with actual values:
 
 ```
-Session ended. Summary saved to CAPCOM.
-
-Today's work:
-- Objectives completed: X
-- Alerts cleared: Y
-- Time active: [calculated from staging start time]
-
-Safe travels, Fraser.
++-------------------------------------------------------------------+
+|                                                                   |
+|     ███████╗██████╗  █████╗  ██████╗███████╗                      |
+|     ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝                      |
+|     ███████╗██████╔╝███████║██║     █████╗                        |
+|     ╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝                        |
+|     ███████║██║     ██║  ██║╚██████╗███████╗                      |
+|     ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝                      |
+|              █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗  |
+|             ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝  |
+|             ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ███████╗  |
+|             ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║  |
+|             ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║  |
+|             ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝  |
+|                                                                   |
+|                     SESSION COMPLETE                              |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  SESSION SUMMARY                                                  |
+|  ---------------                                                  |
+|  Duration:             {session_duration}                         |
+|  Objectives completed: {objectives_completed}                     |
+|  Alerts cleared:       {alerts_cleared}                           |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  VOYAGE PROGRESS                                                  |
+|  ---------------                                                  |
+|  {voyage_name}         [{progress_bar}] {done}/{total}            |
+|                                                                   |
+|  (No active voyages if none in progress)                          |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  Summary saved to CAPCOM. Staging cleared.                        |
+|                                                                   |
+|                  Safe travels, Commander.                         |
+|                                                                   |
++-------------------------------------------------------------------+
 ```
+
+**Dynamic elements:**
+
+| Placeholder | Source | Example |
+|-------------|--------|---------|
+| `{session_duration}` | Calculate from staging.md start time | `2h 15m` |
+| `{objectives_completed}` | SQLite query (today's completions) | `3` |
+| `{alerts_cleared}` | SQLite query (today's cleared alerts) | `1` |
+| `{voyage_name}` | Active voyage title from SQLite | `user-authentication` |
+| `{progress_bar}` | Visual bar based on done/total | `████████░░` |
+| `{done}/{total}` | Completed/Total objectives in voyage | `8/10` |
+
+**Progress bar calculation:**
+
+```
+bar_width = 10
+filled = (done / total) * bar_width
+empty = bar_width - filled
+progress_bar = "█" * filled + "░" * empty
+```
+
+**If no active voyages:**
+
+Replace the VOYAGE PROGRESS section with:
+
+```
+|  VOYAGE PROGRESS                                                  |
+|  ---------------                                                  |
+|  No active voyages                                                |
+```
+
+**If session duration cannot be calculated:**
+
+Use `--:--` as fallback.
 
 ## Optional: --compress Flag
 
@@ -161,14 +236,44 @@ Warning: Could not query SQLite. Session summary saved with limited statistics.
 ## Example Output
 
 ```
-Session ended. Summary saved to CAPCOM.
-
-Today's work:
-- Objectives completed: 3
-- Alerts cleared: 1
-- Time active: 2h 15m
-
-Safe travels, Fraser.
++-------------------------------------------------------------------+
+|                                                                   |
+|     ███████╗██████╗  █████╗  ██████╗███████╗                      |
+|     ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝                      |
+|     ███████╗██████╔╝███████║██║     █████╗                        |
+|     ╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝                        |
+|     ███████║██║     ██║  ██║╚██████╗███████╗                      |
+|     ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝                      |
+|              █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗  |
+|             ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝  |
+|             ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ███████╗  |
+|             ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║  |
+|             ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║  |
+|             ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝  |
+|                                                                   |
+|                     SESSION COMPLETE                              |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  SESSION SUMMARY                                                  |
+|  ---------------                                                  |
+|  Duration:             2h 15m                                     |
+|  Objectives completed: 3                                          |
+|  Alerts cleared:       1                                          |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  VOYAGE PROGRESS                                                  |
+|  ---------------                                                  |
+|  user-authentication   [████████░░] 8/10                          |
+|                                                                   |
++-------------------------------------------------------------------+
+|                                                                   |
+|  Summary saved to CAPCOM. Staging cleared.                        |
+|                                                                   |
+|                  Safe travels, Commander.                         |
+|                                                                   |
++-------------------------------------------------------------------+
 ```
 
 ## CAPCOM Entry Example
@@ -203,4 +308,4 @@ Next session should continue from this point.
 
 ---
 
-HOUSTON signing off. All systems nominal.
+Safe travels, Commander. HOUSTON signing off.
