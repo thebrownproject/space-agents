@@ -34,13 +34,10 @@ When Space-Agents is used in a project, it creates:
 
 ```
 .space-agents/
-├── space-agents.db          # SQLite state
+├── space-agents.db          # SQLite state (includes alerts table)
 ├── capcom.md                # Master CAPCOM log (append-only, grep-only)
 ├── staging.md               # Session buffer (full read, cleared on logout)
 ├── notifications            # Cross-session notification file
-├── alerts/
-│   ├── ACTIVE.md            # Open alerts by severity
-│   └── CLEARED.md           # Resolved alerts
 ├── scripts/
 │   ├── ralph.sh             # Execution loop (copied from plugin)
 │   └── airlock.sh           # Test/lint validation
@@ -289,33 +286,9 @@ Pods and Crew create alerts when they encounter problems. Severity levels based 
 | **Airlock** | Tests/lint failure | blocker |
 | **Pod** | Objective failed | critical |
 
-### Alert Format (alerts/ACTIVE.md)
+### Alert Storage
 
-```markdown
-# Active Alerts
-
-## [0] CRITICAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-(none)
-
-## [1] BLOCKER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### ALT-001 — 2026-01-16 10:30 — Pod-003
-**Objective:** jwt-token-signing
-**Source:** Worker (3 retries exhausted)
-**Description:** Cannot resolve `jsonwebtoken` - missing from package.json
-
-## [2] WARNING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### ALT-002 — 2026-01-16 10:45 — Pod-003
-**Objective:** jwt-token-signing
-**Source:** Analyst
-**Description:** Using deprecated `sign()` method
-
-## [3] INFO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-(none)
-```
+Alerts are stored in **SQLite only** (no separate markdown files). The `/capcom` command displays them formatted.
 
 ### Alert Flow
 
@@ -325,8 +298,7 @@ Pod executing objective
     ├── Worker/Inspector/Analyst hits issue
     │       │
     │       ▼
-    │   Create alert in SQLite
-    │   Append to alerts/ACTIVE.md
+    │   Create alert in SQLite alerts table
     │   Log to CAPCOM
     │       │
     │       ▼
@@ -334,7 +306,15 @@ Pod executing objective
     │   severity 2-3? → Continue, log for review
     │
     ▼
-HOUSTON sees alerts on /login, /capcom, or via notification
+HOUSTON sees alerts via /capcom or notifications
+```
+
+### Alert Display (via /capcom)
+
+```
+Alerts: 2 active
+  [1] BLOCKER  ALT-001  Worker: Cannot resolve jsonwebtoken
+  [2] WARNING  ALT-002  Analyst: Deprecated sign() method
 ```
 
 ---
@@ -581,8 +561,8 @@ WHERE status = 'active';
 - [ ] `/handover` skill (mid-session context dump)
 
 ### Phase 3: Alerts & Notifications
-- [ ] Alert system (alerts/ACTIVE.md, CLEARED.md)
-- [ ] Alert creation from Pod/Crew
+- [ ] Alert creation from Pod/Crew (SQLite alerts table)
+- [ ] Alert display in /capcom output
 - [ ] Hooks configuration
 - [ ] check-notifications.sh script
 - [ ] on-agent-complete.sh script
