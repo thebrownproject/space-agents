@@ -1,6 +1,6 @@
 ---
 name: launch
-description: Start a Space-Agents session - initialize project, show HOUSTON welcome screen
+description: "Use when starting a Space-Agents session. Initializes .space-agents/ project structure, SQLite database, and displays HOUSTON welcome screen with mission status."
 ---
 
 # /launch - Space-Agents Session Start

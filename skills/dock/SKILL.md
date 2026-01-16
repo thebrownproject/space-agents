@@ -1,6 +1,6 @@
 ---
 name: dock
-description: End Space-Agents session - save summary to CAPCOM, clear staging
+description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, clears staging buffer, displays session statistics."
 ---
 
 # /dock - End Session
