@@ -1,5 +1,5 @@
 ---
-name: dock
+name: dock-session
 description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, clears staging buffer, displays ASCII logout screen with session statistics."
 ---
 

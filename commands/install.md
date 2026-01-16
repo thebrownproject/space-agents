@@ -3,4 +3,4 @@ description: "Install Space-Agents in current project - creates .space-agents/ d
 disable-model-invocation: true
 ---
 
-Invoke the space-agents:install skill and follow it exactly as presented to you
+Invoke the space-agents:install-system skill and follow it exactly as presented to you

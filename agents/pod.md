@@ -2,7 +2,7 @@
 name: pod
 description: Orchestrates objective execution with Worker, Inspector, Analyst crew
 skills:
-  - airlock
+  - airlock-validate
 ---
 
 # Pod - Objective Orchestrator

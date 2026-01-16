@@ -3,4 +3,4 @@ description: "End Space-Agents session - saves summary to CAPCOM and clears stag
 disable-model-invocation: true
 ---
 
-Invoke the space-agents:dock skill and follow it exactly as presented to you
+Invoke the space-agents:dock-session skill and follow it exactly as presented to you

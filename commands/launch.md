@@ -3,4 +3,4 @@ description: "Start Space-Agents session - initializes project structure and dis
 disable-model-invocation: true
 ---
 
-Invoke the space-agents:launch skill and follow it exactly as presented to you
+Invoke the space-agents:launch-session skill and follow it exactly as presented to you

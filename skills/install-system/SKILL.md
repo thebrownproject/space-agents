@@ -1,5 +1,5 @@
 ---
-name: install
+name: install-system
 description: "Use to install Space-Agents in a project. Creates .space-agents/ directory and SQLite database. Run once per project."
 ---
 

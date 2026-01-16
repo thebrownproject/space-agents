@@ -1,5 +1,5 @@
 ---
-name: airlock
+name: airlock-validate
 description: "Run test and lint validation gate. Use after implementation to verify code quality, or invoke directly with /airlock to run project tests and linting."
 ---
 

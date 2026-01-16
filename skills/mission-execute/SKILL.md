@@ -1,5 +1,5 @@
 ---
-name: mission-run
+name: mission-execute
 description: "Launch the Ralph execution loop to process mission objectives. Use when ready to execute a planned mission with the Pod/Worker/Inspector/Analyst cycle."
 ---
 

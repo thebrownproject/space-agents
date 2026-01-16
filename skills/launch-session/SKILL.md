@@ -1,5 +1,5 @@
 ---
-name: launch
+name: launch-session
 description: "Use when starting a Space-Agents session. Checks installation, displays HOUSTON welcome screen with mission status, and establishes Flight Director persona."
 ---
 
