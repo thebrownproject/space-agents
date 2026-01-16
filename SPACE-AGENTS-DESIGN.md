@@ -1,6 +1,6 @@
 # Space-Agents
 
-**An opinionated agent orchestration framework for Claude Code.**
+**Experimental framework for orchestrating Claude Code agents with fresh context loops.**
 
 *Evolved from SAL-9000 / Agent Launchpad*
 
@@ -118,11 +118,98 @@ Skills in `~/.claude/skills/space-agents/`:
 ├── planning.md           # Mission/objective breakdown
 ├── capcom.md             # Status check via subagent
 ├── mission-run.md        # Launch Ralph loop
+├── install.md            # Setup wizard
 └── prompts/
     ├── pod.md
     ├── worker.md
     ├── inspector.md
     └── analyst.md
+```
+
+---
+
+## Zero Dependencies
+
+Space-Agents requires no external packages. Everything is built with Claude Code primitives:
+
+| Component | How It's Created | Dependency |
+|-----------|------------------|------------|
+| Skills | Markdown files | None (Write tool) |
+| Prompts | Markdown files | None (Write tool) |
+| ralph.sh | Shell script | Bash (built-in) |
+| airlock.sh | Shell script | Bash (built-in) |
+| SQLite DB | `sqlite3` command | Built into macOS/Linux |
+| CAPCOM log | Markdown file | None (Write tool) |
+| Directory structure | `mkdir -p` | Bash (built-in) |
+
+Anyone with Claude Code can install and run Space-Agents. No `npm install`, no `pip install`, no Docker.
+
+---
+
+## Installation (`/install` Skill)
+
+A single command sets up the entire system:
+
+```
+User: /install
+```
+
+### What It Creates
+
+**1. Global skills** (if not present):
+```
+~/.claude/skills/space-agents/
+├── houston.md
+├── brainstorming.md
+├── planning.md
+├── capcom.md
+├── mission-run.md
+├── install.md
+└── prompts/
+    ├── pod.md
+    ├── worker.md
+    ├── inspector.md
+    └── analyst.md
+```
+
+**2. Project structure**:
+```
+.space-agents/
+├── space-agents.db       # SQLite database
+└── capcom.md             # Master CAPCOM log
+
+missions/
+├── todo/                 # Planned voyages/missions
+├── active/               # In-progress work
+└── complete/             # Finished (archived)
+
+scripts/
+├── ralph.sh              # The execution loop
+└── airlock.sh            # Test/lint validation
+```
+
+**3. SQLite schema**:
+```sql
+-- Initialize database with tables
+CREATE TABLE voyages (...);
+CREATE TABLE missions (...);
+CREATE TABLE objectives (...);
+CREATE TABLE messages (...);
+```
+
+### Output
+
+```
+Space-Agents installed successfully.
+
+Created:
+  ✓ .space-agents/space-agents.db (SQLite initialized)
+  ✓ .space-agents/capcom.md (Master log)
+  ✓ missions/ (todo, active, complete)
+  ✓ scripts/ralph.sh
+  ✓ scripts/airlock.sh
+
+Run /houston to begin.
 ```
 
 ---
@@ -428,6 +515,7 @@ When running 20-30+ agents with complex coordination needs.
 ## MVP Checklist
 
 ```
+□ /install skill: sets up everything with one command
 □ HOUSTON skill with /brainstorming, /planning
 □ SQLite: voyages, missions, objectives tables
 □ ralph.sh: loop that spawns Pods
