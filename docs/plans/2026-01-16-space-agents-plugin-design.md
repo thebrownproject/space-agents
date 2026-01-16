@@ -576,6 +576,56 @@ WHERE status = 'active';
 
 ---
 
+## Changelog
+
+### 2026-01-16 - Phase 1 Complete
+
+**Completed:**
+- All Phase 1 files implemented via parallel agent swarm
+- Renamed `/login` → `/launch`, `/logout` → `/dock` (built-in command conflict)
+- Added `marketplace.json` for plugin distribution
+- Added YAML frontmatter to skills for slash command registration
+- Tested `/launch` successfully - creates `.space-agents/`, initializes SQLite, displays welcome
+
+**Plugin Installation:**
+```bash
+/plugin marketplace add thebrownproject/space-agents
+/plugin install space-agents@space-agents
+```
+
+**Known Issue:**
+- Skills don't appear in autocomplete dropdown (character budget limit or cache issue)
+- Skills still work when typed manually (`/launch`, `/dock`)
+- Investigating: may need `SLASH_COMMAND_TOOL_CHAR_BUDGET=30000` env var
+
+**Files Created:**
+```
+.claude-plugin/
+├── plugin.json
+└── marketplace.json
+
+agents/
+├── houston.md
+├── pod.md
+├── worker.md
+├── inspector.md
+└── analyst.md
+
+scripts/
+├── init-db.sql
+├── ralph.sh
+└── airlock.sh
+
+skills/
+├── launch/SKILL.md
+└── dock/SKILL.md
+
+assets/
+└── launch-screen.txt
+```
+
+---
+
 ## References
 
 - `SPACE-AGENTS-DESIGN.md` - NASA terminology, hierarchy
