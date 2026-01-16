@@ -1,3 +1,8 @@
+---
+name: launch
+description: Start a Space-Agents session - initialize project, show HOUSTON welcome screen
+---
+
 # /launch - Space-Agents Session Start
 
 Initialize a Space-Agents session. Sets up project structure, database, and displays the mission control welcome screen.

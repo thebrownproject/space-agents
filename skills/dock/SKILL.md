@@ -1,3 +1,8 @@
+---
+name: dock
+description: End Space-Agents session - save summary to CAPCOM, clear staging
+---
+
 # /dock - End Session
 
 End the current Space-Agents session. Save summary to CAPCOM, clear staging.
