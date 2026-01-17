@@ -45,7 +45,7 @@ HOUSTON (Flight Director) ─── THIS SESSION ─── Plans, never codes
     ├── /launch, /dock      Session management
     ├── /brainstorming       Explore ideas
     ├── /planning            Break down work
-    ├── /mission-run         Launch Ralph loop
+    ├── /mission         Launch Ralph loop
     ├── /capcom              Status check (via subagent)
     ├── /handover            Context dump for next session
     └── /maintenance         Archive and cleanup
@@ -125,7 +125,7 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 | `/handover` | Mid-session context dump for fresh session |
 | `/brainstorming` | Explore ideas before implementation |
 | `/planning` | Break voyage into missions/objectives |
-| `/mission-run` | Launch Ralph loop (Attended or Background) |
+| `/mission` | Launch Ralph loop (Attended or Background) |
 | `/capcom` | Status check via fresh subagent |
 | `/maintenance` | Archive completed work, cleanup |
 
@@ -133,7 +133,7 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 
 1. User runs `/launch` → HOUSTON displays welcome screen, loads state
 2. User describes goal → HOUSTON plans voyage/missions/objectives
-3. User runs `/mission-run` → Choose Attended or Background mode
+3. User runs `/mission` → Choose Attended or Background mode
 4. Ralph loop spawns fresh Pod for each objective
 5. Pod cycles: Worker → Inspector → Analyst → Airlock
 6. State persists to SQLite + CAPCOM logs

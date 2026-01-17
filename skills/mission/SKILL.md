@@ -1,9 +1,9 @@
 ---
-name: mission-execute
+name: mission
 description: "Launch the Ralph execution loop to process mission objectives. Use when ready to execute a planned mission with the Pod/Worker/Inspector/Analyst cycle."
 ---
 
-# /mission-run - Ralph Execution Loop
+# /mission - Ralph Execution Loop
 
 Launch the Ralph execution loop to process objectives for an active mission. Ralph spawns fresh Pods for each objective, maintaining state in SQLite while avoiding context rot.
 
@@ -29,7 +29,7 @@ Each Pod is spawned fresh with no memory of previous objectives. State persists 
 
 ## When to Use
 
-Run `/mission-run` when:
+Run `/mission` when:
 
 - A mission has been planned with objectives in SQLite
 - The mission status is "active"
@@ -73,7 +73,7 @@ bash scripts/ralph.sh <mission_id>
 
 ## Instructions
 
-When `/mission-run` is invoked, follow these steps:
+When `/mission` is invoked, follow these steps:
 
 ### Step 1: Verify Prerequisites
 
@@ -246,7 +246,7 @@ Ralph: claude CLI not found.
 ## Example Session
 
 ```
-User: /mission-run
+User: /mission
 
 HOUSTON: Active missions found:
 
@@ -295,7 +295,7 @@ Objective complete: OBJ-001
 - Run `/capcom` to see the alert
 - Address the underlying issue
 - Clear the alert in SQLite
-- Re-run `/mission-run`
+- Re-run `/mission`
 
 ---
 

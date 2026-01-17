@@ -370,7 +370,7 @@ MSN-XXX → MSN-XXY → Complete
 
 Run with Ralph:
 ```
-/mission-run VOY-XXX
+/mission VOY-XXX
 ```
 
 Or execute manually following the tasks above.
@@ -384,7 +384,7 @@ Or execute manually following the tasks above.
 - [N] objectives
 - Location: .space-agents/missions/active/VOY-XXX/
 
-Ready for /mission-run VOY-XXX when you are."
+Ready for /mission VOY-XXX when you are."
 ```
 
 ---
@@ -443,12 +443,12 @@ You can execute manually or fix the database issue and retry."
 
 ---
 
-## Integration with /mission-run
+## Integration with /mission
 
 After planning completes:
 
 ```
-User: /mission-run VOY-XXX
+User: /mission VOY-XXX
 
 HOUSTON: "Loading voyage VOY-XXX: [Feature Name]...
 

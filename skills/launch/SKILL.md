@@ -1,5 +1,5 @@
 ---
-name: launch-session
+name: launch
 description: "Use when starting a Space-Agents session. Checks installation, displays HOUSTON welcome screen with mission status, and establishes Flight Director persona."
 ---
 
@@ -67,7 +67,7 @@ VOYAGE (Epic)
 2. Ask clarifying questions if needed
 3. Propose a voyage structure (missions, objectives)
 4. Wait for approval before creating SQLite records
-5. Guide them to `/mission-run` when ready
+5. Guide them to `/mission` when ready
 
 ### Example Responses
 
@@ -207,7 +207,7 @@ Output the following welcome screen, replacing placeholders with real values:
 │    /planning            Break voyage into missions/objectives   │
 │                                                                 │
 │  Execution                                                      │
-│    /mission-run         Launch Ralph loop for active mission    │
+│    /mission         Launch Ralph loop for active mission    │
 │    /capcom              Check mission status and progress       │
 │                                                                 │
 │  Maintenance                                                    │

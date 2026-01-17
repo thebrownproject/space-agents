@@ -3,4 +3,4 @@ description: "Run test and lint validation gate - executes project tests and lin
 disable-model-invocation: true
 ---
 
-Invoke the space-agents:airlock-validate skill and follow it exactly as presented to you
+Invoke the /airlock skill and follow it exactly as presented to you

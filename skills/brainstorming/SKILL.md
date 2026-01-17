@@ -237,7 +237,7 @@ Once user selects an approach:
 
    ## Next Steps
    - Run /planning to break into missions/objectives
-   - Run /mission-run to execute via Ralph
+   - Run /mission to execute via Ralph
    ```
 
 3. **Update staging/buffer.md** with session summary
