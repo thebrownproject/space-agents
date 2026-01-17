@@ -49,7 +49,7 @@ Use the current working directory as the project root, or accept an optional pat
 Execute the airlock script:
 
 ```bash
-bash airlock.sh [PROJECT_ROOT] [OUTPUT_FILE]
+bash scripts/airlock.sh [PROJECT_ROOT] [OUTPUT_FILE]
 ```
 
 The script:

@@ -356,8 +356,8 @@ EOF
 
     # Spawn Pod via claude CLI
     # Using -p for print mode (non-interactive)
-    # Pod agent prompt is in agents/pod.md
-    local pod_agent="${PROJECT_ROOT}/agents/pod.md"
+    # Pod agent prompt is in agents/mission-pod.md
+    local pod_agent="${PROJECT_ROOT}/agents/mission-pod.md"
     local exit_code=0
 
     if [[ -f "$pod_agent" ]]; then

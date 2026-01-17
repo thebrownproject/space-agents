@@ -29,7 +29,7 @@ This skill ends a Space-Agents session by:
 | File | Pattern | Purpose |
 |------|---------|---------|
 | `.space-agents/capcom.md` | Append only | Master log (permanent) |
-| `.space-agents/staging.md` | Full read, then clear | Session buffer |
+| `.space-agents/staging/buffer.md` | Full read, then clear | Session buffer |
 | `.space-agents/space-agents.db` | Query | State source |
 
 ## Procedure
@@ -62,7 +62,7 @@ sqlite3 .space-agents/space-agents.db "SELECT o.id, o.title, m.title as mission 
 
 ### Step 2: Read Staging for Context
 
-Read `.space-agents/staging.md` fully to understand session activity.
+Read `.space-agents/staging/buffer.md` fully to understand session activity.
 
 This file contains:
 - Session start time
@@ -114,7 +114,7 @@ Append the session summary to `.space-agents/capcom.md`:
 
 ### Step 6: Clear Staging
 
-Overwrite `.space-agents/staging.md` with empty state:
+Overwrite `.space-agents/staging/buffer.md` with empty state:
 
 ```markdown
 # Space-Agents Staging
@@ -177,7 +177,7 @@ Display the logout screen with session statistics. Replace placeholders with act
 
 | Placeholder | Source | Example |
 |-------------|--------|---------|
-| `{session_duration}` | Calculate from staging.md start time | `2h 15m` |
+| `{session_duration}` | Calculate from buffer.md start time | `2h 15m` |
 | `{objectives_completed}` | SQLite query (today's completions) | `3` |
 | `{alerts_cleared}` | SQLite query (today's cleared alerts) | `1` |
 | `{voyage_name}` | Active voyage title from SQLite | `user-authentication` |
@@ -215,7 +215,7 @@ Use `--:--` as fallback.
 
 ## Error Handling
 
-**No staging.md found:**
+**No buffer.md found:**
 ```
 No active session detected. Nothing to save.
 Run /launch to start a new session.
@@ -301,7 +301,7 @@ Next session should continue from this point.
 ## Key Constraints
 
 1. **Never read capcom.md** - Only append to it
-2. **Always clear staging.md** - Fresh state for next session
+2. **Always clear buffer.md** - Fresh state for next session
 3. **Keep summaries concise** - CAPCOM grows indefinitely
 4. **Preserve in-progress state** - Don't auto-complete uncertain work
 5. **Use UTC timestamps** - Consistent across sessions

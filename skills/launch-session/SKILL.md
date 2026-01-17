@@ -84,7 +84,7 @@ When the user runs `/launch`, execute these steps:
 1. **Check installation** - verify `.space-agents/space-agents.db` exists
 2. **Query current state** from SQLite (voyages, missions, objectives, alerts)
 3. **Display welcome screen** with live statistics
-4. **Load staging.md** if it exists (session continuity)
+4. **Load staging/buffer.md** if it exists (session continuity)
 5. **Check for active alerts** (critical/blocker)
 
 ---
@@ -228,7 +228,7 @@ Output the following welcome screen, replacing placeholders with real values:
 
 ## Step 4: Load Staging (Session Continuity)
 
-If `.space-agents/staging.md` exists and has content:
+If `.space-agents/staging/buffer.md` exists and has content:
 
 1. Read the file contents
 2. After the welcome screen, add a section:
@@ -237,14 +237,14 @@ If `.space-agents/staging.md` exists and has content:
 ────────────────────────────────────────────────────────────────────
 SESSION CONTINUITY
 
-Previous session notes loaded from staging.md:
+Previous session notes loaded from staging/buffer.md:
 {staging_content}
 
 Ready to continue where you left off.
 ────────────────────────────────────────────────────────────────────
 ```
 
-If staging.md is empty or does not exist, skip this section.
+If buffer.md is empty or does not exist, skip this section.
 
 ---
 

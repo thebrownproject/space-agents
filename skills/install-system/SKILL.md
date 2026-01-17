@@ -54,8 +54,10 @@ mkdir -p .space-agents/missions/complete
 .space-agents/
 ├── space-agents.db          # SQLite database (Step 3)
 ├── capcom.md                # Master CAPCOM log (append-only)
-├── staging.md               # Session buffer
-├── notifications            # Cross-session alerts
+├── staging/
+│   ├── buffer.md            # Session buffer
+│   └── handover.md          # Context dump for fresh sessions
+├── brainstorming/           # Design docs before planning
 └── missions/
     ├── todo/                # Planned voyages
     ├── active/              # In-progress work
@@ -69,7 +71,7 @@ mkdir -p .space-agents/missions/complete
 Create the database using the schema file:
 
 ```bash
-sqlite3 .space-agents/space-agents.db < init-db.sql
+sqlite3 .space-agents/space-agents.db < scripts/init-db.sql
 ```
 
 The schema creates:
@@ -100,21 +102,26 @@ Space-Agents installed. HOUSTON standing by.
 ---
 ```
 
-**`.space-agents/staging.md`:**
+**`.space-agents/staging/buffer.md`:**
 ```markdown
-# Space-Agents Staging
+# Space-Agents Session Buffer
 
-*Session buffer - cleared on /dock*
+*Cleared on /dock*
 
 ---
 
 [No active session]
 ```
 
-**`.space-agents/notifications`:**
-```
-# Space-Agents Notifications
-# Format: [timestamp] title: message
+**`.space-agents/staging/handover.md`:**
+```markdown
+# Space-Agents Handover
+
+*Context dump for fresh sessions*
+
+---
+
+[No handover pending]
 ```
 
 ---
@@ -186,7 +193,7 @@ The `/install` skill:
 1. Checks for existing installation
 2. Creates directory structure
 3. Initializes SQLite database with schema
-4. Creates initialization files (capcom.md, staging.md)
+4. Creates initialization files (capcom.md, staging/buffer.md, staging/handover.md)
 5. Displays installation complete screen
 6. Guides user to run `/launch`
 

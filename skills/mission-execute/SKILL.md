@@ -55,7 +55,7 @@ Ralph runs in the foreground with full output. Use when:
 - You need to intervene quickly if issues arise
 
 ```bash
-bash ralph.sh <mission_id> --attended
+bash scripts/ralph.sh <mission_id> --attended
 ```
 
 ### Background Mode (default)
@@ -66,7 +66,7 @@ Ralph runs with minimal output. Use when:
 - You'll check status via `/capcom`
 
 ```bash
-bash ralph.sh <mission_id>
+bash scripts/ralph.sh <mission_id>
 ```
 
 ---
@@ -120,23 +120,14 @@ Select mode:
 
 ### Step 4: Launch Ralph
 
-Execute the ralph.sh script from the skill directory:
+Execute the ralph.sh script:
 
 ```bash
-# Get the skill directory path
-SKILL_DIR="$(dirname "$0")"
-
 # Attended mode
-bash "$SKILL_DIR/ralph.sh" <mission_id> --attended
+bash scripts/ralph.sh <mission_id> --attended
 
 # Background mode
-bash "$SKILL_DIR/ralph.sh" <mission_id>
-```
-
-Or using absolute path:
-
-```bash
-bash /path/to/skills/mission-run/ralph.sh <mission_id> [--attended]
+bash scripts/ralph.sh <mission_id>
 ```
 
 ### Step 5: Monitor and Report
@@ -290,7 +281,7 @@ Objective complete: OBJ-001
 ### Ralph hangs on first objective
 
 - Check if Claude CLI is properly installed
-- Verify the `agents/pod.md` file exists
+- Verify the `agents/mission-pod.md` file exists
 - Check SQLite permissions
 
 ### Objectives keep failing

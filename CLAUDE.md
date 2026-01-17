@@ -74,8 +74,10 @@ When Space-Agents is used in a project:
 .space-agents/
 ├── space-agents.db          # SQLite state (voyages, missions, objectives, alerts)
 ├── capcom.md                # Master log (append-only, grep-only)
-├── staging.md               # Session buffer (cleared on /dock)
-├── notifications            # Cross-session alerts
+├── staging/
+│   ├── buffer.md            # Session buffer (cleared on /dock)
+│   └── handover.md          # Context dump for fresh sessions
+├── brainstorming/           # Design docs before planning
 ├── scripts/
 │   ├── ralph.sh             # Execution loop
 │   └── airlock.sh           # Test/lint validation
@@ -108,7 +110,7 @@ alerts      (id, timestamp, severity, objective_id, source, description, status,
 
 | Tier | File | Pattern | Lifecycle |
 |------|------|---------|-----------|
-| **Staging** | `staging.md` | Full read | Per-session |
+| **Staging** | `staging/buffer.md` | Full read | Per-session |
 | **Master CAPCOM** | `capcom.md` | Grep only | Permanent |
 | **Mission logs** | `*/capcom.log` | Full or grep | Per-mission |
 
