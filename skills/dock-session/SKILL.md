@@ -1,6 +1,6 @@
 ---
 name: dock-session
-description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, clears staging buffer, displays ASCII logout screen with session statistics."
+description: "Use when ending a Space-Agents session. Saves session summary to CAPCOM log, generates handover for next session, clears staging buffer, displays ASCII logout screen with session statistics."
 ---
 
 # /dock - End Session
@@ -19,8 +19,9 @@ This skill ends a Space-Agents session by:
 1. Querying session statistics from SQLite
 2. Reading staging buffer for context
 3. Generating and appending session summary to CAPCOM
-4. Clearing the staging buffer
-5. Displaying ASCII logout screen with statistics
+4. Generating handover for next session
+5. Clearing the staging buffer
+6. Displaying ASCII logout screen with statistics
 
 ## Memory Architecture
 
@@ -112,7 +113,22 @@ Append the session summary to `.space-agents/capcom.md`:
 - Include horizontal rule `---` at end
 - Keep summary concise (no more than 200 words)
 
-### Step 6: Clear Staging
+### Step 6: Generate Handover
+
+Invoke the **handover skill** to generate a context dump for the next session.
+
+This follows the DRY principle - handover logic lives in one place (`skills/handover/SKILL.md`).
+
+The handover skill will:
+- Query current state from SQLite
+- Read session context from buffer.md
+- Check git status
+- Generate handover document
+- Save to `.space-agents/staging/handover.md`
+
+**Note:** Do NOT display the handover content to the user during dock - just generate it silently. The logout screen will indicate it's been saved.
+
+### Step 7: Clear Staging
 
 Overwrite `.space-agents/staging/buffer.md` with empty state:
 
@@ -126,7 +142,7 @@ Overwrite `.space-agents/staging/buffer.md` with empty state:
 [No active session]
 ```
 
-### Step 7: Display ASCII Logout Screen
+### Step 8: Display ASCII Logout Screen
 
 Display the logout screen with session statistics. Replace placeholders with actual values:
 
@@ -167,6 +183,7 @@ Display the logout screen with session statistics. Replace placeholders with act
 +-------------------------------------------------------------------+
 |                                                                   |
 |  Summary saved to CAPCOM. Staging cleared.                        |
+|  Handover ready at staging/handover.md                            |
 |                                                                   |
 |                  Safe travels, Commander.                         |
 |                                                                   |
@@ -270,6 +287,7 @@ Warning: Could not query SQLite. Session summary saved with limited statistics.
 +-------------------------------------------------------------------+
 |                                                                   |
 |  Summary saved to CAPCOM. Staging cleared.                        |
+|  Handover ready at staging/handover.md                            |
 |                                                                   |
 |                  Safe travels, Commander.                         |
 |                                                                   |

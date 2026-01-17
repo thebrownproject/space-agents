@@ -1,6 +1,6 @@
-# Space-Agents Session Buffer
+# Space-Agents Staging
 
-*Cleared on /dock*
+*Session buffer - cleared on logout*
 
 ---
 
