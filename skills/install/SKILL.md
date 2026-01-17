@@ -57,8 +57,8 @@ mkdir -p .space-agents/missions/complete
 ├── staging/
 │   ├── buffer.md            # Session buffer
 │   └── handover.md          # Context dump for fresh sessions
-├── brainstorming/           # Design docs before planning
 └── missions/
+    ├── exploration/         # Exploration sessions before mission-brief
     ├── todo/                # Planned voyages
     ├── active/              # In-progress work
     └── complete/            # Archived work

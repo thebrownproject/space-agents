@@ -27,23 +27,7 @@
 
 ## P1 - High Priority (Near-Term)
 
-### 1. Hooks & Notification System
-
-**Status:** Designed, not implemented
-**Source:** `2026-01-16-space-agents-plugin-design.md`
-**Blocks:** Alert escalation, background mission notifications
-
-| Item | Description |
-|------|-------------|
-| `hooks.json` configuration | PreToolUse/PostToolUse hook definitions |
-| `notify.sh` | macOS notification script for mission events |
-| `check-notifications.sh` | Poll notification file for pending alerts |
-| `on-agent-complete.sh` | PostTask hook for mission completion |
-| Alert escalation | Severity 0-1 alerts notify immediately via hooks |
-
-**Why P1:** Without notifications, background missions complete silently. Users have no way to know when to check back.
-
-### 2. /maintenance Skill
+### 1. /maintenance Skill
 
 **Status:** Folder exists, no SKILL.md
 **Source:** `2026-01-16-space-agents-plugin-design.md`
@@ -61,7 +45,7 @@
 
 ## P2 - Medium Priority (Quality of Life)
 
-### 3. CAPCOM Memory Management
+### 2. CAPCOM Memory Management
 
 **Status:** Partially designed
 **Source:** `2026-01-16-space-agents-plugin-design.md`, `yegge-beads.md`
@@ -74,7 +58,7 @@
 
 **Why P2:** CAPCOM logs grow indefinitely. Eventually becomes unwieldy.
 
-### 4. Propulsion Principle (GUPP)
+### 3. Propulsion Principle (GUPP)
 
 **Status:** Concept documented
 **Source:** `yegge-gastown.md`
@@ -88,7 +72,7 @@
 
 **Why P2:** Quality of life improvement. Prevents agents from pausing unnecessarily.
 
-### 5. Dependency Tracking (Ready-State Semantics)
+### 4. Dependency Tracking (Ready-State Semantics)
 
 **Status:** Concept from Beads
 **Source:** `yegge-beads.md`
@@ -101,7 +85,7 @@
 
 **Why P2:** Currently objectives are sequential by default. Explicit dependencies enable smarter scheduling.
 
-### 6. Session Boundaries (Land the Plane)
+### 5. Session Boundaries (Land the Plane)
 
 **Status:** Concept from Beads
 **Source:** `yegge-beads.md`
@@ -118,7 +102,7 @@
 
 ## P3 - Low Priority (Future Phases)
 
-### 7. Parallel Execution (Phase 2)
+### 6. Parallel Execution (Phase 2)
 
 **Status:** Deferred until sequential feels slow
 **Source:** `SPACE-AGENTS-DESIGN.md`
@@ -132,7 +116,7 @@
 
 **Why P3:** Sequential execution works fine for most tasks. Parallel adds complexity.
 
-### 8. Health Monitoring (Phase 3)
+### 7. Health Monitoring (Phase 3)
 
 **Status:** Deferred until scaling
 **Source:** `SPACE-AGENTS-DESIGN.md`, `yegge-gastown.md`
@@ -145,7 +129,7 @@
 
 **Why P3:** Only needed when running many agents. Overhead until then.
 
-### 9. F-Thread Advanced Config
+### 8. F-Thread Advanced Config
 
 **Status:** Enhancement ideas
 **Source:** `2026-01-16-f-thread-planning-architecture.md`
@@ -159,7 +143,7 @@
 
 **Why P3:** Current F-Thread config is hardcoded. Flexibility is nice-to-have.
 
-### 10. F-Thread Code Review
+### 9. F-Thread Code Review
 
 **Status:** Concept
 **Source:** `2026-01-16-f-thread-planning-architecture.md`
@@ -168,7 +152,7 @@ Spawn 3-5 review agents in parallel to analyze code from different perspectives 
 
 **Why P3:** Enhancement to existing review process. Not critical path.
 
-### 11. F-Thread Speculative Execution
+### 10. F-Thread Speculative Execution
 
 **Status:** Experimental concept
 **Source:** `2026-01-16-f-thread-planning-architecture.md`
@@ -181,7 +165,7 @@ For risky objectives, spawn 3 Pods with different approaches, pick the best resu
 
 ## P4 - Deferred (Distant Future)
 
-### 12. tmux Orchestration (Phase 4)
+### 11. tmux Orchestration (Phase 4)
 
 **Status:** Research documented
 **Source:** `SPACE-AGENTS-DESIGN.md`, `docs/research/tmux-orchestration.md`
@@ -194,7 +178,7 @@ For risky objectives, spawn 3 Pods with different approaches, pick the best resu
 
 **Why P4:** Task tool works. tmux adds value at scale for 20+ agents.
 
-### 13. Advanced Workflows (Phase 4)
+### 12. Advanced Workflows (Phase 4)
 
 **Status:** Gas Town concepts
 **Source:** `SPACE-AGENTS-DESIGN.md`, `yegge-gastown.md`
@@ -207,7 +191,7 @@ For risky objectives, spawn 3 Pods with different approaches, pick the best resu
 
 **Why P4:** Missions/Objectives cover most use cases. These are refinements.
 
-### 14. Session Archaeology (Seance)
+### 13. Session Archaeology (Seance)
 
 **Status:** Concept from Gas Town
 **Source:** `SPACE-AGENTS-DESIGN.md`
@@ -216,7 +200,7 @@ Query past session decisions. Ask "why did we do X?" and get structured answers 
 
 **Why P4:** CAPCOM logs provide most of this. Structured query is a refinement.
 
-### 15. Web Dashboard
+### 14. Web Dashboard
 
 **Status:** Distant vision
 **Source:** `SPACE-AGENTS-DESIGN.md`
@@ -267,3 +251,53 @@ All items extracted from:
 ---
 
 *Last updated: 2026-01-17*
+
+---
+
+## Reference: Documents Inventory
+
+**Location:** `docs/plans/`
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `SPACE-AGENTS-DESIGN.md` | Foundational design - NASA hierarchy, computing model | Complete |
+| `2026-01-16-space-agents-plugin-design.md` | Full plugin spec - skills, agents, scripts, 4-phase roadmap | Phase 1 Complete |
+| `2026-01-16-architecture-refactor.md` | Refactor checklist | 8/9 Done |
+| `HANDOVER-2026-01-16.md` | Context dump from Phase 1 completion | Reference |
+| `2026-01-16-f-thread-planning-architecture.md` | Two-tier system design (F-Thread + Ralph) | Design Phase |
+| `2026-01-16-brainstorming-forward-deployed-fthread.md` | Forward-deployed parallel agents for brainstorming | Design Phase |
+| `2026-01-16-planning-forward-deployed-fthread.md` | Forward-deployed parallel agents for planning | Design Phase |
+
+---
+
+## Reference: Agents Inventory
+
+**Location:** `agents/`
+
+| Agent | Used By | Purpose |
+|-------|---------|---------|
+| `mission-pod.md` | Ralph loop | Orchestrates crew for single objective |
+| `mission-worker.md` | Pod | Implements code changes |
+| `mission-inspector.md` | Pod | Reviews against requirements |
+| `mission-analyst.md` | Pod | Reviews code quality |
+| `brainstorming-research.md` | `/brainstorming` | Explores codebase for patterns |
+| `brainstorming-architecture.md` | `/brainstorming` | Proposes architectural approaches |
+| `brainstorming-risk.md` | `/brainstorming` | Identifies risks and estimates effort |
+| `planning-task-planner.md` | `/planning` | Breaks feature into missions/objectives |
+| `planning-sequencer.md` | `/planning` | Sequences missions, identifies dependencies |
+| `planning-implementer.md` | `/planning` | Creates detailed TDD task breakdown |
+
+---
+
+## Reference: Key Design Decisions
+
+| Decision | Choice | Source |
+|----------|--------|--------|
+| Installation method | Plugin install via marketplace | Plugin design |
+| Project structure | Everything in `.space-agents/` | Plugin design |
+| Session management | Explicit `/launch` and `/dock` | Plugin design |
+| HOUSTON role | Plans, coordinates, never codes | SPACE-AGENTS-DESIGN |
+| Pod orchestration | Pod is orchestrator (no separate Commander) | SPACE-AGENTS-DESIGN |
+| Memory system | 3-tier (staging/CAPCOM/SQLite) | Plugin design |
+| Planning architecture | Two-tier: F-Thread for planning, Ralph for execution | F-Thread architecture |
+| Agent spawning | Forward-deployed (ahead of conversation) | Brainstorming F-Thread |

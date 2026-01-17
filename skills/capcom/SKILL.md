@@ -227,7 +227,7 @@ CAPCOM STATUS REPORT
 
 No active voyages or missions.
 
-Ready to start? Describe what you want to build, or run /brainstorming
+Ready to start? Describe what you want to build, or run /exploration
 to explore ideas.
 ────────────────────────────────────────────────────────────────────
 ```

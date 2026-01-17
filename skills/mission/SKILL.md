@@ -89,7 +89,7 @@ WHERE m.status = 'active';
 
 If no active missions:
 ```
-HOUSTON: No active missions found. Use /planning to create a mission first.
+HOUSTON: No active missions found. Use /mission-brief to create a mission first.
 ```
 
 ### Step 2: Confirm Mission Selection
@@ -217,7 +217,7 @@ Check progress with `/capcom` - it reads these logs and SQLite state.
 
 ```
 Ralph: Mission not found: MSN-999
-       Run /planning to create a mission first.
+       Run /mission-brief to create a mission first.
 ```
 
 ### Mission not active
