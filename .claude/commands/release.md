@@ -12,7 +12,7 @@ Bump the space-agents plugin version and push:
 4. Git add all files, commit with message "chore: bump version to X.X.X", and push
 5. Update the marketplace catalog:
    ```
-   /plugin marketplace update thebrownproject/space-agents
+   /plugin marketplace update space-agents
    ```
 
 Report the version change when complete.
