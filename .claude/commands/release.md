@@ -10,9 +10,10 @@ Bump the space-agents plugin version and push:
    - `.claude-plugin/plugin.json` (top-level "version" field)
    - `.claude-plugin/marketplace.json` (plugins[0].version field)
 4. Git add all files, commit with message "chore: bump version to X.X.X", and push
-5. Update the marketplace catalog:
+5. Tell the user to run the marketplace update manually:
    ```
+   Run this command in the Claude Code box:
    /plugin marketplace update space-agents
    ```
 
-Report the version change when complete.
+Report the version change and prompt the user to run the marketplace update.

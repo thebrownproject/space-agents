@@ -104,7 +104,37 @@ Continue the conversation with follow-up questions. Typical areas to explore:
 - Ask 1-2 questions per round (don't overwhelm)
 - Share your thinking - "I'm leaning toward X because..."
 - Push back if something seems off - "That might be over-engineering..."
-- Use AskUserQuestion for structured choices, plain text for open discussion
+- **Use AskUserQuestion for structured choices** (see below)
+- Use plain text for open-ended exploration
+
+### When to Use AskUserQuestion
+
+**IMPORTANT:** When presenting choices or decisions, use the `AskUserQuestion` tool to give the user structured options. This provides a better experience than open-ended text questions.
+
+**Use AskUserQuestion when:**
+- Offering 2-4 distinct approaches to choose from
+- Asking about priorities or preferences
+- Confirming a direction before proceeding
+- Any question where you can anticipate the likely answers
+
+**Use plain text when:**
+- Exploring open-ended topics ("What's driving this need?")
+- Asking for context or background
+- The answer could be anything
+
+**Example:**
+```
+# Instead of plain text:
+"Should we prioritize speed, simplicity, or robustness?"
+
+# Use AskUserQuestion:
+AskUserQuestion with options:
+- Speed (Recommended) - Optimize for fast delivery
+- Simplicity - Keep the solution minimal
+- Robustness - Build for edge cases and scale
+```
+
+This makes decisions easier and surfaces trade-offs clearly.
 
 ### Step 3: Suggest Agents When Useful
 
