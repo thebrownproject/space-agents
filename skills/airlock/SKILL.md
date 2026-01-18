@@ -40,16 +40,22 @@ Run `/airlock` directly to:
 
 When `/airlock` is invoked, execute the airlock validation script.
 
-### Step 1: Determine Project Root
+### Step 1: Determine Paths
 
-Use the current working directory as the project root, or accept an optional path argument.
+- **Skill base directory**: Use the "Base directory for this skill" provided in the invocation
+- **Project root**: Use the current working directory, or accept an optional path argument
 
 ### Step 2: Run Validation
 
-Execute the airlock script:
+Execute the airlock script (located in the skill's base directory):
 
 ```bash
-bash scripts/airlock.sh [PROJECT_ROOT] [OUTPUT_FILE]
+bash <skill-base-dir>/scripts/airlock.sh [PROJECT_ROOT] [OUTPUT_FILE]
+```
+
+For example, if the base directory is `/path/to/skills/airlock`, run:
+```bash
+bash /path/to/skills/airlock/scripts/airlock.sh .
 ```
 
 The script:

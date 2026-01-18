@@ -82,10 +82,15 @@ If none: "No active missions."
 ## Briefing Section
 
 Generate `{briefing}` content (extend the box with additional `│  ...  │` lines as needed). Base it on:
-- **capcom.md** - Last entry only (grep for final `## [` heading)
-- **staging/handover.md** - Context from previous session
-- **staging/buffer.md** - Current session notes
-- **Critical/blocker alerts** - If any exist, list details (id, source, description)
-- **Pending work** - Active missions/objectives
+- **capcom.md** - Last entry only. Use grep to find the final `## [` heading and read from there:
+  ```bash
+  # Find line number of last entry
+  grep -n "^## \[" .space-agents/capcom.md | tail -1 | cut -d: -f1
+  # Then read from that line to end
+  ```
+- **staging/handover.md** - Read fully, this is context from previous session
+- **staging/buffer.md** - Current session notes (may be empty if just starting)
+- **Critical/blocker alerts** - Query SQLite for active alerts with severity 0 or 1
+- **Pending work** - Active missions/objectives from SQLite
 
 If nothing notable: "All quiet. Ready for new orders."

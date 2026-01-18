@@ -111,3 +111,46 @@ Next session: Full integration test of exploration → mission-brief → ralph l
 Verify /pod skill loads correctly and handovers pass context between Pods.
 
 ---
+
+## [2026-01-18 08:59] Session End
+
+### Summary
+- Ran /exploration to design integration test with throwaway todo app
+- Spawned research agent to audit ralph.sh and /pod skill pre-flight
+- Found issues: /pod uses lowercase skill.md (others use SKILL.md), handovers never tested
+- Ran /mission-brief with planning council (task-planner, sequencer, implementer)
+- Created MSN-003-Integration-Test with 3 objectives (HTML, CSS, JS)
+- Mission staged and ready for /mission-go execution
+
+### Statistics
+- Objectives completed: 0 (planning session)
+- Alerts cleared: 0
+- Missions staged: 1 (MSN-003-Integration-Test)
+
+### Notes
+MSN-003 ready to execute. Will test full workflow including /pod skill loading and handover file creation.
+Known risk: skill.md filename case may cause issues on case-sensitive filesystems.
+
+---
+
+## [2026-01-18 20:58] Session End
+
+### Summary
+- Successfully ran MSN-003-Integration-Test (3 objectives, full workflow test)
+- Fixed multiple ralph.sh bugs: syntax errors, quoting, mprocs --server flag, priority ordering
+- Removed duplicate mark_objective_in_progress from ralph (Pod handles it now)
+- Simplified Pod's airlock invocation to use /airlock skill directly
+- Updated airlock skill to reference base directory correctly
+- Added folder lifecycle: staged → active → complete with cleanup
+- Moved transient files (signals, prompts) to tmp/ subfolder, cleaned on completion
+
+### Statistics
+- Objectives completed: 9 (including 3 from integration test + 6 from earlier missions)
+- Alerts cleared: 0
+- Missions completed: 3 (MSN-001, MSN-002, MSN-003)
+
+### Notes
+Integration test passed. Todo app created in test-frontend/ with HTML, CSS, JS.
+Next session: Consider brainstorming better airlock approach (testing instructions vs script).
+
+---

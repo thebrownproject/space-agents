@@ -200,28 +200,19 @@ cleanup_signals() {
 get_next_objective() {
     local mission_id="$1"
 
-    # Get next pending objective, ordered by priority (DESC) then created_at (ASC)
+    # Get next pending objective, ordered by priority (ASC = 1 first) then created_at (ASC)
     # Returns: id|title|description
     sql_query_row "
         SELECT id, title, description
         FROM objectives
         WHERE mission_id = '$mission_id'
           AND status = 'pending'
-        ORDER BY priority DESC, created_at ASC
+        ORDER BY priority ASC, created_at ASC
         LIMIT 1;
     "
 }
 
-mark_objective_in_progress() {
-    local objective_id="$1"
-    # Uses MISSION_ID from outer scope
-
-    sql_query "
-        UPDATE objectives
-        SET status = 'in_progress'
-        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
-    "
-}
+# Note: mark_objective_in_progress is handled by the Pod (Phase 1.5 of /pod skill)
 
 mark_objective_complete() {
     local objective_id="$1"
@@ -279,6 +270,26 @@ mark_mission_complete() {
         SET status = 'complete'
         WHERE id = '$mission_id';
     "
+
+    # Move mission folder from active/ to complete/
+    local active_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}"
+    local complete_dir="${SPACE_AGENTS_DIR}/missions/complete/${mission_id}"
+
+    if [[ -d "$active_dir" ]]; then
+        # Clean up tmp/ folder before moving (signals, prompts)
+        rm -rf "${active_dir}/tmp"
+
+        mkdir -p "${SPACE_AGENTS_DIR}/missions/complete"
+        mv "$active_dir" "$complete_dir"
+        log INFO "Moved mission folder to complete/"
+    fi
+
+    # Clean up staged folder if it still exists
+    local staged_dir="${SPACE_AGENTS_DIR}/missions/staged/${mission_id}"
+    if [[ -d "$staged_dir" ]]; then
+        rm -rf "$staged_dir"
+        log INFO "Cleaned up staged folder"
+    fi
 }
 
 check_critical_alerts() {
@@ -343,27 +354,28 @@ spawn_pod_visible() {
     local pod_agent="$3"
     local mission_id="$4"
     local mission_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}"
-    local signal_dir="${mission_dir}/signals"
+    local tmp_dir="${mission_dir}/tmp"
+    local signal_dir="${tmp_dir}/signals"
 
-    # Ensure signal directory exists
+    # Ensure tmp directories exist
     mkdir -p "$signal_dir"
 
     # Write prompt to file (avoids quoting issues with mprocs)
-    local prompt_file="${mission_dir}/prompts/${objective_id}.txt"
+    local prompt_file="${tmp_dir}/prompts/${objective_id}.txt"
     mkdir -p "$(dirname "$prompt_file")"
     echo "$pod_prompt" > "$prompt_file"
 
-    # Build claude command
+    # Build claude command (escape quotes for JSON)
     local cmd
     if [[ -f "$pod_agent" ]]; then
-        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions --system-prompt \"\$(cat ${pod_agent})\" \"\$(cat ${prompt_file})\""
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions --system-prompt \\\"\$(cat ${pod_agent})\\\" \\\"\$(cat ${prompt_file})\\\""
     else
-        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions \"\$(cat ${prompt_file})\""
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions \\\"\$(cat ${prompt_file})\\\""
     fi
 
-    # Spawn via mprocs ctl
+    # Spawn via mprocs ctl (connect to server started by ralph-visible.sh)
     log INFO "Adding Pod to mprocs: Pod-${objective_id}"
-    mprocs --ctl '{\"c\": \"add-proc\", \"cmd\": \"'"$cmd'\", \"name\": \"Pod-'${objective_id}'\"}'
+    mprocs --server 127.0.0.1:4050 --ctl "{\"c\": \"add-proc\", \"cmd\": \"$cmd\", \"name\": \"Pod-${objective_id}\"}"
 
     # Wait for signal file
     local signal_file="${signal_dir}/${objective_id}.done"
@@ -534,8 +546,7 @@ main() {
         log INFO "Selected objective: $objective_title ($objective_id)"
         log_capcom "$mission_id" "Starting objective: $objective_id - $objective_title"
 
-        # Mark objective as in progress
-        mark_objective_in_progress "$objective_id"
+        # Note: Pod marks objective as in_progress (Phase 1.5 of /pod skill)
 
         # Spawn Pod for this objective
         local pod_exit_code=0

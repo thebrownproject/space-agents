@@ -35,31 +35,29 @@ This skill ends a Space-Agents session by:
 
 ## Procedure
 
-### Step 1: Query Session Statistics
+### Step 1: Gather Session Statistics
 
-Query SQLite for session activity:
+Statistics should reflect THIS SESSION, not all of today. Since we don't track session start time, derive stats from context:
+
+1. **Objectives completed** - Count based on missions you ran during this session (from your memory/context), NOT from a date-based SQLite query
+2. **Missions completed** - Count missions that transitioned to 'complete' during this session
+3. **Alerts cleared** - Count alerts you addressed during this session
+
+Query SQLite for current state (for the logout screen):
 
 ```bash
-# Get completed objectives count (today)
-sqlite3 .space-agents/space-agents.db "SELECT COUNT(*) FROM objectives WHERE status = 'complete' AND date(completed_at) = date('now');"
-
-# Get cleared alerts count (today)
-sqlite3 .space-agents/space-agents.db "SELECT COUNT(*) FROM alerts WHERE status = 'cleared' AND date(cleared_at) = date('now');"
-
-# Get active voyages with progress
+# Get active missions with progress
 sqlite3 .space-agents/space-agents.db "
-SELECT v.title,
-       (SELECT COUNT(*) FROM objectives o
-        JOIN missions m ON o.mission_id = m.id
-        WHERE m.voyage_id = v.id AND o.status = 'complete') as done,
-       (SELECT COUNT(*) FROM objectives o
-        JOIN missions m ON o.mission_id = m.id
-        WHERE m.voyage_id = v.id) as total
-FROM voyages v WHERE v.status = 'active';"
+SELECT m.id, m.title,
+       (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id AND status = 'complete') as done,
+       (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id) as total
+FROM missions m WHERE m.status = 'active';"
 
 # Get in-progress objectives (may need status update)
 sqlite3 .space-agents/space-agents.db "SELECT o.id, o.title, m.title as mission FROM objectives o JOIN missions m ON o.mission_id = m.id WHERE o.status = 'in_progress';"
 ```
+
+**Important:** Don't use `date('now')` queries - they count all of today, not just this session.
 
 ### Step 2: Read Staging for Context
 

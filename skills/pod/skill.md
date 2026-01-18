@@ -139,9 +139,7 @@ Provide context:
 
 ### 2.4 Run Airlock
 
-Execute: `bash .space-agents/scripts/airlock.sh` (if exists)
-
-Or invoke `/airlock` skill.
+Invoke the `/airlock` skill to run project validation (tests, lint, type checking).
 
 **Exit 0:** Proceed to completion
 **Exit non-zero:** Create BLOCKER alert, exit failure
@@ -194,7 +192,7 @@ Append to `.space-agents/missions/active/<mission_id>/capcom.log`:
 
 If running in visible mode, touch the signal file:
 ```bash
-touch .space-agents/missions/active/<mission_id>/signals/<objective_id>.done
+touch .space-agents/missions/active/<mission_id>/tmp/signals/<objective_id>.done
 ```
 
 ### 3.5 Exit

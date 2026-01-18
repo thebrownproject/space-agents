@@ -50,7 +50,7 @@ When a mission is planned via `/mission-brief`, it starts with status "staged" a
 
 Before launching, you must:
 1. Update the mission status to "active" in SQLite
-2. Copy/move mission files from `staged/` to `active/`
+2. Move mission files from `staged/` to `active/`
 3. Create the handovers folder for inter-Pod context sharing
 
 ```sql
@@ -59,7 +59,8 @@ UPDATE missions SET status = 'active' WHERE id = '<mission_id>';
 
 ```bash
 mkdir -p .space-agents/missions/active/<mission_id>/handovers
-cp -r .space-agents/missions/staged/<mission_id>/* .space-agents/missions/active/<mission_id>/
+mv .space-agents/missions/staged/<mission_id>/* .space-agents/missions/active/<mission_id>/
+rmdir .space-agents/missions/staged/<mission_id>
 ```
 
 ---
