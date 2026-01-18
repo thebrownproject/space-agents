@@ -10,12 +10,9 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style. You pl
 ## The Process
 
 1. Check `.space-agents/space-agents.db` exists
-2. Query from SQLite:
-   - Project name: `SELECT title FROM voyages LIMIT 1;`
-   - Mission count, objective count, active alerts
+2. Query SQLite: project from `voyages`, mission count from `missions WHERE status IN ('staged','active')`, objective count from `objectives WHERE status IN ('pending','in_progress')`, alert counts by severity from `SELECT severity, COUNT(*) FROM alerts WHERE status='active' GROUP BY severity` (0=critical, 1=blocker, 2=warning, 3=info), list of staged/active missions with their status
 3. Display welcome screen with stats
-4. Show staging/buffer.md summary if exists
-5. Show critical/blocker alerts if any
+4. Generate briefing from staging files
 
 ## If Not Installed
 
@@ -25,7 +22,7 @@ Display "HOUSTON offline. Installation required." then use AskUserQuestion: Inst
 
 **IMPORTANT**: The welcome screen below is your ONLY output. Do not add any text before or after it. All contextual information goes in the `{briefing}` section inside the box.
 
-Replace `{project}`, `{mission_count}`, `{objective_count}`, and `{briefing}` with actual values:
+Replace placeholders with actual values:
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -45,7 +42,8 @@ Replace `{project}`, `{mission_count}`, `{objective_count}`, and `{briefing}` wi
 │            HOUSTON online. All systems nominal.                │
 ├────────────────────────────────────────────────────────────────┤
 │  Project: {project}                                            │
-│  Missions: {mission_count}    Objectives: {objective_count}                          │
+│  Missions: {mission_count} | Objectives: {objective_count}     │
+│  Alerts: {critical} critical | {blocker} blocker | {warning} warning | {info} info │
 ├────────────────────────────────────────────────────────────────┤
 │  COMMANDS                                                      │
 ├────────────────────────────────────────────────────────────────┤
@@ -62,10 +60,22 @@ Replace `{project}`, `{mission_count}`, `{objective_count}`, and `{briefing}` wi
 │    /mission             Launch Pod loop for active mission     │
 │    /capcom              Check mission status and progress      │
 ├────────────────────────────────────────────────────────────────┤
+│  MISSIONS                                                      │
+│  {missions}                                                    │
+├────────────────────────────────────────────────────────────────┤
 │  BRIEFING                                                      │
 │  {briefing}                                                    │
 └────────────────────────────────────────────────────────────────┘
 ```
+
+## Missions Section
+
+Generate `{missions}` - list staged/active missions with status:
+```
+[staged] MSN-001 - Mission title here
+[active] MSN-002 - Another mission
+```
+If none: "No active missions."
 
 ## Briefing Section
 
@@ -73,7 +83,7 @@ Generate `{briefing}` content (extend the box with additional `│  ...  │` li
 - **capcom.md** - Last entry only (grep for final `## [` heading)
 - **staging/handover.md** - Context from previous session
 - **staging/buffer.md** - Current session notes
-- **Critical/blocker alerts** - Immediate attention items
+- **Critical/blocker alerts** - If any exist, list details (id, source, description)
 - **Pending work** - Active missions/objectives
 
 If nothing notable: "All quiet. Ready for new orders."
