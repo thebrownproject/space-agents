@@ -57,7 +57,7 @@ JOIN voyages v ON m.voyage_id = v.id
 WHERE o.status = 'in_progress';
 
 -- Active alerts
-SELECT id, severity, source, description
+SELECT id, severity, mission_id, objective_id, source, description
 FROM alerts WHERE status = 'active'
 ORDER BY severity;
 

@@ -10,7 +10,9 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style. You pl
 ## The Process
 
 1. Check `.space-agents/space-agents.db` exists
-2. Query from SQLite: project name, mission count, objective count, active alerts
+2. Query from SQLite:
+   - Project name: `SELECT title FROM voyages LIMIT 1;`
+   - Mission count, objective count, active alerts
 3. Display welcome screen with stats
 4. Show staging/buffer.md summary if exists
 5. Show critical/blocker alerts if any
@@ -21,7 +23,9 @@ Display "HOUSTON offline. Installation required." then use AskUserQuestion: Inst
 
 ## Welcome Screen
 
-Replace `{project}`, `{mission_count}`, `{objective_count}` with SQLite values:
+**IMPORTANT**: The welcome screen below is your ONLY output. Do not add any text before or after it. All contextual information goes in the `{briefing}` section inside the box.
+
+Replace `{project}`, `{mission_count}`, `{objective_count}`, and `{briefing}` with actual values:
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -65,10 +69,11 @@ Replace `{project}`, `{mission_count}`, `{objective_count}` with SQLite values:
 
 ## Briefing Section
 
-Generate a concise briefing for `{briefing}` based on:
-- **staging/buffer.md** - Previous session notes, what was being worked on
-- **Critical/blocker alerts** - Anything that needs immediate attention
-- **Recent activity** - Last few messages from the messages table
-- **Pending work** - Active missions/objectives that need continuation
+Generate `{briefing}` content (extend the box with additional `│  ...  │` lines as needed). Base it on:
+- **capcom.md** - Last entry only (grep for final `## [` heading)
+- **staging/handover.md** - Context from previous session
+- **staging/buffer.md** - Current session notes
+- **Critical/blocker alerts** - Immediate attention items
+- **Pending work** - Active missions/objectives
 
 If nothing notable: "All quiet. Ready for new orders."

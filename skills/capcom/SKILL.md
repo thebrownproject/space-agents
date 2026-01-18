@@ -58,7 +58,7 @@ Run these queries:
    ORDER BY o.priority;
 
 4. Active alerts:
-   SELECT id, severity, source, description, created_at
+   SELECT id, severity, mission_id, objective_id, source, description, created_at
    FROM alerts WHERE status = 'active'
    ORDER BY severity, created_at DESC;
 
