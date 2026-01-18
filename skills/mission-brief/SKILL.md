@@ -125,10 +125,16 @@ After all approvals:
 2. **Move exploration:** Copy `exploration.md` into mission folder, delete exploration folder
 3. **Write _mission.md:** Mission context (goal, objectives list, key files)
 4. **Write implementation-plan.md:** Detailed plan with TDD tasks per objective
-5. **Insert SQLite records:** mission + objectives
+5. **Insert SQLite records:**
+   ```sql
+   INSERT INTO missions (id, title, status) VALUES ('<mission_id>', '<title>', 'staged');
+   INSERT INTO objectives (mission_id, id, title, description, status, priority)
+   VALUES ('<mission_id>', 'OBJ-001', '<title>', '<desc>', 'pending', 1);
+   ```
 6. **Confirm:** "Mission ready. Run `/mission` to begin execution."
 
-**Mission ID format:** `MSN-001-Short-description` (e.g., `MSN-001-Schema-v2`, `MSN-002-Auth-JWT`)
+**Mission ID format:** `MSN-001-Short-description`
+**Objective ID format:** `OBJ-001`, `OBJ-002`... (resets per mission, composite key)
 
 **Folder lifecycle:** `staged/` → `active/` (on /mission) → `complete/` (on finish)
 

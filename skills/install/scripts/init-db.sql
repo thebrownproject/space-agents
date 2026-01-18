@@ -2,7 +2,7 @@
 -- ============================================================================
 -- Usage: sqlite3 .space-agents/space-agents.db < init-db.sql
 -- ============================================================================
--- Tables: voyages, missions, objectives, messages, alerts
+-- Tables: voyages, missions, objectives, alerts
 -- Designed for idempotent execution (CREATE IF NOT EXISTS)
 -- ============================================================================
 
@@ -24,25 +24,18 @@ CREATE TABLE IF NOT EXISTS missions (
 );
 
 -- Objectives (stories/tasks)
+-- Composite key: (mission_id, id) allows OBJ-001 in each mission
 CREATE TABLE IF NOT EXISTS objectives (
-    id TEXT PRIMARY KEY,
-    mission_id TEXT REFERENCES missions(id),
+    id TEXT NOT NULL,                -- OBJ-001, OBJ-002... (resets per mission)
+    mission_id TEXT NOT NULL REFERENCES missions(id),
     title TEXT NOT NULL,
     description TEXT,
     status TEXT CHECK(status IN ('pending', 'in_progress', 'complete', 'failed')),
     priority INTEGER DEFAULT 0,
+    worker_attempts INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    completed_at DATETIME
-);
-
--- Messages (CAPCOM structured queries)
-CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    agent TEXT NOT NULL,
-    objective_id TEXT REFERENCES objectives(id),
-    type TEXT CHECK(type IN ('started', 'completed', 'failed', 'feedback')),
-    content TEXT
+    completed_at DATETIME,
+    PRIMARY KEY (mission_id, id)
 );
 
 -- Alerts (Gas Town severity pattern)
@@ -52,11 +45,12 @@ CREATE TABLE IF NOT EXISTS alerts (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     severity INTEGER CHECK(severity IN (0, 1, 2, 3)),
     mission_id TEXT NOT NULL REFERENCES missions(id),
-    objective_id TEXT REFERENCES objectives(id),
+    objective_id TEXT,               -- References composite key with mission_id
     source TEXT NOT NULL,
     description TEXT NOT NULL,
     status TEXT CHECK(status IN ('active', 'cleared')) DEFAULT 'active',
-    cleared_at DATETIME
+    cleared_at DATETIME,
+    FOREIGN KEY (mission_id, objective_id) REFERENCES objectives(mission_id, id)
 );
 
 -- Index for alerts by mission

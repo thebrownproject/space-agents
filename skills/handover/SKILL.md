@@ -57,10 +57,6 @@ WHERE o.status = 'in_progress';
 SELECT id, severity, mission_id, objective_id, source, description
 FROM alerts WHERE status = 'active'
 ORDER BY severity;
-
--- Recent messages (last 10)
-SELECT agent, type, content, timestamp
-FROM messages ORDER BY timestamp DESC LIMIT 10;
 ```
 
 ### Step 2: Read Session Buffer

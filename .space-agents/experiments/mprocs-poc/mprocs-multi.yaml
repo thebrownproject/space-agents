@@ -1,0 +1,9 @@
+# POC: Multiple Claude sessions test
+# Run: cd .space-agents/experiments/mprocs-poc && mprocs -c mprocs-multi.yaml
+
+server: 127.0.0.1:4050
+
+procs:
+  ralph:
+    shell: "./ralph-multi-test.sh"
+    autostart: true

@@ -6,7 +6,7 @@
 # state persists in SQLite. Agents are compute, not memory.
 #
 # Usage:
-#   ./ralph.sh <mission_id> [--attended]
+#   ./ralph.sh <mission_id> [--visible]
 #
 # Exit codes:
 #   0 - Mission complete (all objectives done)
@@ -19,6 +19,12 @@ set -euo pipefail
 # ----------------------------------------------------------------------------
 # Configuration
 # ----------------------------------------------------------------------------
+
+# Script location for finding sibling scripts
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Visible mode flag (set by --visible-internal when launched from mprocs)
+VISIBLE_MODE=false
 
 # Find project root (directory containing .space-agents)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
@@ -158,6 +164,36 @@ sql_query_row() {
 }
 
 # ----------------------------------------------------------------------------
+# Signal File Infrastructure
+# ----------------------------------------------------------------------------
+
+create_signal_dir() {
+    local mission_id="$1"
+    local signal_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/signals"
+    mkdir -p "$signal_dir"
+    echo "$signal_dir"
+}
+
+wait_for_signal() {
+    local signal_file="$1"
+    local timeout="${2:-300}"
+    local waited=0
+
+    while [[ ! -f "$signal_file" ]] && [[ $waited -lt $timeout ]]; do
+        sleep 2
+        waited=$((waited + 2))
+    done
+
+    [[ -f "$signal_file" ]]
+}
+
+cleanup_signals() {
+    local mission_id="$1"
+    local signal_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/signals"
+    rm -rf "$signal_dir"
+}
+
+# ----------------------------------------------------------------------------
 # Objective Management
 # ----------------------------------------------------------------------------
 
@@ -178,42 +214,34 @@ get_next_objective() {
 
 mark_objective_in_progress() {
     local objective_id="$1"
+    # Uses MISSION_ID from outer scope
 
     sql_query "
         UPDATE objectives
         SET status = 'in_progress'
-        WHERE id = '$objective_id';
-    "
-
-    sql_query "
-        INSERT INTO messages (agent, objective_id, type, content)
-        VALUES ('Ralph', '$objective_id', 'started', 'Ralph dispatched Pod for objective');
+        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
     "
 }
 
 mark_objective_complete() {
     local objective_id="$1"
+    # Uses MISSION_ID from outer scope
 
     sql_query "
         UPDATE objectives
         SET status = 'complete', completed_at = CURRENT_TIMESTAMP
-        WHERE id = '$objective_id';
+        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
     "
 }
 
 mark_objective_failed() {
     local objective_id="$1"
-    local reason="$2"
+    # Uses MISSION_ID from outer scope
 
     sql_query "
         UPDATE objectives
         SET status = 'failed'
-        WHERE id = '$objective_id';
-    "
-
-    sql_query "
-        INSERT INTO messages (agent, objective_id, type, content)
-        VALUES ('Ralph', '$objective_id', 'failed', '$reason');
+        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
     "
 }
 
@@ -309,6 +337,48 @@ create_alert() {
 # Pod Spawning
 # ----------------------------------------------------------------------------
 
+spawn_pod_visible() {
+    local objective_id="$1"
+    local pod_prompt="$2"
+    local pod_agent="$3"
+    local mission_id="$4"
+    local mission_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}"
+    local signal_dir="${mission_dir}/signals"
+
+    # Ensure signal directory exists
+    mkdir -p "$signal_dir"
+
+    # Write prompt to file (avoids quoting issues with mprocs)
+    local prompt_file="${mission_dir}/prompts/${objective_id}.txt"
+    mkdir -p "$(dirname "$prompt_file")"
+    echo "$pod_prompt" > "$prompt_file"
+
+    # Build claude command
+    local cmd
+    if [[ -f "$pod_agent" ]]; then
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions --system-prompt \"\$(cat ${pod_agent})\" \"\$(cat ${prompt_file})\""
+    else
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions \"\$(cat ${prompt_file})\""
+    fi
+
+    # Spawn via mprocs ctl
+    log INFO "Adding Pod to mprocs: Pod-${objective_id}"
+    mprocs --ctl '{\"c\": \"add-proc\", \"cmd\": \"'"$cmd'\", \"name\": \"Pod-'${objective_id}'\"}'
+
+    # Wait for signal file
+    local signal_file="${signal_dir}/${objective_id}.done"
+    log INFO "Waiting for Pod completion signal: ${signal_file}"
+
+    if wait_for_signal "$signal_file" 600; then
+        log SUCCESS "Pod signaled completion"
+        rm -f "$signal_file"
+        return 0
+    else
+        log ERROR "Pod timed out (10 min) waiting for signal"
+        return 1
+    fi
+}
+
 spawn_pod() {
     local objective_id="$1"
     local objective_title="$2"
@@ -317,63 +387,18 @@ spawn_pod() {
 
     log INFO "Spawning Pod for objective: $objective_title"
 
-    # Build the prompt for Pod
-    # Pod receives objective context and orchestrates Worker/Inspector/Analyst
-    local pod_prompt
-    pod_prompt=$(cat <<EOF
-You are a Pod - a fresh spacecraft launched to execute ONE objective.
+    # Simple prompt that invokes the /pod skill
+    # The skill handles context loading, crew dispatch, and handover
+    local pod_prompt="Run /pod ${objective_id} ${mission_id}"
 
-## Objective Assignment
-
-**Objective ID:** $objective_id
-**Title:** $objective_title
-**Description:**
-$objective_description
-
-## Environment
-
-**Project Root:** $PROJECT_ROOT
-**Space-Agents Root:** $SPACE_AGENTS_DIR
-**Database:** $DB
-
-## Your Mission
-
-1. Load any additional context from mission files
-2. Dispatch Worker to implement
-3. Dispatch Inspector to verify requirements
-4. Dispatch Analyst to review code quality
-5. Run Airlock validation (if airlock.sh exists)
-6. Report completion via exit code
-
-## Exit Codes
-
-- Exit 0: Objective complete (success)
-- Exit 1: Objective failed (blocker - try next objective)
-- Exit 2: Critical failure (halt Ralph loop)
-
-## Important
-
-You are fresh - you have no memory of previous objectives.
-All state comes from SQLite and files. Query the database for context.
-Stay focused on this single objective. Do not scope-creep.
-
-Begin execution.
-EOF
-)
-
-    # Spawn Pod via claude CLI
-    # Using -p for print mode (non-interactive)
-    # Pod agent prompt is in agents/mission-pod.md
-    local pod_agent="${PROJECT_ROOT}/agents/mission-pod.md"
     local exit_code=0
 
-    if [[ -f "$pod_agent" ]]; then
-        # Use Pod agent system prompt
-        echo "$pod_prompt" | claude -p --system-prompt "$(cat "$pod_agent")" --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task" 2>&1 || exit_code=$?
+    if [[ "$VISIBLE_MODE" == "true" ]]; then
+        # Visible mode: spawn via mprocs, wait for signal
+        spawn_pod_visible "$objective_id" "$pod_prompt" "" "$mission_id" || exit_code=$?
     else
-        # Fallback: run without custom system prompt
-        log WARNING "Pod agent not found at $pod_agent, using default"
-        echo "$pod_prompt" | claude -p --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task" 2>&1 || exit_code=$?
+        # Headless mode: run claude with the prompt
+        echo "$pod_prompt" | claude -p --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,Skill" 2>&1 || exit_code=$?
     fi
 
     return $exit_code
@@ -384,22 +409,59 @@ EOF
 # ----------------------------------------------------------------------------
 
 main() {
-    local mission_id="${1:-}"
-    local attended_mode="${2:-}"
+    local mission_id=""
+    local visible_flag=false
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --visible)
+                visible_flag=true
+                shift
+                ;;
+            --visible-internal)
+                # Called by ralph-visible.sh, already inside mprocs
+                VISIBLE_MODE=true
+                shift
+                ;;
+            --attended)
+                # Legacy flag, kept for backward compatibility
+                shift
+                ;;
+            -*)
+                echo "Unknown option: $1"
+                exit 2
+                ;;
+            *)
+                if [[ -z "$mission_id" ]]; then
+                    mission_id="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
 
     # Validate arguments
     if [[ -z "$mission_id" ]]; then
-        echo "Usage: ralph.sh <mission_id> [--attended]"
+        echo "Usage: ralph.sh <mission_id> [--visible]"
         echo ""
         echo "Options:"
         echo "  mission_id   The ID of the mission to execute"
-        echo "  --attended   Run in attended mode with full output"
+        echo "  --visible    Run in visible mode (mprocs TUI for real-time pod visibility)"
         exit 2
     fi
 
+    # If --visible and not already internal, launch wrapper
+    if [[ "$visible_flag" == "true" ]] && [[ "$VISIBLE_MODE" != "true" ]]; then
+        exec "${SCRIPT_DIR}/ralph-visible.sh" "$mission_id"
+    fi
+
+    # Set global MISSION_ID for use by helper functions
+    MISSION_ID="$mission_id"
+
     # Run prerequisites
     check_prerequisites
-    check_mission "$mission_id"
+    check_mission "$MISSION_ID"
 
     # Get mission info for logging
     local mission_title
@@ -490,7 +552,7 @@ main() {
             1)
                 # Blocker - objective failed, but try next
                 log WARNING "Pod reported blocker for: $objective_title"
-                mark_objective_failed "$objective_id" "Pod reported blocker"
+                mark_objective_failed "$objective_id"
                 create_alert 1 "$mission_id" "$objective_id" "Pod" "Objective failed with blocker"
                 log_capcom "$mission_id" "Objective failed (blocker): $objective_id"
                 log INFO "Continuing to next objective..."
@@ -498,7 +560,7 @@ main() {
             2)
                 # Critical - halt the loop
                 log ERROR "Pod reported CRITICAL failure for: $objective_title"
-                mark_objective_failed "$objective_id" "Pod reported critical failure"
+                mark_objective_failed "$objective_id"
                 create_alert 0 "$mission_id" "$objective_id" "Pod" "Critical failure - Ralph loop halted"
                 log_capcom "$mission_id" "CRITICAL: Ralph halted at objective $objective_id"
                 send_notification "Space-Agents CRITICAL" "Mission halted: $objective_title"
@@ -507,7 +569,7 @@ main() {
             *)
                 # Unknown exit code - treat as blocker
                 log WARNING "Pod exited with unexpected code: $pod_exit_code"
-                mark_objective_failed "$objective_id" "Pod exited with code $pod_exit_code"
+                mark_objective_failed "$objective_id"
                 create_alert 1 "$mission_id" "$objective_id" "Pod" "Unexpected exit code: $pod_exit_code"
                 log_capcom "$mission_id" "Objective failed (exit $pod_exit_code): $objective_id"
                 log INFO "Continuing to next objective..."

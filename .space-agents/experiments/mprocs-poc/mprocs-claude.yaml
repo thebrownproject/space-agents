@@ -1,0 +1,9 @@
+# POC: mprocs config for Claude Code visibility test
+# Start with: cd .space-agents/experiments/mprocs-poc && mprocs -c mprocs-claude.yaml
+
+server: 127.0.0.1:4050
+
+procs:
+  ralph:
+    shell: "./ralph-claude-test.sh"
+    autostart: true

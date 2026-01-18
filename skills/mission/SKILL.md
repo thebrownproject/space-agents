@@ -41,11 +41,53 @@ Run `/mission` when:
 - The mission must have status "active"
 - At least one objective must be "pending"
 
+### Activating a Staged Mission
+
+When a mission is planned via `/mission-brief`, it starts with status "staged" and files in:
+```
+.space-agents/missions/staged/<mission_id>/
+```
+
+Before launching, you must:
+1. Update the mission status to "active" in SQLite
+2. Copy/move mission files from `staged/` to `active/`
+3. Create the handovers folder for inter-Pod context sharing
+
+```sql
+UPDATE missions SET status = 'active' WHERE id = '<mission_id>';
+```
+
+```bash
+mkdir -p .space-agents/missions/active/<mission_id>/handovers
+cp -r .space-agents/missions/staged/<mission_id>/* .space-agents/missions/active/<mission_id>/
+```
+
 ---
 
 ## Mode Selection
 
 Before launching Ralph, choose an execution mode:
+
+### Visible Mode (`--visible`) - Recommended
+
+Ralph launches inside mprocs, spawning each Pod as a visible panel. Use when:
+- You want to watch Pods execute in real-time
+- Debugging or demonstrating the system
+- You need to see what each Pod is doing
+
+**IMPORTANT:** Visible mode requires manual execution. Claude Code cannot run mprocs through the Bash tool - it must run in your actual terminal to display the TUI.
+
+When the user selects visible mode, provide the command for them to copy/paste:
+
+```
+HOUSTON: Run this in your terminal to launch visible mode:
+
+    cd /path/to/project && bash .claude/plugins/cache/space-agents/space-agents/1.0.13/skills/mission/scripts/ralph.sh MSN-XXX --visible
+
+    (Or if using local skills: bash skills/mission/scripts/ralph.sh MSN-XXX --visible)
+```
+
+The user runs this command manually and watches the mprocs screen. Each Pod spawns as a new panel with live output.
 
 ### Attended Mode (`--attended`)
 

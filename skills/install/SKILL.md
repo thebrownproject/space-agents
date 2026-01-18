@@ -78,8 +78,7 @@ sqlite3 .space-agents/space-agents.db < scripts/init-db.sql
 The schema creates:
 - `voyages` - Epics/major initiatives
 - `missions` - Features within a voyage
-- `objectives` - Stories/tasks within a mission
-- `messages` - CAPCOM structured queries
+- `objectives` - Stories/tasks within a mission (with `worker_attempts` for retry tracking)
 - `alerts` - Severity-tracked notifications
 
 ---

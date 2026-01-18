@@ -56,10 +56,6 @@ Run these queries:
    FROM alerts WHERE status = 'active'
    ORDER BY severity, created_at DESC;
 
-4. Recent activity:
-   SELECT agent, type, content, timestamp
-   FROM messages ORDER BY timestamp DESC LIMIT 5;
-
 FORMAT your response as:
 
 [CAPCOM_REPORT]
@@ -75,10 +71,6 @@ OBJECTIVES: X pending, Y in_progress, Z complete
 ALERTS: X active
 ─────────────────
 [List alerts by severity: CRITICAL first, then BLOCKER, WARNING, INFO]
-
-RECENT ACTIVITY
-─────────────────
-[Last 5 messages]
 
 End with [CAPCOM_COMPLETE]
 ```
@@ -162,12 +154,6 @@ MSN-002: JWT Implementation
 ALERTS: 1 active
 ─────────────────
 [WARNING] ALT-002 Analyst: Deprecated sign() method in jwt.ts:45
-
-RECENT ACTIVITY
-─────────────────
-[14:23] Worker: Completed token verification
-[14:15] Inspector: PASS - meets requirements
-[14:10] Worker: Started token refresh implementation
 
 ────────────────────────────────────────────────────────────────────
 HOUSTON standing by. What would you like to do next?

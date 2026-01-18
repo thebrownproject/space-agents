@@ -1,0 +1,2 @@
+List the files in .space-agents/staging/ directory and describe what you see in 1 sentence.
+When completely done, you MUST run this exact command: touch /Users/fraserbrown/Documents/space-agents/.space-agents/experiments/mprocs-poc/signals/pod1.done
