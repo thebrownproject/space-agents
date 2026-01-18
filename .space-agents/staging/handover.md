@@ -1,59 +1,61 @@
 # Space-Agents Handover
 
 **Generated:** 2026-01-18
-**Version:** 1.0.16
+**Version:** 1.0.17
 
 ---
 
 ## Session Summary
 
-This session focused on integration testing and bug fixes for the Space-Agents execution loop.
+Exploration session focused on brainstorming new features and updating the roadmap.
 
 ### What Was Accomplished
 
-1. **Integration Test Complete** - MSN-003-Integration-Test passed
-   - 3 objectives executed via Ralph → Pod workflow
-   - Created test-frontend/ with functional todo app
-   - Verified visible mode (mprocs) works correctly
+1. **Feature Exploration** - Brainstormed 4 new features via /exploration skill:
+   - `/manual` - Manual mode, escape from mission ceremony
+   - `/code-review` - Agent swarm code reviews (aspect reviewers)
+   - `/debug` - Systematic debugging with alerts integration
+   - `/autopilot` - Autonomous overnight agents with CI/CD
 
-2. **Ralph Script Fixes**
-   - Fixed syntax errors in shell quoting
-   - Added `--server 127.0.0.1:4050` for mprocs ctl
-   - Fixed priority ordering (`ASC` not `DESC`)
-   - Removed duplicate `mark_objective_in_progress` (Pod handles it)
+2. **Exploration Reports Created:**
+   - `.space-agents/exploration/2026-01-18-review-debug/exploration.md`
+   - `.space-agents/exploration/2026-01-18-autopilot-manual/exploration.md`
 
-3. **Folder Lifecycle Management**
-   - staged/ → active/ → complete/ transitions
-   - Cleanup of staged folder on activation
-   - Move to complete/ on mission finish
+3. **Recovered Lost Files** - Found and restored from git history:
+   - `.space-agents/exploration/2026-01-17-gas-town-vision/exploration.md`
+   - `.space-agents/exploration/2026-01-17-space-agents-roadmap/exploration.md`
 
-4. **Transient File Cleanup**
-   - Moved signals/ and prompts/ into tmp/ subfolder
-   - tmp/ deleted before moving mission to complete/
+4. **Roadmap Updated** - Fresh priorities:
+   - P0: `/manual`
+   - P1: `/code-review`, `/debug`
+   - P2: `/autopilot`, `/maintenance`
+   - P3: Parallel execution, dependency tracking (Gas Town patterns)
 
-5. **Airlock Skill Update**
-   - Pod now invokes /airlock skill directly
-   - Skill instructions clarified to use base directory
+5. **Architecture Clarified:**
+   - CAPCOM memory management: mostly done (selective loading via grep)
+   - GUPP: solved differently by Ralph loop (fresh agents vs forced propulsion)
+   - Beads comparison: Space-Agents is simplified Beads (queryable state without distributed complexity)
 
 ### Current State
 
-- All missions complete (MSN-001, MSN-002, MSN-003)
-- No active missions or in-progress objectives
-- No active alerts
+- No active missions
+- No in-progress objectives
+- No critical alerts
+- 5 exploration reports in `.space-agents/exploration/`
 
 ### Files Changed (Not Committed)
 
-- `skills/mission-go/scripts/ralph.sh` - Multiple bug fixes
-- `skills/mission-go/scripts/ralph-visible.sh` - mprocs server config
-- `skills/mission-go/SKILL.md` - Activation instructions
-- `skills/pod/skill.md` - Airlock invocation, signal path
-- `skills/airlock/SKILL.md` - Base directory instructions
+- `.space-agents/exploration/2026-01-18-review-debug/exploration.md` - New
+- `.space-agents/exploration/2026-01-18-autopilot-manual/exploration.md` - New
+- `.space-agents/exploration/2026-01-17-gas-town-vision/exploration.md` - Recovered
+- `.space-agents/exploration/2026-01-17-space-agents-roadmap/exploration.md` - Updated
+- `.space-agents/capcom.md` - Session entry appended
 
 ### Next Session Suggestions
 
-1. **Commit changes** - Run `/commit` to save all fixes
-2. **Bump version** - Consider 1.0.17 release
-3. **Brainstorm airlock** - User mentioned wanting to explore better airlock approach (instructions vs bash script)
+1. **Implement `/manual`** - Simplest new feature, immediate value
+2. **Commit exploration files** - Run git add/commit to save new explorations
+3. **Or continue exploration** - More brainstorming if needed
 
 ---
 
@@ -63,4 +65,4 @@ This session focused on integration testing and bug fixes for the Space-Agents e
 /launch
 ```
 
-All systems nominal. Ready for new missions.
+Ready for new work. Four features explored and queued for implementation.
