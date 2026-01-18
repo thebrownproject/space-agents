@@ -39,21 +39,18 @@ When the user runs `/handover`, execute these steps:
 Run SQLite queries to gather state:
 
 ```sql
--- Active voyages with progress
-SELECT v.id, v.title, v.status,
+-- Active missions with progress
+SELECT m.id, m.title, m.status,
        (SELECT COUNT(*) FROM objectives o
-        JOIN missions m ON o.mission_id = m.id
-        WHERE m.voyage_id = v.id AND o.status = 'complete') as done,
+        WHERE o.mission_id = m.id AND o.status = 'complete') as done,
        (SELECT COUNT(*) FROM objectives o
-        JOIN missions m ON o.mission_id = m.id
-        WHERE m.voyage_id = v.id) as total
-FROM voyages v WHERE v.status IN ('planning', 'active');
+        WHERE o.mission_id = m.id) as total
+FROM missions m WHERE m.status IN ('staged', 'active');
 
 -- In-progress objectives
-SELECT o.id, o.title, o.description, m.title as mission, v.title as voyage
+SELECT o.id, o.title, o.description, m.title as mission
 FROM objectives o
 JOIN missions m ON o.mission_id = m.id
-JOIN voyages v ON m.voyage_id = v.id
 WHERE o.status = 'in_progress';
 
 -- Active alerts
@@ -94,9 +91,10 @@ Create a structured prompt that the next session can use:
 
 ## Current State
 
-### Active Voyage
-- **ID:** VOY-XXX
-- **Title:** [Voyage title]
+### Active Mission
+- **ID:** MSN-XXX
+- **Title:** [Mission title]
+- **Status:** [active/staged]
 - **Progress:** X/Y objectives complete
 
 ### In-Progress Work
@@ -179,7 +177,7 @@ To continue in a fresh session:
 
 | Section | Purpose | Source |
 |---------|---------|--------|
-| Current State | Where we are | SQLite queries |
+| Current State | Active missions and progress | SQLite queries |
 | In-Progress Work | What's actively being worked on | SQLite + buffer |
 | Active Alerts | Issues needing attention | SQLite alerts table |
 | Session Context | Important decisions/context | buffer.md |
@@ -200,9 +198,10 @@ To continue in a fresh session:
 
 ## Current State
 
-### Active Voyage
-- **ID:** VOY-001
-- **Title:** User Authentication System
+### Active Mission
+- **ID:** MSN-002
+- **Title:** JWT Implementation
+- **Status:** active
 - **Progress:** 5/10 objectives complete
 
 ### In-Progress Work
@@ -261,7 +260,7 @@ HOUSTON will load state from SQLite and continue from here.
 
 **If no active work:**
 ```
-HANDOVER: No active voyages or in-progress work to hand over.
+HANDOVER: No active missions or in-progress work to hand over.
 
 Current session state saved to buffer. Run /dock to end cleanly,
 or /launch in a new session to start fresh.

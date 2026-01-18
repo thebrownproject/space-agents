@@ -1,6 +1,6 @@
 ---
 name: capcom
-description: "Check mission status and progress via fresh subagent. Queries SQLite for voyages, missions, objectives, and alerts. Keeps HOUSTON context lean."
+description: "Check mission status and progress via fresh subagent. Queries SQLite for missions, objectives, and alerts. Keeps HOUSTON context lean."
 ---
 
 # /capcom - Status Check
@@ -41,28 +41,22 @@ DATABASE: .space-agents/space-agents.db
 
 Run these queries:
 
-1. Active voyages:
-   SELECT id, title, status, created_at FROM voyages
-   WHERE status IN ('planning', 'active') ORDER BY created_at DESC;
+1. Active missions:
+   SELECT id, title, status, created_at FROM missions
+   WHERE status IN ('staged', 'active') ORDER BY created_at DESC;
 
-2. Missions for active voyages:
-   SELECT m.id, m.title, m.status, v.title as voyage
-   FROM missions m JOIN voyages v ON m.voyage_id = v.id
-   WHERE v.status IN ('planning', 'active');
-
-3. Objectives status:
+2. Objectives status:
    SELECT o.id, o.title, o.status, m.title as mission
    FROM objectives o JOIN missions m ON o.mission_id = m.id
-   JOIN voyages v ON m.voyage_id = v.id
-   WHERE v.status IN ('planning', 'active')
+   WHERE m.status IN ('staged', 'active')
    ORDER BY o.priority;
 
-4. Active alerts:
+3. Active alerts:
    SELECT id, severity, mission_id, objective_id, source, description, created_at
    FROM alerts WHERE status = 'active'
    ORDER BY severity, created_at DESC;
 
-5. Recent activity:
+4. Recent activity:
    SELECT agent, type, content, timestamp
    FROM messages ORDER BY timestamp DESC LIMIT 5;
 
@@ -70,17 +64,13 @@ FORMAT your response as:
 
 [CAPCOM_REPORT]
 
-VOYAGES: X active
+MISSIONS: X total (Y active, Z staged)
 ─────────────────
-[List each voyage with status]
-
-MISSIONS: X total
-─────────────────
-[List missions grouped by voyage]
+[List each mission with status]
 
 OBJECTIVES: X pending, Y in_progress, Z complete
 ─────────────────
-[List objectives with status indicators]
+[List objectives grouped by mission with status indicators]
 
 ALERTS: X active
 ─────────────────
@@ -156,16 +146,10 @@ Use these indicators in the report:
 CAPCOM STATUS REPORT
 ────────────────────────────────────────────────────────────────────
 
-VOYAGES: 1 active
+MISSIONS: 2 total (1 active, 1 complete)
 ─────────────────
-● VOY-001: User Authentication System (active)
-
-MISSIONS: 3 total
-─────────────────
-VOY-001: User Authentication System
-  ● MSN-001: Database Schema (complete)
-  ◐ MSN-002: JWT Implementation (active)
-  ○ MSN-003: API Endpoints (todo)
+● MSN-001: Database Schema (complete)
+◐ MSN-002: JWT Implementation (active)
 
 OBJECTIVES: 2 pending, 1 in_progress, 5 complete
 ─────────────────
@@ -197,7 +181,6 @@ HOUSTON standing by. What would you like to do next?
 Users can request filtered status:
 
 - `/capcom alerts` - Show only alerts
-- `/capcom voyage VOY-XXX` - Show specific voyage
 - `/capcom mission MSN-XXX` - Show specific mission
 
 Adjust the subagent query accordingly.
@@ -225,7 +208,7 @@ Attempting direct query...
 CAPCOM STATUS REPORT
 ────────────────────────────────────────────────────────────────────
 
-No active voyages or missions.
+No active missions.
 
 Ready to start? Describe what you want to build, or run /exploration
 to explore ideas.

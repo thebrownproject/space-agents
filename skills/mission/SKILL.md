@@ -37,7 +37,7 @@ Run `/mission` when:
 
 **Prerequisites:**
 - Space-Agents must be installed (`/install`)
-- A voyage and mission must exist in the database
+- A mission must exist in the database
 - The mission must have status "active"
 - At least one objective must be "pending"
 
@@ -80,10 +80,9 @@ When `/mission` is invoked, follow these steps:
 Query SQLite to find active missions:
 
 ```sql
-SELECT m.id, m.title, v.title as voyage_title,
+SELECT m.id, m.title,
        (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id AND status = 'pending') as pending_count
 FROM missions m
-JOIN voyages v ON m.voyage_id = v.id
 WHERE m.status = 'active';
 ```
 
@@ -204,7 +203,7 @@ Ralph includes safety mechanisms:
 
 During execution, Ralph logs to:
 
-- **Per-voyage log:** `.space-agents/missions/active/<voyage>/capcom.log`
+- **Per-mission log:** `.space-agents/missions/active/<mission_id>/capcom.log`
 - **Notifications file:** `.space-agents/notifications`
 
 Check progress with `/capcom` - it reads these logs and SQLite state.
@@ -257,7 +256,6 @@ Launching MSN-001 in attended mode...
 ===========================================
 RALPH LOOP STARTING
 ===========================================
-Voyage: User Authentication (VOY-001)
 Mission: JWT Token Management (MSN-001)
 ===========================================
 
@@ -287,7 +285,7 @@ Objective complete: OBJ-001
 ### Objectives keep failing
 
 - Review alerts via `/capcom`
-- Check the per-voyage capcom.log for details
+- Check the per-mission capcom.log for details
 - Consider running `/airlock` manually to debug
 
 ### Critical alert halts everything

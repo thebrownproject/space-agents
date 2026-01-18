@@ -6,21 +6,20 @@
 -- Designed for idempotent execution (CREATE IF NOT EXISTS)
 -- ============================================================================
 
--- Voyages (epics)
+-- Voyages (project - one per installation)
 CREATE TABLE IF NOT EXISTS voyages (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    status TEXT CHECK(status IN ('planning', 'active', 'complete', 'archived')),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    notified INTEGER DEFAULT 0
+    description TEXT,
+    settings TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Missions (features)
 CREATE TABLE IF NOT EXISTS missions (
     id TEXT PRIMARY KEY,
-    voyage_id TEXT REFERENCES voyages(id),
     title TEXT NOT NULL,
-    status TEXT CHECK(status IN ('todo', 'active', 'complete', 'failed')),
+    status TEXT CHECK(status IN ('staged', 'active', 'complete', 'failed')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -52,12 +51,17 @@ CREATE TABLE IF NOT EXISTS alerts (
     id TEXT PRIMARY KEY,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     severity INTEGER CHECK(severity IN (0, 1, 2, 3)),
+    mission_id TEXT NOT NULL REFERENCES missions(id),
     objective_id TEXT REFERENCES objectives(id),
     source TEXT NOT NULL,
     description TEXT NOT NULL,
     status TEXT CHECK(status IN ('active', 'cleared')) DEFAULT 'active',
     cleared_at DATETIME
 );
+
+-- Index for alerts by mission
+CREATE INDEX IF NOT EXISTS idx_alerts_mission
+ON alerts(mission_id, status);
 
 -- Index for quick pending objective queries
 CREATE INDEX IF NOT EXISTS idx_objectives_pending

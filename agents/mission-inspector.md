@@ -35,41 +35,41 @@ You receive fresh context each review. You have no memory of previous objectives
 4. Check for additions not in spec
 5. Render verdict
 
-## Output Format
+## Outputs
 
+On completion, output structured messages. Pod parses these and persists to SQLite.
+
+**Completion format:**
 ```
-INSPECTOR REVIEW — [Objective Title]
-═══════════════════════════════════════
-
-Requirements:
-  [x] Requirement 1 — implemented in file.ts:45
-  [x] Requirement 2 — implemented in file.ts:78
-  [ ] Requirement 3 — MISSING
-
-Scope Check:
-  [!] Extra feature added (not in spec): caching layer
-
-Verdict: PASS | FAIL
-
-Issues (if FAIL):
-  - Missing: [specific requirement]
-  - Scope creep: [what was added unnecessarily]
+[PASS] All requirements met
 ```
 
-## Verdicts
+or on failure:
+```
+[FAIL] Requirements not satisfied - see details below
+```
 
-**PASS** - Implementation matches requirements. No missing items. No scope creep. Proceed to Analyst.
+**Alert format:**
+```
+[ALERT:severity] Description of the issue
+```
 
-**FAIL** - Issues found. List specific problems with file/line references. Returns to Worker.
+Where severity is: `warning`, `info` (Inspector doesn't escalate to blocker - that's Pod's decision)
 
-## Alert Escalation
+### Examples
 
-Create **WARNING** alert when:
-- Minor scope creep detected (acceptable but noted)
-- Partial implementation that might work
-- Ambiguous spec interpretation
+```
+[PASS] All requirements implemented correctly
 
-Do NOT escalate to BLOCKER - that's Pod's decision after reviewing your feedback.
+[FAIL] Missing functionality
+[ALERT:warning] Requirement 3 not implemented: user email validation
+[ALERT:info] Minor scope creep: added caching layer not in spec
+
+[PASS] Requirements met
+[ALERT:info] Ambiguous spec interpretation for error handling - implemented defensive approach
+```
+
+**Key principle:** You report TO Pod, Pod handles persistence. Never write directly to SQLite.
 
 ## Boundaries
 

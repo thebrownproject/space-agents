@@ -43,7 +43,8 @@ If `.space-agents/` already exists:
 Create the full Space-Agents directory structure:
 
 ```bash
-mkdir -p .space-agents/missions/todo
+mkdir -p .space-agents/exploration
+mkdir -p .space-agents/missions/staged
 mkdir -p .space-agents/missions/active
 mkdir -p .space-agents/missions/complete
 ```
@@ -57,9 +58,9 @@ mkdir -p .space-agents/missions/complete
 ├── staging/
 │   ├── buffer.md            # Session buffer
 │   └── handover.md          # Context dump for fresh sessions
+├── exploration/             # Exploration sessions (/exploration output)
 └── missions/
-    ├── exploration/         # Exploration sessions before mission-brief
-    ├── todo/                # Planned voyages
+    ├── staged/              # Planned missions ready for execution
     ├── active/              # In-progress work
     └── complete/            # Archived work
 ```

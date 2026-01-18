@@ -62,15 +62,13 @@ Query SQLite for objective details:
 
 ```sql
 SELECT o.id, o.title, o.description, o.status, o.priority,
-       m.id as mission_id, m.title as mission_title,
-       v.id as voyage_id, v.title as voyage_title
+       m.id as mission_id, m.title as mission_title
 FROM objectives o
 JOIN missions m ON o.mission_id = m.id
-JOIN voyages v ON m.voyage_id = v.id
 WHERE o.id = '<objective_id>';
 ```
 
-Read mission context: `missions/active/<voyage>/missions/<mission>/_mission.md`
+Read mission context: `missions/active/<mission_id>/_mission.md`
 
 Mark objective in progress and log start:
 
@@ -131,9 +129,11 @@ For each alert found:
 SELECT COALESCE(MAX(CAST(SUBSTR(id, 5) AS INTEGER)), 0) + 1 FROM alerts;
 -- New ID: ALT-<padded_num> (e.g., ALT-007)
 
-INSERT INTO alerts (id, severity, objective_id, source, description, status)
-VALUES ('<id>', <severity>, '<objective_id>', '<crew_member>', '<description>', 'active');
+INSERT INTO alerts (id, severity, mission_id, objective_id, source, description, status)
+VALUES ('<id>', <severity>, '<mission_id>', '<objective_id>', '<crew_member>', '<description>', 'active');
 ```
+
+Note: You have `mission_id` from the objective context query. Always include it when creating alerts.
 
 For each crew result:
 
@@ -184,7 +184,7 @@ INSERT INTO messages (agent, objective_id, type, content)
 VALUES ('Pod', '<objective_id>', 'completed', 'Objective complete: <title>');
 ```
 
-Log to mission CAPCOM (`missions/active/<voyage>/capcom.log`):
+Log to mission CAPCOM (`missions/active/<mission_id>/capcom.log`):
 ```
 [YYYY-MM-DD HH:MM:SS] POD: Objective complete - <title>
 ```

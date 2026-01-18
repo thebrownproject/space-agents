@@ -54,11 +54,11 @@ log() {
 }
 
 log_capcom() {
-    local voyage_id="$1"
+    local mission_id="$1"
     local message="$2"
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    local capcom_log="${SPACE_AGENTS_DIR}/missions/active/${voyage_id}/capcom.log"
+    local capcom_log="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/capcom.log"
 
     # Ensure directory exists
     mkdir -p "$(dirname "$capcom_log")"
@@ -220,12 +220,11 @@ mark_objective_failed() {
 get_mission_info() {
     local mission_id="$1"
 
-    # Returns: mission_title|voyage_id|voyage_title
-    sql_query_row "
-        SELECT m.title, v.id, v.title
-        FROM missions m
-        JOIN voyages v ON m.voyage_id = v.id
-        WHERE m.id = '$mission_id';
+    # Returns: mission_title
+    sql_query "
+        SELECT title
+        FROM missions
+        WHERE id = '$mission_id';
     "
 }
 
@@ -257,15 +256,14 @@ mark_mission_complete() {
 check_critical_alerts() {
     local mission_id="$1"
 
-    # Check for any active critical (severity 0) alerts for this mission's objectives
+    # Check for any active critical (severity 0) alerts for this mission
     local critical_count
     critical_count=$(sql_query "
         SELECT COUNT(*)
-        FROM alerts a
-        JOIN objectives o ON a.objective_id = o.id
-        WHERE o.mission_id = '$mission_id'
-          AND a.severity = 0
-          AND a.status = 'active';
+        FROM alerts
+        WHERE mission_id = '$mission_id'
+          AND severity = 0
+          AND status = 'active';
     ")
 
     [[ "$critical_count" -gt 0 ]]
@@ -277,9 +275,10 @@ check_critical_alerts() {
 
 create_alert() {
     local severity="$1"
-    local objective_id="$2"
-    local source="$3"
-    local description="$4"
+    local mission_id="$2"
+    local objective_id="$3"
+    local source="$4"
+    local description="$5"
 
     # Generate next alert ID
     local next_num
@@ -290,9 +289,17 @@ create_alert() {
     # Escape single quotes in description
     local safe_description="${description//\'/\'\'}"
 
+    # objective_id can be empty for mission-level alerts
+    local obj_value
+    if [[ -z "$objective_id" ]]; then
+        obj_value="NULL"
+    else
+        obj_value="'$objective_id'"
+    fi
+
     sql_query "
-        INSERT INTO alerts (id, severity, objective_id, source, description, status)
-        VALUES ('$alert_id', $severity, '$objective_id', '$source', '$safe_description', 'active');
+        INSERT INTO alerts (id, severity, mission_id, objective_id, source, description, status)
+        VALUES ('$alert_id', $severity, '$mission_id', $obj_value, '$source', '$safe_description', 'active');
     "
 
     log WARNING "Alert created: $alert_id (severity $severity) - $description"
@@ -306,7 +313,7 @@ spawn_pod() {
     local objective_id="$1"
     local objective_title="$2"
     local objective_description="$3"
-    local voyage_id="$4"
+    local mission_id="$4"
 
     log INFO "Spawning Pod for objective: $objective_title"
 
@@ -395,19 +402,16 @@ main() {
     check_mission "$mission_id"
 
     # Get mission info for logging
-    local mission_info
-    mission_info=$(get_mission_info "$mission_id")
-    local mission_title voyage_id voyage_title
-    IFS='|' read -r mission_title voyage_id voyage_title <<< "$mission_info"
+    local mission_title
+    mission_title=$(get_mission_info "$mission_id")
 
     log INFO "============================================"
     log INFO "RALPH LOOP STARTING"
     log INFO "============================================"
-    log INFO "Voyage: $voyage_title ($voyage_id)"
     log INFO "Mission: $mission_title ($mission_id)"
     log INFO "============================================"
 
-    log_capcom "$voyage_id" "Ralph loop starting for mission: $mission_id"
+    log_capcom "$mission_id" "Ralph loop starting"
 
     local iteration=0
     local max_iterations=100  # Safety limit
@@ -419,7 +423,7 @@ main() {
         # Safety: prevent infinite loops
         if [[ $iteration -gt $max_iterations ]]; then
             log ERROR "Max iterations ($max_iterations) reached. Halting."
-            create_alert 0 "" "Ralph" "Max iterations reached - possible infinite loop"
+            create_alert 0 "$mission_id" "" "Ralph" "Max iterations reached - possible infinite loop"
             send_notification "Space-Agents" "Ralph halted: max iterations reached"
             exit 1
         fi
@@ -429,7 +433,7 @@ main() {
         # Check for critical alerts before continuing
         if check_critical_alerts "$mission_id"; then
             log ERROR "Critical alert detected. Halting Ralph loop."
-            log_capcom "$voyage_id" "Ralph halted: critical alert detected"
+            log_capcom "$mission_id" "Ralph halted: critical alert detected"
             send_notification "Space-Agents CRITICAL" "Mission halted due to critical alert"
             exit 1
         fi
@@ -448,14 +452,14 @@ main() {
                 log SUCCESS "============================================"
                 log SUCCESS "MISSION COMPLETE: $mission_title"
                 log SUCCESS "============================================"
-                log_capcom "$voyage_id" "Mission complete: $mission_id"
+                log_capcom "$mission_id" "Mission complete: $mission_id"
                 send_notification "Space-Agents" "Mission complete: $mission_title"
                 exit 0
             else
                 # Some objectives may be in failed state
                 log WARNING "No pending objectives, but mission not fully complete"
                 log WARNING "Check failed objectives and alerts"
-                log_capcom "$voyage_id" "Ralph stopped: no pending objectives, some may have failed"
+                log_capcom "$mission_id" "Ralph stopped: no pending objectives, some may have failed"
                 send_notification "Space-Agents" "Mission stalled: check failed objectives"
                 exit 1
             fi
@@ -466,14 +470,14 @@ main() {
         IFS='|' read -r objective_id objective_title objective_description <<< "$objective_row"
 
         log INFO "Selected objective: $objective_title ($objective_id)"
-        log_capcom "$voyage_id" "Starting objective: $objective_id - $objective_title"
+        log_capcom "$mission_id" "Starting objective: $objective_id - $objective_title"
 
         # Mark objective as in progress
         mark_objective_in_progress "$objective_id"
 
         # Spawn Pod for this objective
         local pod_exit_code=0
-        spawn_pod "$objective_id" "$objective_title" "$objective_description" "$voyage_id" || pod_exit_code=$?
+        spawn_pod "$objective_id" "$objective_title" "$objective_description" "$mission_id" || pod_exit_code=$?
 
         # Handle Pod exit code
         case $pod_exit_code in
@@ -481,22 +485,22 @@ main() {
                 # Success
                 log SUCCESS "Pod completed objective: $objective_title"
                 mark_objective_complete "$objective_id"
-                log_capcom "$voyage_id" "Objective complete: $objective_id"
+                log_capcom "$mission_id" "Objective complete: $objective_id"
                 ;;
             1)
                 # Blocker - objective failed, but try next
                 log WARNING "Pod reported blocker for: $objective_title"
                 mark_objective_failed "$objective_id" "Pod reported blocker"
-                create_alert 1 "$objective_id" "Pod" "Objective failed with blocker"
-                log_capcom "$voyage_id" "Objective failed (blocker): $objective_id"
+                create_alert 1 "$mission_id" "$objective_id" "Pod" "Objective failed with blocker"
+                log_capcom "$mission_id" "Objective failed (blocker): $objective_id"
                 log INFO "Continuing to next objective..."
                 ;;
             2)
                 # Critical - halt the loop
                 log ERROR "Pod reported CRITICAL failure for: $objective_title"
                 mark_objective_failed "$objective_id" "Pod reported critical failure"
-                create_alert 0 "$objective_id" "Pod" "Critical failure - Ralph loop halted"
-                log_capcom "$voyage_id" "CRITICAL: Ralph halted at objective $objective_id"
+                create_alert 0 "$mission_id" "$objective_id" "Pod" "Critical failure - Ralph loop halted"
+                log_capcom "$mission_id" "CRITICAL: Ralph halted at objective $objective_id"
                 send_notification "Space-Agents CRITICAL" "Mission halted: $objective_title"
                 exit 1
                 ;;
@@ -504,8 +508,8 @@ main() {
                 # Unknown exit code - treat as blocker
                 log WARNING "Pod exited with unexpected code: $pod_exit_code"
                 mark_objective_failed "$objective_id" "Pod exited with code $pod_exit_code"
-                create_alert 1 "$objective_id" "Pod" "Unexpected exit code: $pod_exit_code"
-                log_capcom "$voyage_id" "Objective failed (exit $pod_exit_code): $objective_id"
+                create_alert 1 "$mission_id" "$objective_id" "Pod" "Unexpected exit code: $pod_exit_code"
+                log_capcom "$mission_id" "Objective failed (exit $pod_exit_code): $objective_id"
                 log INFO "Continuing to next objective..."
                 ;;
         esac

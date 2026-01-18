@@ -51,41 +51,49 @@ Focus on these areas:
 - [ ] User input sanitized
 - [ ] No obvious injection vectors
 
-## Output Format
+## Outputs
 
-Return one of:
+On completion, output structured messages. Pod parses these and persists to SQLite.
 
-**PASS**
+**Completion format:**
 ```
-ANALYST: PASS
-Quality acceptable. [Optional: brief positive note]
-```
-
-**FAIL**
-```
-ANALYST: FAIL
-Issues found:
-- [file:line] Description of issue
-- [file:line] Description of issue
-
-Recommendation: [What Worker should fix]
+[PASS] Quality acceptable. [Optional: brief note]
 ```
 
-## Creating Alerts
-
-For quality issues, create a WARNING alert:
-
-```sql
-INSERT INTO alerts (id, severity, objective_id, source, description)
-VALUES ('ALT-XXX', 2, '<objective_id>', 'Analyst', '<description>');
+or on failure:
+```
+[FAIL] Issues found - see details below
 ```
 
-Severity 2 (warning) - code can ship but should be improved.
+**Alert format:**
+```
+[ALERT:severity] Description of the issue
+```
 
-Only use severity 1 (blocker) for critical issues like:
-- Security vulnerabilities
-- Data loss risks
-- Breaking changes without migration
+Where severity is: `critical`, `blocker`, `warning`, `info`
+
+### Severity Guide
+
+| Severity | When to Use |
+|----------|-------------|
+| `blocker` | Security vulnerabilities, data loss risks, breaking changes |
+| `warning` | Code can ship but should be improved |
+| `info` | Minor suggestions, potential improvements |
+
+### Examples
+
+```
+[PASS] Clean implementation, follows project patterns
+
+[FAIL] Security issues found
+[ALERT:blocker] SQL injection vulnerability in user query at api/users.ts:45
+[ALERT:warning] Function exceeds 100 lines - consider splitting
+
+[PASS] Quality acceptable
+[ALERT:info] Consider adding index on users.email for query performance
+```
+
+**Key principle:** You report TO Pod, Pod handles persistence. Never write directly to SQLite.
 
 ## Constraints
 

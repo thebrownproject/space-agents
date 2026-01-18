@@ -51,3 +51,42 @@ Major plugin restructure complete. Skills now use:
 Exploration skill instructions may need expansion for folder creation details in future refactor.
 
 ---
+## [2026-01-18 10:14] Session End
+
+### Summary
+- Major skill simplification: /launch (294→75 lines), /exploration (356→47 lines), /mission-brief (471→177 lines)
+- Simplified planning agents: task-planner, sequencer, implementer
+- Clarified hierarchy: Voyage = Project (set at install), Mission = Feature, Objectives = Tasks
+- Updated welcome screen to show Project name instead of voyage count
+- Released version 1.0.12
+
+### Statistics
+- Objectives completed: 0
+- Alerts cleared: 0
+- Active voyages: 0
+
+### Notes
+Next session: Update SQLite schema and database to align with new hierarchy (voyage as project).
+
+---
+
+
+## [2026-01-18 14:35] Session End
+
+### Summary
+- MSN-001-Schema-v2 completed: SQLite schema updated for MVP hierarchy
+- Removed voyage dependencies from ralph.sh, Pod, and mission skill
+- Added mission_id to alerts table, updated all agent INSERTs
+- Fixed Inspector/Analyst to use structured output like Worker
+- Tested Ralph loop - identified need for visible Pod sessions (future enhancement)
+
+### Statistics
+- Objectives completed: 3
+- Alerts cleared: 0
+- Missions completed: 1 (MSN-001-Schema-v2)
+
+### Notes
+Ralph loop works but runs Pods in non-interactive mode. User wants to see live sessions.
+Next session: discuss options for visible Pod execution (Task tool vs interactive mode).
+
+---

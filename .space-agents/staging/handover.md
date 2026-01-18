@@ -1,58 +1,49 @@
 # Space-Agents Handover
 
-*Generated: 2026-01-18 09:20*
+*Generated: 2026-01-18 14:35*
 
 ---
 
 ## Session Context
 
-This session completed a major plugin restructure:
+Completed MSN-001-Schema-v2 (SQLite Schema Update). All 3 objectives done.
 
-### Changes Implemented
-1. **Skill Renames:**
-   - `/brainstorming` → `/exploration`
-   - `/planning` → `/mission-brief`
+## Key Changes This Session
 
-2. **Folder Restructure:**
-   - Removed standalone `brainstorming/` folder
-   - Created `missions/exploration/` for exploration sessions
-   - Lifecycle: `exploration/` → `todo/` → `active/` → `complete/`
+### Schema (init-db.sql)
+- Removed `voyage_id` from missions table (MVP: no voyages)
+- Added `mission_id NOT NULL` to alerts table
+- Changed mission status enum: `staged`, `active`, `complete`, `failed`
 
-3. **Agent Renames:**
-   - `brainstorming-research` → `exploration-research`
-   - `brainstorming-architecture` → `exploration-architecture`
-   - `brainstorming-risk` → `exploration-risk`
+### Agent Communication
+- Inspector/Analyst now use structured output: `[PASS]`/`[FAIL]` + `[ALERT:severity]`
+- Pod adds `mission_id` when persisting alerts (crew don't need to know it)
+- All crew follow "report to Pod, Pod persists" pattern
 
-### Files Modified
-- CLAUDE.md
-- skills/exploration/SKILL.md
-- skills/mission-brief/SKILL.md
-- skills/launch/SKILL.md
-- skills/capcom/SKILL.md
-- skills/install/SKILL.md
-- skills/mission/SKILL.md
-- commands/run-exploration.md
-- commands/run-mission-brief.md
-- agents/exploration-*.md (3 files)
-- agents/planning-*.md (3 files)
+### Ralph Loop (ralph.sh)
+- Removed all voyage references
+- Updated `create_alert()` to include `mission_id`
+- Updated `check_critical_alerts()` to query by `mission_id` directly
+- Tested successfully - spawns Pods, completes objectives
 
-### Migration Complete
-- Existing brainstorming files moved to `missions/exploration/`
-- Old `brainstorming/` folder removed
+### Folder Structure
+- Missions now at: `.space-agents/missions/active/<mission_id>/`
+- Mission IDs are descriptive: `MSN-001-Schema-v2`
 
-## Current State
+## Open Discussion
 
-- **Active voyages:** 0
-- **Pending missions:** 0
-- **Active alerts:** 0
+User wants to **see Pod sessions running live** (like watching Claude Code work).
+Current `-p` mode hides interactive UI. Options to discuss:
+1. Spawn Pods via Task tool (visible in /tasks)
+2. Run without `-p` (interactive but requires manual permission approval)
+3. Use tmux/split panes
+
+## Git Status
+
+Modified files not yet committed - schema and agent changes from this session.
 
 ## Next Steps
 
-1. Test `/exploration` to verify new workflow
-2. Test `/mission-brief` to verify folder moves from exploration/ to todo/
-3. Consider expanding exploration skill instructions for folder creation
-4. User mentioned future refactor of exploration skill
-
----
-
-*Copy this to a new session to resume context.*
+1. Discuss visible Pod execution approach
+2. Consider voyages/epics for post-MVP
+3. Test full Ralph loop with visible sessions

@@ -8,7 +8,7 @@ description: "Write mission plan with objectives. HOUSTON convenes planning coun
 Turn an exploration report into an executable mission with objectives. HOUSTON reviews the exploration, convenes a planning council for input, then synthesizes everything into a plan for user approval.
 
 **Hierarchy:**
-- Voyage = Project (set at install, not planned here)
+- Project = the codebase (one per installation)
 - Mission = Feature (designed in /exploration)
 - Objectives = Tasks (created here)
 
@@ -121,17 +121,42 @@ This pattern applies to all objectives. Ready to write the plan?
 
 After all approvals:
 
-1. **Create mission folder:** `.space-agents/missions/YYYY-MM-DD-<topic>/`
-2. **Write implementation plan:** `implementation-plan.md`
-3. **Insert SQLite records:** mission + objectives (linked to project voyage)
-4. **Confirm:** "Mission MSN-XXX ready. Run `/mission` to begin execution."
+1. **Create mission folder:** `.space-agents/missions/staged/<mission-id>/`
+2. **Move exploration:** Copy `exploration.md` into mission folder, delete exploration folder
+3. **Write _mission.md:** Mission context (goal, objectives list, key files)
+4. **Write implementation-plan.md:** Detailed plan with TDD tasks per objective
+5. **Insert SQLite records:** mission + objectives
+6. **Confirm:** "Mission ready. Run `/mission` to begin execution."
 
-## Plan Structure
+**Mission ID format:** `MSN-001-Short-description` (e.g., `MSN-001-Schema-v2`, `MSN-002-Auth-JWT`)
+
+**Folder lifecycle:** `staged/` → `active/` (on /mission) → `complete/` (on finish)
+
+## _mission.md Structure
+
+```markdown
+# MSN-XXX-Description: [Feature Name]
+
+**Status:** Staged
+**Created:** [timestamp]
+
+## Goal
+[One sentence]
+
+## Objectives
+1. OBJ-001 - [Name]
+2. OBJ-002 - [Name]
+
+## Key Files
+[List of files to create/modify]
+```
+
+## implementation-plan.md Structure
 
 ```markdown
 # [Feature] Implementation Plan
 
-**Mission:** MSN-XXX
+**Mission:** MSN-XXX-Description
 **Created:** [timestamp]
 
 ## Objectives
@@ -166,11 +191,9 @@ After all approvals:
 
 ## Remember
 
-- Voyage = project (already exists from /install)
 - Mission = feature (one per /exploration report)
-- Objectives = tasks (3-5 per mission, Pod-sized: 1-3 hours max)
-- Check exploration folder first, confirm selection with user
-- HOUSTON reads and analyzes before spawning council
+- Objectives = tasks (3-5 per mission, Pod-sized chunks)
+- Mission IDs are descriptive: `MSN-001-Schema-v2`
+- Create in `staged/`, moves to `active/` on execution
 - Council are advisors - HOUSTON synthesizes and can override
-- TDD structure: test → fail → implement → pass → commit
 - User approves each stage before anything is written
