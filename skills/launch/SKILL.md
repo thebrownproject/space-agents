@@ -57,7 +57,9 @@ Replace placeholders with actual values:
 │    /mission-brief       Write mission plan, define objectives  │
 │                                                                │
 │  Execution                                                     │
-│    /mission             Launch Pod loop for active mission     │
+│    /mission-go          Launch Pod loop for active mission     │
+│                                                                │
+│  Communication                                                 │
 │    /capcom              Check mission status and progress      │
 ├────────────────────────────────────────────────────────────────┤
 │  MISSIONS                                                      │

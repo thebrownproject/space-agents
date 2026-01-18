@@ -22,7 +22,7 @@ Turn an exploration report into an executable mission with objectives. HOUSTON r
 6. **Synthesize** - HOUSTON combines own analysis + council input
 7. **Present stages** - user approves each stage
 8. **Write plan** - SQLite records + markdown file
-9. **Handoff** - offer `/mission` to begin execution
+9. **Handoff** - offer `/mission-go` to begin execution
 
 ## Step 1: Check What's Available
 
@@ -131,12 +131,12 @@ After all approvals:
    INSERT INTO objectives (mission_id, id, title, description, status, priority)
    VALUES ('<mission_id>', 'OBJ-001', '<title>', '<desc>', 'pending', 1);
    ```
-6. **Confirm:** "Mission ready. Run `/mission` to begin execution."
+6. **Confirm:** "Mission ready. Run `/mission-go` to begin execution."
 
 **Mission ID format:** `MSN-001-Short-description`
 **Objective ID format:** `OBJ-001`, `OBJ-002`... (resets per mission, composite key)
 
-**Folder lifecycle:** `staged/` → `active/` (on /mission) → `complete/` (on finish)
+**Folder lifecycle:** `staged/` → `active/` (on /mission-go) → `complete/` (on finish)
 
 ## _mission.md Structure
 

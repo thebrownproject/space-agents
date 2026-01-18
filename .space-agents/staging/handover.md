@@ -7,7 +7,7 @@
 
 ## Next Session: Full Integration Test
 
-Test the complete workflow: `/exploration` → `/mission-brief` → `/mission`
+Test the complete workflow: `/exploration` → `/mission-brief` → `/mission-go`
 
 ### Key Changes This Session
 

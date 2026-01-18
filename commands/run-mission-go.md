@@ -3,4 +3,4 @@ description: "Launch Ralph execution loop - spawns Pods to execute mission objec
 disable-model-invocation: true
 ---
 
-Invoke the /mission skill and follow it exactly as presented to you
+Invoke the /mission-go skill and follow it exactly as presented to you

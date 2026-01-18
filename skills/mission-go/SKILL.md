@@ -1,9 +1,9 @@
 ---
-name: mission
+name: mission-go
 description: "Launch the Ralph execution loop to process mission objectives. Use when ready to execute a planned mission with the Pod/Worker/Inspector/Analyst cycle."
 ---
 
-# /mission - Ralph Execution Loop
+# /mission-go - Ralph Execution Loop
 
 Launch the Ralph execution loop to process objectives for an active mission. Ralph spawns fresh Pods for each objective, maintaining state in SQLite while avoiding context rot.
 
@@ -29,7 +29,7 @@ Each Pod is spawned fresh with no memory of previous objectives. State persists 
 
 ## When to Use
 
-Run `/mission` when:
+Run `/mission-go` when:
 
 - A mission has been planned with objectives in SQLite
 - The mission status is "active"
@@ -82,9 +82,9 @@ When the user selects visible mode, provide the command for them to copy/paste:
 ```
 HOUSTON: Run this in your terminal to launch visible mode:
 
-    cd /path/to/project && bash .claude/plugins/cache/space-agents/space-agents/1.0.13/skills/mission/scripts/ralph.sh MSN-XXX --visible
+    cd /path/to/project && bash .claude/plugins/cache/space-agents/space-agents/<VERSION>/skills/mission-go/scripts/ralph.sh MSN-XXX --visible
 
-    (Or if using local skills: bash skills/mission/scripts/ralph.sh MSN-XXX --visible)
+    (Or if using local skills: bash skills/mission-go/scripts/ralph.sh MSN-XXX --visible)
 ```
 
 The user runs this command manually and watches the mprocs screen. Each Pod spawns as a new panel with live output.
@@ -115,7 +115,7 @@ bash scripts/ralph.sh <mission_id>
 
 ## Instructions
 
-When `/mission` is invoked, follow these steps:
+When `/mission-go` is invoked, follow these steps:
 
 ### Step 1: Verify Prerequisites
 
@@ -287,7 +287,7 @@ Ralph: claude CLI not found.
 ## Example Session
 
 ```
-User: /mission
+User: /mission-go
 
 HOUSTON: Active missions found:
 
@@ -335,7 +335,7 @@ Objective complete: OBJ-001
 - Run `/capcom` to see the alert
 - Address the underlying issue
 - Clear the alert in SQLite
-- Re-run `/mission`
+- Re-run `/mission-go`
 
 ---
 
