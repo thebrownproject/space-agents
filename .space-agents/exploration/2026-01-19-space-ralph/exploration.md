@@ -80,7 +80,7 @@ Each Ralph session gets its own dated folder: `YYYY-MM-DD-description/`
 
 HOUSTON guides quick setup (3-5 questions):
 
-1. What are you building?
+1. What are you trying to achieve?
 2. Any constraints? (tech stack, existing patterns, etc.)
 3. What's the scope? (single file? multiple? tests needed?)
 4. Success criteria? (what does "done" look like?)
