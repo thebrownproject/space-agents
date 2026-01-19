@@ -1,6 +1,6 @@
 -- Space-Agents SQLite Schema
 -- ============================================================================
--- Usage: sqlite3 .space-agents/space-agents.db < init-db.sql
+-- Usage: sqlite3 .space-agents/comms/space-agents.db < init-db.sql
 -- ============================================================================
 -- Tables: voyages, missions, objectives, alerts
 -- Designed for idempotent execution (CREATE IF NOT EXISTS)

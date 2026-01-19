@@ -37,7 +37,7 @@ You are a CAPCOM status agent for Space-Agents.
 
 TASK: Query the current state and return a formatted status report.
 
-DATABASE: .space-agents/space-agents.db
+DATABASE: .space-agents/comms/space-agents.db
 
 Run these queries:
 

@@ -29,8 +29,8 @@ VISIBLE_MODE=false
 # Find project root (directory containing .space-agents)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 SPACE_AGENTS_DIR="${PROJECT_ROOT}/.space-agents"
-DB="${SPACE_AGENTS_DIR}/space-agents.db"
-NOTIFICATIONS_FILE="${SPACE_AGENTS_DIR}/notifications"
+DB="${SPACE_AGENTS_DIR}/comms/space-agents.db"
+NOTIFICATIONS_FILE="${SPACE_AGENTS_DIR}/comms/notifications.md"
 NOTIFY_SCRIPT="${SPACE_AGENTS_DIR}/scripts/notify.sh"
 
 # Colors for terminal output (attended mode)

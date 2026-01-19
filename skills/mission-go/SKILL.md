@@ -247,7 +247,7 @@ Ralph includes safety mechanisms:
 During execution, Ralph logs to:
 
 - **Per-mission log:** `.space-agents/missions/active/<mission_id>/capcom.log`
-- **Notifications file:** `.space-agents/notifications`
+- **Notifications file:** `.space-agents/comms/notifications.md`
 
 Check progress with `/capcom` - it reads these logs and SQLite state.
 
@@ -272,7 +272,7 @@ Ralph: Mission is not active (status: complete)
 ### Database missing
 
 ```
-Ralph: Database not found at .space-agents/space-agents.db
+Ralph: Database not found at .space-agents/comms/space-agents.db
        Run /launch first to initialize Space-Agents.
 ```
 

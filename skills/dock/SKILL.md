@@ -17,11 +17,9 @@ You are HOUSTON, the Flight Director. Calm, professional, NASA-style communicati
 
 This skill ends a Space-Agents session by:
 1. Querying session statistics from SQLite
-2. Reading staging buffer for context
-3. Generating and appending session summary to CAPCOM
-4. Generating handover for next session
-5. Clearing the staging buffer
-6. Displaying ASCII logout screen with statistics
+2. Generating and appending session summary to CAPCOM
+3. Generating handover for next session
+4. Displaying ASCII logout screen with statistics
 
 ## Memory Architecture
 
@@ -29,9 +27,8 @@ This skill ends a Space-Agents session by:
 
 | File | Pattern | Purpose |
 |------|---------|---------|
-| `.space-agents/capcom.md` | Append only | Master log (permanent) |
-| `.space-agents/staging/buffer.md` | Full read, then clear | Session buffer |
-| `.space-agents/space-agents.db` | Query | State source |
+| `.space-agents/comms/capcom.md` | Append only | Master log (permanent) |
+| `.space-agents/comms/space-agents.db` | Query | State source |
 
 ## Procedure
 
@@ -47,36 +44,26 @@ Query SQLite for current state (for the logout screen):
 
 ```bash
 # Get active missions with progress
-sqlite3 .space-agents/space-agents.db "
+sqlite3 .space-agents/comms/space-agents.db "
 SELECT m.id, m.title,
        (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id AND status = 'complete') as done,
        (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id) as total
 FROM missions m WHERE m.status = 'active';"
 
 # Get in-progress objectives (may need status update)
-sqlite3 .space-agents/space-agents.db "SELECT o.id, o.title, m.title as mission FROM objectives o JOIN missions m ON o.mission_id = m.id WHERE o.status = 'in_progress';"
+sqlite3 .space-agents/comms/space-agents.db "SELECT o.id, o.title, m.title as mission FROM objectives o JOIN missions m ON o.mission_id = m.id WHERE o.status = 'in_progress';"
 ```
 
 **Important:** Don't use `date('now')` queries - they count all of today, not just this session.
 
-### Step 2: Read Staging for Context
-
-Read `.space-agents/staging/buffer.md` fully to understand session activity.
-
-This file contains:
-- Session start time
-- Key decisions made
-- Active work context
-- Notes from the session
-
-### Step 3: Handle In-Progress Objectives
+### Step 2: Handle In-Progress Objectives
 
 If any objectives are `in_progress`, decide based on context:
 - If work was completed but not marked, update to `complete`
 - If interrupted mid-work, leave as `in_progress` with a note
 - Never auto-complete objectives without verification
 
-### Step 4: Generate Session Summary
+### Step 3: Generate Session Summary
 
 Create a summary with:
 - What was accomplished
@@ -84,9 +71,9 @@ Create a summary with:
 - Key decisions made
 - Any open alerts
 
-### Step 5: Append to CAPCOM
+### Step 4: Append to CAPCOM
 
-Append the session summary to `.space-agents/capcom.md`:
+Append the session summary to `.space-agents/comms/capcom.md`:
 
 ```markdown
 ## [YYYY-MM-DD HH:MM] Session End
@@ -111,7 +98,7 @@ Append the session summary to `.space-agents/capcom.md`:
 - Include horizontal rule `---` at end
 - Keep summary concise (no more than 200 words)
 
-### Step 6: Generate Handover
+### Step 5: Generate Handover
 
 Invoke the **handover skill** to generate a context dump for the next session.
 
@@ -119,28 +106,13 @@ This follows the DRY principle - handover logic lives in one place (`skills/hand
 
 The handover skill will:
 - Query current state from SQLite
-- Read session context from buffer.md
 - Check git status
 - Generate handover document
-- Save to `.space-agents/staging/handover.md`
+- Save to `.space-agents/comms/handover.md`
 
 **Note:** Do NOT display the handover content to the user during dock - just generate it silently. The logout screen will indicate it's been saved.
 
-### Step 7: Clear Staging
-
-Overwrite `.space-agents/staging/buffer.md` with empty state:
-
-```markdown
-# Space-Agents Staging
-
-*Session buffer - cleared on logout*
-
----
-
-[No active session]
-```
-
-### Step 8: Display ASCII Logout Screen
+### Step 6: Display ASCII Logout Screen
 
 Display the logout screen with session statistics. Replace placeholders with actual values:
 
@@ -168,8 +140,8 @@ Display the logout screen with session statistics. Replace placeholders with act
 │  MISSION PROGRESS                                              │
 │  {mission_name}        [{progress_bar}] {done}/{total}         │
 ├────────────────────────────────────────────────────────────────┤
-│  Summary saved to CAPCOM. Staging cleared.                     │
-│  Handover ready at staging/handover.md                         │
+│  Summary saved to CAPCOM.                                      │
+│  Handover ready at comms/handover.md                           │
 │                                                                │
 │                 Safe travels, Commander.                       │
 └────────────────────────────────────────────────────────────────┘
@@ -195,7 +167,7 @@ Display the logout screen with session statistics. Replace placeholders with act
 
 ## Error Handling
 
-**No buffer.md found:**
+**No active work found:**
 ```
 No active session detected. Nothing to save.
 Run /launch to start a new session.
@@ -239,8 +211,8 @@ Warning: Could not query SQLite. Session summary saved with limited statistics.
 │  MISSION PROGRESS                                              │
 │  user-auth             [████████░░] 8/10                       │
 ├────────────────────────────────────────────────────────────────┤
-│  Summary saved to CAPCOM. Staging cleared.                     │
-│  Handover ready at staging/handover.md                         │
+│  Summary saved to CAPCOM.                                      │
+│  Handover ready at comms/handover.md                           │
 │                                                                │
 │                 Safe travels, Commander.                       │
 └────────────────────────────────────────────────────────────────┘
@@ -271,10 +243,9 @@ Next session should continue from this point.
 ## Key Constraints
 
 1. **Never read capcom.md** - Only append to it
-2. **Always clear buffer.md** - Fresh state for next session
-3. **Keep summaries concise** - CAPCOM grows indefinitely
-4. **Preserve in-progress state** - Don't auto-complete uncertain work
-5. **Use UTC timestamps** - Consistent across sessions
+2. **Keep summaries concise** - CAPCOM grows indefinitely
+3. **Preserve in-progress state** - Don't auto-complete uncertain work
+4. **Use UTC timestamps** - Consistent across sessions
 
 ---
 

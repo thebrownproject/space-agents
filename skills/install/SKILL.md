@@ -43,6 +43,7 @@ If `.space-agents/` already exists:
 Create the full Space-Agents directory structure:
 
 ```bash
+mkdir -p .space-agents/comms
 mkdir -p .space-agents/exploration
 mkdir -p .space-agents/missions/staged
 mkdir -p .space-agents/missions/active
@@ -53,11 +54,11 @@ mkdir -p .space-agents/missions/complete
 
 ```
 .space-agents/
-├── space-agents.db          # SQLite database (Step 3)
-├── capcom.md                # Master CAPCOM log (append-only)
-├── staging/
-│   ├── buffer.md            # Session buffer
-│   └── handover.md          # Context dump for fresh sessions
+├── comms/
+│   ├── space-agents.db      # SQLite database (Step 3)
+│   ├── capcom.md            # Master CAPCOM log (append-only)
+│   ├── handover.md          # Context dump for fresh sessions
+│   └── notifications.md     # Event notifications
 ├── exploration/             # Exploration sessions (/exploration output)
 └── missions/
     ├── staged/              # Planned missions ready for execution
@@ -72,7 +73,7 @@ mkdir -p .space-agents/missions/complete
 Create the database using the schema file:
 
 ```bash
-sqlite3 .space-agents/space-agents.db < scripts/init-db.sql
+sqlite3 .space-agents/comms/space-agents.db < scripts/init-db.sql
 ```
 
 The schema creates:
@@ -87,7 +88,7 @@ The schema creates:
 
 Create empty/default files:
 
-**`.space-agents/capcom.md`:**
+**`.space-agents/comms/capcom.md`:**
 ```markdown
 # CAPCOM Master Log
 
@@ -102,18 +103,7 @@ Space-Agents installed. HOUSTON standing by.
 ---
 ```
 
-**`.space-agents/staging/buffer.md`:**
-```markdown
-# Space-Agents Session Buffer
-
-*Cleared on /dock*
-
----
-
-[No active session]
-```
-
-**`.space-agents/staging/handover.md`:**
+**`.space-agents/comms/handover.md`:**
 ```markdown
 # Space-Agents Handover
 
@@ -122,6 +112,15 @@ Space-Agents installed. HOUSTON standing by.
 ---
 
 [No handover pending]
+```
+
+**`.space-agents/comms/notifications.md`:**
+```markdown
+# Space-Agents Notifications
+
+*Event log from Ralph loop*
+
+---
 ```
 
 ---
@@ -141,9 +140,9 @@ Show the installation success screen:
 |                                                                  |
 |  Created:                                                        |
 |    [x] .space-agents/ directory structure                        |
-|    [x] SQLite database with schema                               |
+|    [x] comms/ folder with SQLite database                        |
 |    [x] CAPCOM master log                                         |
-|    [x] Session staging buffer                                    |
+|    [x] Handover and notifications files                          |
 |                                                                  |
 +------------------------------------------------------------------+
 |                                                                  |
@@ -191,9 +190,9 @@ What would you like to do?
 
 The `/install` skill:
 1. Checks for existing installation
-2. Creates directory structure
+2. Creates directory structure (comms/, exploration/, missions/)
 3. Initializes SQLite database with schema
-4. Creates initialization files (capcom.md, staging/buffer.md, staging/handover.md)
+4. Creates initialization files (capcom.md, handover.md, notifications.md)
 5. Displays installation complete screen
 6. Guides user to run `/launch`
 
