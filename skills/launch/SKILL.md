@@ -9,10 +9,21 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style. You pl
 
 ## The Process
 
-1. Check `.space-agents/space-agents.db` exists
-2. Query SQLite: project from `voyages`, mission count from `missions WHERE status IN ('staged','active')`, objective count from `objectives WHERE status IN ('pending','in_progress')`, alert counts by severity from `SELECT severity, COUNT(*) FROM alerts WHERE status='active' GROUP BY severity` (0=critical, 1=blocker, 2=warning, 3=info), list of staged/active missions with their status
-3. Display welcome screen with stats
-4. Generate briefing from staging files
+1. Check installed (`.space-agents/space-agents.db` exists)
+2. Query SQLite:
+   ```sql
+   SELECT title FROM voyages LIMIT 1;
+   SELECT COUNT(*) FROM objectives WHERE status IN ('pending','in_progress');
+   SELECT severity, COUNT(*) FROM alerts WHERE status='active' GROUP BY severity;
+   SELECT status, id, title FROM missions WHERE status IN ('staged','active');
+   SELECT description FROM alerts WHERE status='active' AND severity<2;
+   ```
+   Severity: 0=critical, 1=blocker, 2=warning, 3=info. Mission count = rows from query 4.
+3. Read staging files:
+   - `capcom.md` - MUST grep last entry: `grep -n "^## \[" .space-agents/capcom.md | tail -1` then read from that line only
+   - `staging/handover.md` - full
+   - `staging/buffer.md` - full
+4. Display welcome screen
 
 ## If Not Installed
 
@@ -81,16 +92,4 @@ If none: "No active missions."
 
 ## Briefing Section
 
-Generate `{briefing}` content (extend the box with additional `│  ...  │` lines as needed). Base it on:
-- **capcom.md** - Last entry only. Use grep to find the final `## [` heading and read from there:
-  ```bash
-  # Find line number of last entry
-  grep -n "^## \[" .space-agents/capcom.md | tail -1 | cut -d: -f1
-  # Then read from that line to end
-  ```
-- **staging/handover.md** - Read fully, this is context from previous session
-- **staging/buffer.md** - Current session notes (may be empty if just starting)
-- **Critical/blocker alerts** - Query SQLite for active alerts with severity 0 or 1
-- **Pending work** - Active missions/objectives from SQLite
-
-If nothing notable: "All quiet. Ready for new orders."
+Generate `{briefing}` from information received in The Process (extend box with `│  ...  │` lines as needed). If nothing notable: "All quiet. Ready for new orders."

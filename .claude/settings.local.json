@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(space-agents:launch)",
+      "Bash(sqlite3:*)"
+    ]
+  }
+}
