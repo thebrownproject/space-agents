@@ -386,6 +386,159 @@ Now Ralph can't proceed with that task until the bug is closed.
 
 ---
 
+## Folder Structure and Lifecycle
+
+### Overview
+
+Folder structure **matches Beads status exactly** for consistency:
+
+| Beads Status | Folder Path | Meaning |
+|--------------|-------------|---------|
+| `open` | `epics/open/{epic}/` | Epic being planned |
+| `in_progress` | `epics/in_progress/{epic}/` | Epic being executed |
+| `closed` | `epics/closed/{epic}/` | Completed epic |
+| `open` | `epics/in_progress/{epic}/open/{feature}/` | Feature planned, not started |
+| `in_progress` | `epics/in_progress/{epic}/in_progress/{feature}/` | Feature actively being worked on |
+| `closed` | `epics/in_progress/{epic}/closed/{feature}/` | Feature completed |
+
+### Epic Lifecycle
+
+**1. Create Epic (open)**
+
+`/launch` creates epic in Beads and folder:
+
+```bash
+bd create "Epic: Task Management API" -t epic
+# → bd-a3f8 (status: open)
+
+mkdir -p .space-agents/epics/open/bd-a3f8-task-management-api/
+```
+
+**Folder contains:**
+- `README.md` - Epic overview
+- `exploration/` - Optional exploration documents
+
+**2. Activate Epic (in_progress)**
+
+`/dock bd-a3f8` moves epic to active:
+
+```bash
+bd update bd-a3f8 --status in_progress
+
+mv .space-agents/epics/open/bd-a3f8-task-management-api \
+   .space-agents/epics/in_progress/bd-a3f8-task-management-api
+
+mkdir -p .space-agents/epics/in_progress/bd-a3f8-task-management-api/{open,in_progress,closed}
+```
+
+**Folder now contains:**
+- `README.md` - Epic progress tracker
+- `open/` - Features being planned
+- `in_progress/` - Features being executed
+- `closed/` - Completed features
+
+**3. Complete Epic (closed)**
+
+When all features closed, epic moves to complete:
+
+```bash
+bd close bd-a3f8
+
+mv .space-agents/epics/in_progress/bd-a3f8-task-management-api \
+   .space-agents/epics/closed/bd-a3f8-task-management-api
+```
+
+**Folder is archived** with all completed features preserved.
+
+### Feature Lifecycle
+
+**1. Create Feature (open)**
+
+`/mission-brief` creates feature in Beads and folder:
+
+```bash
+bd create "Feature: User Authentication" --parent bd-a3f8 -t feature
+# → bd-a3f8.1 (status: open)
+
+mkdir -p .space-agents/epics/in_progress/bd-a3f8-task-management-api/open/bd-a3f8.1-user-authentication/
+```
+
+**Folder contains:**
+- `README.md` - Feature description
+- `mission-brief.md` - Detailed plan from planning agents
+
+**2. Activate Feature (in_progress)**
+
+`/dock bd-a3f8.1` moves feature to active:
+
+```bash
+bd update bd-a3f8.1 --status in_progress
+
+mv .../open/bd-a3f8.1-user-authentication \
+   .../in_progress/bd-a3f8.1-user-authentication
+```
+
+**Folder now contains:**
+- `README.md` - Feature status
+- `mission-brief.md` - Original plan (preserved)
+- `capcom.log` - Ralph execution log (created by Ralph)
+- `handover.md` - Context between iterations (updated by Pod)
+- `tmp/pod-prompts/` - Generated prompts for each task
+- `tmp/signals/` - Pod completion signals
+
+**3. Complete Feature (closed)**
+
+Ralph completes all tasks and moves feature:
+
+```bash
+bd close bd-a3f8.1
+
+mv .../in_progress/bd-a3f8.1-user-authentication \
+   .../closed/bd-a3f8.1-user-authentication
+
+rm -rf .../closed/bd-a3f8.1-user-authentication/tmp/
+```
+
+**Folder is archived** with execution history:
+- `README.md` - Completion summary
+- `mission-brief.md` - Original plan (historical reference)
+- `capcom.log` - Full execution log
+- `handover.md` - Final state
+
+### Key Artifacts
+
+| Artifact | Created By | Purpose | Lifecycle |
+|----------|-----------|---------|-----------|
+| `README.md` | Skills | Feature/Epic description and status | Created → Updated → Archived |
+| `mission-brief.md` | `/mission-brief` | Detailed plan and requirements | Created once, preserved |
+| `capcom.log` | Ralph | Timestamped execution log | Created on activation, grows during execution |
+| `handover.md` | Pod | Context between Pod iterations | Updated after each task |
+| `tmp/pod-prompts/` | Ralph | Generated prompts for each task | Ephemeral, deleted on completion |
+| `tmp/signals/` | Pod | Completion signals for mprocs mode | Ephemeral, deleted on completion |
+
+### Folder Benefits
+
+**For Humans:**
+- Browse project history by epic
+- See complete execution logs
+- Track what was planned vs what was built
+- Reference decisions and implementation details
+- Onboard new team members with archived context
+
+**For Agents:**
+- Read `handover.md` for context on next iteration
+- Read `mission-brief.md` for original requirements
+- Ralph generates `pod-prompts/` with full context
+- Resume work after interruption
+
+**For System:**
+- Archive completed work automatically
+- Preserve audit trail in git
+- Multi-machine sync (folders + Beads JSONL)
+- Clean separation of planning/execution/archive
+
+---
+
 ## Migration Strategy
 
 ### Phase 1: Preparation (Day 1)
@@ -562,23 +715,69 @@ check_critical_bugs() {
 - ✅ Signal file infrastructure
 - ✅ Notification system
 
-### File Structure (No Changes)
+### File Structure (Updated to Match Beads)
+
+**Key Change:** Folder structure now matches Beads status terminology (open/in_progress/closed)
+
 ```
 .space-agents/
-├── missions/
-│   ├── active/
-│   │   └── {feature-id}/
-│   │       ├── capcom.log
-│   │       ├── handover.md
-│   │       └── tmp/
-│   ├── staged/
-│   └── complete/
+├── epics/                                    ← RENAMED from "missions"
+│   ├── open/                                 ← Epics being planned (Beads: open)
+│   │   └── {epic-id}-{slug}/
+│   │       ├── README.md
+│   │       └── exploration/
+│   │
+│   ├── in_progress/                          ← Epics being executed (Beads: in_progress)
+│   │   └── {epic-id}-{slug}/
+│   │       ├── README.md
+│   │       │
+│   │       ├── open/                         ← Features planned (Beads: open)
+│   │       │   └── {feature-id}-{slug}/
+│   │       │       ├── README.md
+│   │       │       └── mission-brief.md
+│   │       │
+│   │       ├── in_progress/                  ← Features active (Beads: in_progress)
+│   │       │   └── {feature-id}-{slug}/
+│   │       │       ├── README.md
+│   │       │       ├── mission-brief.md
+│   │       │       ├── capcom.log
+│   │       │       ├── handover.md
+│   │       │       └── tmp/
+│   │       │           ├── pod-prompts/
+│   │       │           └── signals/
+│   │       │
+│   │       └── closed/                       ← Features complete (Beads: closed)
+│   │           └── {feature-id}-{slug}/
+│   │               ├── README.md
+│   │               ├── mission-brief.md
+│   │               ├── capcom.log
+│   │               └── handover.md
+│   │
+│   └── closed/                               ← Completed epics (Beads: closed)
+│       └── {epic-id}-{slug}/
+│           ├── README.md
+│           └── closed/
+│               └── (completed features)
+│
 ├── comms/
 │   └── notifications.md
+│
 └── exploration/
+    └── YYYY-MM-DD-topic/
 ```
 
-Only `.space-agents/comms/space-agents.db` is replaced with `.beads/` directory.
+**Folder Naming Convention:**
+- Epic folders: `bd-a3f8-task-management-api/`
+- Feature folders: `bd-a3f8.1-user-authentication/`
+- Slug generated from title (lowercase, hyphens)
+
+**Artifacts Stored in Feature Folders:**
+- `README.md` - Feature description and status
+- `mission-brief.md` - Detailed plan (created by /mission-brief)
+- `capcom.log` - Ralph execution log
+- `handover.md` - Context between Pod iterations
+- `tmp/pod-prompts/` - Generated prompts for each task
+- `tmp/signals/` - Pod completion signals
 
 ---
 
@@ -595,6 +794,10 @@ Only `.space-agents/comms/space-agents.db` is replaced with `.beads/` directory.
 - ❌ Missions → ✅ Features
 - ❌ Objectives → ✅ Tasks
 - ❌ Alerts table → ✅ Bugs with `blocks` dependencies
+
+### Folder Naming
+- ❌ `missions/` → ✅ `epics/`
+- ❌ `staged/active/complete/` → ✅ `open/in_progress/closed/` (matches Beads exactly)
 
 ### Query Language
 - ❌ SQL queries → ✅ `bd` CLI + `jq`

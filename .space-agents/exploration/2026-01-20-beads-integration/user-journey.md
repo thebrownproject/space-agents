@@ -85,7 +85,7 @@ bd create "Epic: Task Management API" \
   --description "Build REST API for task management with auth, CRUD, and notifications"
 ```
 4. **NEW:** Beads generates hash ID: `bd-a3f8`
-5. Creates mission directory: `.space-agents/missions/active/bd-a3f8/`
+5. Creates epic directory: `.space-agents/epics/open/bd-a3f8-task-management-api/`
 6. **NEW:** Runs `bd sync` - commits to `.beads/issues.jsonl`:
 ```jsonl
 {"id":"bd-a3f8","type":"epic","title":"Epic: Task Management API","status":"open","priority":1,"labels":["project:space-agents","category:voyage"],"created_at":"2026-01-20T10:00:00Z"}
@@ -212,7 +212,7 @@ bd create "Task: Add logout endpoint" \
 ```
 
 4. **NEW:** Runs `bd sync` - commits all issues to `.beads/issues.jsonl`
-5. Creates mission brief document at `.space-agents/missions/staged/bd-a3f8.1/mission-brief.md`
+5. Creates mission brief document at `.space-agents/epics/in_progress/bd-a3f8-task-management-api/open/bd-a3f8.1-user-authentication/mission-brief.md`
 
 **Beads State After:**
 ```
@@ -240,7 +240,7 @@ Priority 2: bd-a3f8.1.2 - Implement JWT signing
 Priority 3: bd-a3f8.1.3 - Add login endpoint
 Priority 4: bd-a3f8.1.4 - Add logout endpoint
 
-Mission brief document: .space-agents/missions/staged/bd-a3f8.1/mission-brief.md
+Mission brief document: .space-agents/epics/in_progress/bd-a3f8-task-management-api/open/bd-a3f8.1-user-authentication/mission-brief.md
 
 Ready to execute. Run /mission-go bd-a3f8.1
 ```
@@ -262,8 +262,8 @@ claude /dock bd-a3f8.1
 bd update bd-a3f8.1 --status in_progress
 bd sync
 ```
-2. Moves feature folder: `.space-agents/missions/staged/bd-a3f8.1/` → `active/bd-a3f8.1/`
-3. Creates CAPCOM log: `.space-agents/missions/active/bd-a3f8.1/capcom.log`
+2. Moves feature folder: `.space-agents/epics/in_progress/bd-a3f8-task-management-api/open/bd-a3f8.1-user-authentication/` → `in_progress/bd-a3f8.1-user-authentication/`
+3. Creates CAPCOM log: `.space-agents/epics/in_progress/bd-a3f8-task-management-api/in_progress/bd-a3f8.1-user-authentication/capcom.log`
 
 **Beads State After:**
 ```
@@ -276,7 +276,7 @@ Feature bd-a3f8.1 activated and ready for execution.
 
 Status: in_progress
 Tasks: 4 pending
-Location: .space-agents/missions/active/bd-a3f8.1/
+Location: .space-agents/epics/in_progress/bd-a3f8-task-management-api/in_progress/bd-a3f8.1-user-authentication/
 
 Run /mission-go bd-a3f8.1 to start Ralph loop.
 ```
@@ -587,8 +587,8 @@ bd sync
 
 **Ralph moves mission folder:**
 ```bash
-mv .space-agents/missions/active/bd-a3f8.1 \
-   .space-agents/missions/complete/bd-a3f8.1
+mv .space-agents/epics/in_progress/bd-a3f8-task-management-api/in_progress/bd-a3f8.1-user-authentication \
+   .space-agents/epics/in_progress/bd-a3f8-task-management-api/closed/bd-a3f8.1-user-authentication
 ```
 
 **Ralph exits with code 0**
@@ -619,7 +619,7 @@ Files changed:
   • src/routes/auth.ts
   • tests/auth/*.test.ts
 
-Feature moved to: .space-agents/missions/complete/bd-a3f8.1/
+Feature moved to: .space-agents/epics/in_progress/bd-a3f8-task-management-api/closed/bd-a3f8.1-user-authentication/
 
 Run /capcom to see overall status.
 ```
