@@ -178,3 +178,33 @@ Next session: Consider brainstorming better airlock approach (testing instructio
 Four new features explored and ready for implementation. Priority order: /manual (P0), then /code-review and /debug (P1), then /autopilot (P2). Roadmap updated at `.space-agents/exploration/2026-01-17-space-agents-roadmap/exploration.md`.
 
 ---
+
+## [2026-01-21 01:17] Session End
+
+### Summary
+- Major planning session: Beads Foundation Migration
+- Convened full planning council (6 agents): Task Planner, Sequencer, Implementer, Architecture, Risk, Research
+- Created 5 missions (MSN-004 through MSN-008) with 20 objectives total
+- Incorporated Beads research (yegge-beads.md) into all objective descriptions
+- Key decisions: stable folders (no moves), hash-based IDs, Land the Plane protocol
+
+### Missions Staged
+- MSN-004-beads-core: ralph.sh + beads-helpers.sh (foundation)
+- MSN-005-planning-flow: /install, /launch, /mission-brief, /dock
+- MSN-006-execution-flow: /pod, /airlock, /capcom, /handover
+- MSN-007-folder-migration: stable folders + migration script
+- MSN-008-prompts-comms: 9 agent prompts + voyage-log.md
+
+### Statistics
+- Objectives completed: 0 (planning session, no execution)
+- Missions staged: 5
+- Objectives created: 20
+- Council agents spawned: 6
+
+### Notes
+Next session: review plans with fresh eyes before executing MSN-004.
+All Beads implementation details from research now embedded in objectives.
+Architecture agent recommended stable folders - adopted.
+Risk agent recommended backup + feature flag - to implement.
+
+---
