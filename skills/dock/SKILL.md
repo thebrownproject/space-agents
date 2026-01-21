@@ -16,7 +16,7 @@ User runs `/dock` or indicates they're ending the session.
 You are HOUSTON, the Flight Director. Calm, professional, NASA-style communication.
 
 This skill ends a Space-Agents session by:
-1. Querying session statistics from SQLite
+1. Querying session statistics from Beads
 2. Generating and appending session summary to CAPCOM
 3. Generating handover for next session
 4. Displaying ASCII logout screen with statistics
@@ -28,7 +28,7 @@ This skill ends a Space-Agents session by:
 | File | Pattern | Purpose |
 |------|---------|---------|
 | `.space-agents/comms/capcom.md` | Append only | Master log (permanent) |
-| `.space-agents/comms/space-agents.db` | Query | State source |
+| bd CLI | Query | State source |
 
 ## Procedure
 
@@ -36,32 +36,28 @@ This skill ends a Space-Agents session by:
 
 Statistics should reflect THIS SESSION, not all of today. Since we don't track session start time, derive stats from context:
 
-1. **Objectives completed** - Count based on missions you ran during this session (from your memory/context), NOT from a date-based SQLite query
-2. **Missions completed** - Count missions that transitioned to 'complete' during this session
+1. **Tasks completed** - Count based on features you ran during this session (from your memory/context), NOT from a date-based query
+2. **Features completed** - Count features that transitioned to 'complete' during this session
 3. **Alerts cleared** - Count alerts you addressed during this session
 
-Query SQLite for current state (for the logout screen):
+Query Beads for current state (for the logout screen):
 
 ```bash
-# Get active missions with progress
-sqlite3 .space-agents/comms/space-agents.db "
-SELECT m.id, m.title,
-       (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id AND status = 'complete') as done,
-       (SELECT COUNT(*) FROM objectives WHERE mission_id = m.id) as total
-FROM missions m WHERE m.status = 'active';"
+# Get active features with progress
+bd list -t feature --status in_progress --json
 
-# Get in-progress objectives (may need status update)
-sqlite3 .space-agents/comms/space-agents.db "SELECT o.id, o.title, m.title as mission FROM objectives o JOIN missions m ON o.mission_id = m.id WHERE o.status = 'in_progress';"
+# Get in-progress tasks
+bd list -t task --status in_progress --json
 ```
 
-**Important:** Don't use `date('now')` queries - they count all of today, not just this session.
+**Important:** Session statistics should come from your memory/context of this session, not date-based queries.
 
-### Step 2: Handle In-Progress Objectives
+### Step 2: Handle In-Progress Tasks
 
-If any objectives are `in_progress`, decide based on context:
+If any tasks are `in_progress`, decide based on context:
 - If work was completed but not marked, update to `complete`
 - If interrupted mid-work, leave as `in_progress` with a note
-- Never auto-complete objectives without verification
+- Never auto-complete tasks without verification
 
 ### Step 3: Generate Session Summary
 
@@ -83,9 +79,9 @@ Append the session summary to `.space-agents/comms/capcom.md`:
 - [Current state]
 
 ### Statistics
-- Objectives completed: X
+- Tasks completed: X
 - Alerts cleared: Y
-- Active voyages: Z
+- Active epics: Z
 
 ### Notes
 [Any important context for future sessions]
@@ -105,12 +101,22 @@ Invoke the **handover skill** to generate a context dump for the next session.
 This follows the DRY principle - handover logic lives in one place (`skills/handover/SKILL.md`).
 
 The handover skill will:
-- Query current state from SQLite
+- Query current state from Beads
 - Check git status
 - Generate handover document
 - Save to `.space-agents/comms/handover.md`
 
 **Note:** Do NOT display the handover content to the user during dock - just generate it silently. The logout screen will indicate it's been saved.
+
+### Step 5.5: Land the Plane - Sync Beads
+
+Run `bd sync` to ensure all issue state is committed to git:
+
+```bash
+bd sync
+```
+
+This commits `.beads/issues.jsonl` changes and pushes to remote.
 
 ### Step 6: Display ASCII Logout Screen
 
@@ -134,11 +140,11 @@ Display the logout screen with session statistics. Replace placeholders with act
 │                      SESSION COMPLETE                          │
 ├────────────────────────────────────────────────────────────────┤
 │  SESSION SUMMARY                                               │
-│  Objectives completed: {objectives_completed}                  │
+│  Tasks completed:      {tasks_completed}                       │
 │  Alerts cleared:       {alerts_cleared}                        │
 ├────────────────────────────────────────────────────────────────┤
-│  MISSION PROGRESS                                              │
-│  {mission_name}        [{progress_bar}] {done}/{total}         │
+│  FEATURE PROGRESS                                              │
+│  {feature_name}        [{progress_bar}] {done}/{total}         │
 ├────────────────────────────────────────────────────────────────┤
 │  Summary saved to CAPCOM.                                      │
 │  Handover ready at comms/handover.md                           │
@@ -151,13 +157,13 @@ Display the logout screen with session statistics. Replace placeholders with act
 
 | Placeholder | Source | Example |
 |-------------|--------|---------|
-| `{objectives_completed}` | SQLite query (today's completions) | `3` |
-| `{alerts_cleared}` | SQLite query (today's cleared alerts) | `1` |
-| `{mission_name}` | Active mission title from SQLite | `user-auth` |
+| `{tasks_completed}` | Session context (session completions) | `3` |
+| `{alerts_cleared}` | Session context (cleared alerts) | `1` |
+| `{feature_name}` | Active feature from Beads | `user-auth` |
 | `{progress_bar}` | Visual bar based on done/total | `████████░░` |
-| `{done}/{total}` | Completed/Total objectives in mission | `8/10` |
+| `{done}/{total}` | Completed/Total tasks in feature | `8/10` |
 
-**If no active missions:** Show "No active missions"
+**If no active features:** Show "No active features"
 
 ## Optional: --compress Flag
 
@@ -179,11 +185,12 @@ Space-Agents not initialized in this project.
 Run /launch to initialize.
 ```
 
-**SQLite connection error:**
+**Beads query error:**
 Log the error to CAPCOM manually and inform user:
 ```
-Warning: Could not query SQLite. Session summary saved with limited statistics.
+Warning: Could not query Beads. Session summary saved with limited statistics.
 ```
+Fallback: Use `bd list` without flags to check if Beads is responsive.
 
 ## Example Output
 
@@ -205,10 +212,10 @@ Warning: Could not query SQLite. Session summary saved with limited statistics.
 │                      SESSION COMPLETE                          │
 ├────────────────────────────────────────────────────────────────┤
 │  SESSION SUMMARY                                               │
-│  Objectives completed: 3                                       │
+│  Tasks completed:      3                                       │
 │  Alerts cleared:       1                                       │
 ├────────────────────────────────────────────────────────────────┤
-│  MISSION PROGRESS                                              │
+│  FEATURE PROGRESS                                              │
 │  user-auth             [████████░░] 8/10                       │
 ├────────────────────────────────────────────────────────────────┤
 │  Summary saved to CAPCOM.                                      │
@@ -224,17 +231,17 @@ Warning: Could not query SQLite. Session summary saved with limited statistics.
 ## [2026-01-16 14:30] Session End
 
 ### Summary
-- Completed JWT token signing and verification objectives
-- User authentication voyage progressing well (2/3 missions complete)
+- Completed JWT token signing and verification tasks
+- User authentication epic progressing well (2/3 features complete)
 - One warning alert cleared (deprecated method updated)
 
 ### Statistics
-- Objectives completed: 3
+- Tasks completed: 3
 - Alerts cleared: 1
-- Active voyages: 1 (user-authentication)
+- Active epics: 1 (user-authentication)
 
 ### Notes
-JWT expiry handling objective in progress - Worker on attempt 2.
+JWT expiry handling task in progress - Worker on attempt 2.
 Next session should continue from this point.
 
 ---
