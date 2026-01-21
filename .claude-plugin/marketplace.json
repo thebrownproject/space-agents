@@ -9,7 +9,7 @@
     {
       "name": "space-agents",
       "description": "Multi-agent orchestration system for Claude Code. HOUSTON coordinates Voyages, Missions, and Objectives while fresh Pods execute work autonomously.",
-      "version": "1.0.21",
+      "version": "1.0.22",
       "source": "./",
       "author": {
         "name": "Fraser Brown",

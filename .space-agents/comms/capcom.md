@@ -208,3 +208,29 @@ Architecture agent recommended stable folders - adopted.
 Risk agent recommended backup + feature flag - to implement.
 
 ---
+
+## [2026-01-21 23:45] Session End
+
+### Summary
+- Completed comprehensive council review of Beads Foundation Migration (5 missions, 24 objectives)
+- Deployed 18 agents total: 15 for mission review, 3 for new skill implementation
+- Verified Beads CLI patterns via web research: `.issue_type` not `.type`, `bd comment` doesn't exist
+- Updated all 5 mission briefs with council fixes (folder paths, error handling, rollback plans)
+- Created 4 new execution mode skills: router, solo, orchestrated, ralph (343 lines → 266 lines)
+- Decided: Beads over SQLite for dependency-aware task management
+
+### Statistics
+- Objectives completed: 0 (planning session - execution starts next session)
+- Alerts cleared: 0
+- Staged missions: 5 (MSN-004 through MSN-008, ready for execution)
+
+### Notes
+Next session: Execute MSN-004 using HOUSTON Orchestrated mode (not Ralph loop - can't use ralph to modify ralph). Gate 0 first: verify bd and jq installed.
+
+Key decisions made:
+- Folder structure: Option A (epics/{epic}/open|in_progress|closed/{feature}/)
+- Keep notifications.md (ralph.sh uses it)
+- Rename capcom.md → voyage-log.md (don't delete)
+- Three execution modes for /mission-go
+
+---

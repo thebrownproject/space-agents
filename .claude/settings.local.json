@@ -3,7 +3,11 @@
     "allow": [
       "Skill(space-agents:launch)",
       "Bash(sqlite3:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Skill(space-agents:dock)",
+      "WebFetch(domain:github.com)",
+      "Bash(wc:*)",
+      "Bash(find:*)"
     ]
   }
 }

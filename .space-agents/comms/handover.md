@@ -1,96 +1,121 @@
 # Space-Agents Handover
 
-**Generated:** 2026-01-21
+**Generated:** 2026-01-21 23:45
 **Version:** 1.0.21
 
 ---
 
 ## Session Summary
 
-Major planning session for Beads Foundation Migration - replacing SQLite with Steve Yegge's Beads graph-based work tracker.
+Comprehensive council review of Beads Foundation Migration, verified Beads CLI patterns via web research, updated all mission briefs, and created new execution mode skills.
 
 ### What Was Accomplished
 
-1. **Council Convened** - 6 planning agents analyzed the migration:
-   - Research: Inventoried all SQL queries, skills, agents
-   - Risk: Identified critical risks, recommended safeguards
-   - Task Planner: Structured 5 missions with 20 objectives
-   - Sequencer: Mapped dependencies, critical path (~18 hours)
-   - Architecture: Recommended stable folders, hybrid approach
-   - Implementer: TDD breakdown with line numbers
+1. **Council Review (3 agents)** - Reviewed all 5 missions holistically:
+   - Technical Accuracy (Analyst): Found `.type` should be `.issue_type`, `.blocked` doesn't exist
+   - Cross-Mission Consistency (Inspector): Found folder path mismatches
+   - Completeness & Gaps (Research): Found no error handling, missing rollback plans
 
-2. **5 Missions Created** (MSN-004 through MSN-008):
-   - MSN-004: Beads Core (ralph.sh + beads-helpers.sh)
-   - MSN-005: Planning Flow (/install, /launch, /mission-brief, /dock)
-   - MSN-006: Execution Flow (/pod, /airlock, /capcom, /handover)
-   - MSN-007: Folder Migration (stable folders + migrate script)
-   - MSN-008: Prompts + Comms (9 agents + voyage-log.md)
+2. **Web Search Verification** - Confirmed Beads CLI patterns:
+   - Valid types: `task`, `bug`, `feature`, `epic`, `molecule`, `gate`, etc.
+   - JSON field is `.issue_type` NOT `.type`
+   - `bd comment` does NOT exist - use labels
+   - `bd show <id> --json` confirmed working
+   - Status `blocked` is valid (use `.status == "blocked"`)
 
-3. **Beads Research Incorporated** - All objectives updated with:
-   - Exact `bd` command syntax from docs/research/yegge-beads.md
-   - Hash-based IDs (bd-a3f8 format, not sequential)
-   - Three-layer architecture (CLI → SQLite cache → JSONL+Git)
-   - Land the Plane protocol for /dock
-   - Bug-blocking via `bd dep add`
+3. **All 5 Mission Briefs Updated** with:
+   - Fixed jq queries (`.issue_type` not `.type`)
+   - Fixed blocked check (`.status == "blocked"` not `.blocked`)
+   - Nested folder paths (`epics/{epic}/open/` not flat)
+   - Error handling and rollback plans
+   - `bd_sync_with_retry()` requirement
+   - Kept notifications.md (ralph.sh uses it)
+
+4. **New Execution Mode Skills Created** (4 files, 266 lines):
+   - `/mission-go` - Router, asks feature + mode
+   - `/mission-go-solo` - HOUSTON direct, no agents
+   - `/mission-go-orchestrated` - Worker→Inspector→Analyst per task
+   - `/mission-go-ralph` - Automatic background loop
 
 ### Key Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Approach | Big Bang with safeguards | Simpler than hybrid, council agreed |
-| Folders | Stable (no moves) | Architecture agent recommendation |
-| IDs | Hash-based (bd-a3f8) | Prevents multi-agent collisions |
-| Status | In Beads, not folders | Source of truth is Beads |
-| Terminology | epic/feature/task/bug | Align with Beads types |
+| Execution Modes | Three separate skills | Keep concerns isolated |
+| Default Mode | Orchestrated | Prevents context rot |
+| Beads vs SQLite | Beads | Dependency-aware `bd ready` |
+| Folder Structure | Option A (nested) | `epics/{epic}/open\|in_progress\|closed/{feature}/` |
 
 ### Current State
 
 - **Staged missions:** 5 (MSN-004 through MSN-008)
-- **Pending objectives:** 20
+- **Pending objectives:** 24
 - **Active missions:** 0
-- **Alerts:** 0 critical, 0 blocker, 2 warning
+- **Alerts:** 0 critical, 0 blocker
 
-### Files Changed (Not Committed)
+### Files Changed This Session
 
-- `.space-agents/missions/staged/MSN-004-beads-core/_mission.md` - Created
-- `.space-agents/missions/staged/MSN-005-planning-flow/_mission.md` - Created
-- `.space-agents/missions/staged/MSN-006-execution-flow/_mission.md` - Created
-- `.space-agents/missions/staged/MSN-007-folder-migration/_mission.md` - Created
-- `.space-agents/missions/staged/MSN-008-prompts-comms/_mission.md` - Created
+**Mission Briefs Updated:**
+- `.space-agents/missions/staged/MSN-004-beads-core/_mission.md`
+- `.space-agents/missions/staged/MSN-005-planning-flow/_mission.md`
+- `.space-agents/missions/staged/MSN-006-execution-flow/_mission.md`
+- `.space-agents/missions/staged/MSN-007-folder-migration/_mission.md`
+- `.space-agents/missions/staged/MSN-008-prompts-comms/_mission.md`
+
+**New Skills Created:**
+- `skills/mission-go/skill.md` (router)
+- `skills/mission-go-solo/skill.md`
+- `skills/mission-go-orchestrated/skill.md`
+- `skills/mission-go-ralph/skill.md`
+
+**Comms Updated:**
 - `.space-agents/comms/capcom.md` - Session entry appended
 
 ### Next Session Suggestions
 
-1. **Review plans** - User requested review before execution
-2. **Then run `/mission-go MSN-004-beads-core`** - Start with foundation
-3. **Key prereqs to verify:**
+1. **Execute MSN-004** using Orchestrated mode (not Ralph - can't use ralph to modify ralph)
+2. **Gate 0 first** - Verify `bd` and `jq` installed
+3. **Key prereqs:**
    - Go toolchain installed (for `bd` CLI)
    - jq installed (for JSON parsing)
+   - Git Bash on Windows (scripts use bash)
 
 ---
 
 ## Quick Start
 
 ```bash
-# Review staged missions
-ls .space-agents/missions/staged/
+# Verify prerequisites (Gate 0)
+bd --version
+jq --version
 
-# Read mission details
+# Review first mission
 cat .space-agents/missions/staged/MSN-004-beads-core/_mission.md
 
 # When ready to execute
-/mission-go MSN-004-beads-core
+/mission-go
+# Select MSN-004, then Orchestrated mode
 ```
 
 ---
 
 ## Reference
 
-Exploration documents used:
-- `.space-agents/exploration/2026-01-20-beads-integration/exploration.md`
-- `.space-agents/exploration/2026-01-20-beads-integration/user-journey.md`
-- `.space-agents/exploration/2026-01-20-comms-voyages-redesign/exploration.md`
-- `docs/research/yegge-beads.md` (Beads reference)
+**Execution Modes:**
+- Solo: HOUSTON direct, context fills fast, small tasks only
+- Orchestrated (Recommended): HOUSTON spawns Worker→Inspector→Analyst per task
+- Ralph: Automatic background loop, runs until done or blocker
 
-Council agent outputs available at:
-- `C:\Users\frase\AppData\Local\Temp\claude\...\tasks\*.output`
+**Beads CLI Quick Reference:**
+```bash
+bd add "title" -t feature -p EPIC_ID   # Create feature under epic
+bd ready --json                         # Get next unblocked task
+bd update ID --status in_progress       # Update status
+bd close ID                             # Mark complete
+bd list --parent FEATURE_ID             # List children
+bd dep tree ID                          # Show dependency graph
+```
+
+---
+
+*Handover generated by Space-Agents /dock*
