@@ -1,11 +1,11 @@
 ---
 name: install
-description: "Use to install Space-Agents in a project. Creates .space-agents/ directory and SQLite database. Run once per project."
+description: "Use to install Space-Agents in a project. Creates .space-agents/ directory and initializes Beads for issue tracking. Run once per project."
 ---
 
 # /install - Space-Agents Installation
 
-Install Space-Agents in the current project. Creates the directory structure and SQLite database.
+Install Space-Agents in the current project. Creates the directory structure and initializes Beads for issue tracking.
 
 ---
 
@@ -15,7 +15,7 @@ User runs `/install` or is prompted from `/launch` when system not found.
 
 ## Prerequisites
 
-- `sqlite3` must be available on the system
+- `bd` CLI must be available on the system (v0.47.0+)
 - Write permissions for current directory
 
 ---
@@ -31,9 +31,9 @@ fi
 ```
 
 If `.space-agents/` already exists:
-1. Check if `space-agents.db` exists and has tables
+1. Check if `.beads/issues.jsonl` exists
 2. Ask user: **Reinstall/upgrade** or **Cancel**
-3. If reinstall: backup existing db, proceed with fresh install
+3. If reinstall: backup existing data, proceed with fresh install
 4. If cancel: exit gracefully
 
 ---
@@ -55,7 +55,6 @@ mkdir -p .space-agents/missions/complete
 ```
 .space-agents/
 ├── comms/
-│   ├── space-agents.db      # SQLite database (Step 3)
 │   ├── capcom.md            # Master CAPCOM log (append-only)
 │   ├── handover.md          # Context dump for fresh sessions
 │   └── notifications.md     # Event notifications
@@ -68,19 +67,21 @@ mkdir -p .space-agents/missions/complete
 
 ---
 
-### Step 3: Initialize SQLite Database
+### Step 3: Initialize Beads
 
-Create the database using the schema file:
+Initialize Beads for issue tracking (if not already done):
 
 ```bash
-sqlite3 .space-agents/comms/space-agents.db < scripts/init-db.sql
+# Initialize Beads if not already done
+if [ ! -f ".beads/issues.jsonl" ]; then
+    bd init
+fi
 ```
 
-The schema creates:
-- `voyages` - Epics/major initiatives
-- `missions` - Features within a voyage
-- `objectives` - Stories/tasks within a mission (with `worker_attempts` for retry tracking)
-- `alerts` - Severity-tracked notifications
+Beads provides:
+- Git-backed issue tracking with `.beads/issues.jsonl`
+- Dependency management between tasks
+- Context persistence across session compaction
 
 ---
 
@@ -140,7 +141,7 @@ Show the installation success screen:
 |                                                                  |
 |  Created:                                                        |
 |    [x] .space-agents/ directory structure                        |
-|    [x] comms/ folder with SQLite database                        |
+|    [x] Beads initialized (.beads/)                               |
 |    [x] CAPCOM master log                                         |
 |    [x] Handover and notifications files                          |
 |                                                                  |
@@ -158,14 +159,15 @@ Show the installation success screen:
 
 ## Error Handling
 
-**If sqlite3 not found:**
+**If bd CLI not found:**
 ```
-ERROR: sqlite3 is required but not found.
+ERROR: bd CLI is required but not found.
 
-Please install SQLite:
-  macOS: brew install sqlite
-  Ubuntu: sudo apt install sqlite3
-  Windows: Download from sqlite.org/download.html
+Please install Beads CLI (v0.47.0+):
+  npm install -g beads-cli
+
+Verify installation:
+  bd --version
 ```
 
 **If directory creation fails:**
@@ -191,7 +193,7 @@ What would you like to do?
 The `/install` skill:
 1. Checks for existing installation
 2. Creates directory structure (comms/, exploration/, missions/)
-3. Initializes SQLite database with schema
+3. Initializes Beads for issue tracking
 4. Creates initialization files (capcom.md, handover.md, notifications.md)
 5. Displays installation complete screen
 6. Guides user to run `/launch`
