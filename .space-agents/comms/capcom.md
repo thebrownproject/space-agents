@@ -293,3 +293,38 @@ User considering reorganizing missions as "session containers" vs "work items" -
 MSN-006 ready for execution: 4 tasks with full descriptions, sequential dependencies set.
 
 ---
+
+## [2026-01-21 22:45] Session End
+
+### Summary
+- Major workflow redesign: Exploration (thinking) vs Beads (doing)
+- Model B architecture: Pod self-fetches context via bd ready + bd comments
+- Handovers now stored as Beads comments on tasks, not files
+- Mission folders eliminated - Beads is single source of truth
+- Clean Beads structure: sa-1.x IDs (removed space-agents-05x)
+- Created 3 features with 13 tasks total
+
+### Changes Made
+- MSN-006: Updated for Model B + comments-as-handovers
+- MSN-007: Deleted (folder structure obsolete)
+- MSN-008: Simplified 6→4 objectives (terminology only)
+- MSN-009: Created exploration/planning workflow
+- Renamed all issues to descriptive titles (no MSN/OBJ prefixes)
+- Prefix changed from space-agents-05x to sa-
+
+### Statistics
+- Tasks completed: 0 (planning session)
+- Features created: 3
+- Issues reorganized: 17
+- Alerts cleared: 0
+
+### Notes
+This was an exploration + planning session. Key architectural decisions:
+1. Exploration folder = scratchpad with drafts/ready kanban
+2. /planning skill converts ready plans to Beads
+3. CAPCOM logs session start/end (missions = sessions)
+4. Pod uses Model B (self-fetch, not injected context)
+
+Next session: Execute sa-1.1 (Execution Flow Skills) or sa-1.3 (Exploration workflow)
+
+---

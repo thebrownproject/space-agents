@@ -1,59 +1,84 @@
 # Space-Agents Handover
 
-**Generated:** 2026-01-21 20:53
-**Version:** 1.0.24
+**Generated:** 2026-01-21 22:45
+**Version:** 1.0.25
 
 ---
 
 ## Session Summary
 
-Planning/setup session focused on Beads workflow refinement. No task execution.
-
-### What Was Accomplished
-
-1. **Fixed Beads database** - Legacy database migration, added repo fingerprint, fixed prefix mismatch
-2. **Installed git hooks** - `bd hooks install` for auto-sync on commits
-3. **Created MSN-006** - Execution Flow Skills feature with 4 tasks in Beads
-4. **Full descriptions in Beads** - Migrated all task details from mission brief markdown into Beads task descriptions
-5. **Established pattern** - Beads as single source of truth, markdown becomes optional planning artifact
+Major workflow redesign session. Exploration + planning, no task execution.
 
 ### Key Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Task descriptions | Full detail in Beads | Agent queries `bd show` and has everything needed |
-| Mission briefs | Optional planning artifact | Beads is runtime source of truth |
-| Feature descriptions | Include cross-task context | Gate criteria, rollback plan, severity mapping |
+| Handover storage | Beads comments on tasks | Queryable, no separate files |
+| Pod context | Model B (self-fetch) | Resilient to pivots, simpler Ralph |
+| Mission folders | Eliminated | Beads is single source of truth |
+| ID prefix | sa- (was space-agents-05x) | Clean, short IDs |
+| Feature naming | Descriptive titles | No MSN/OBJ prefixes |
 
-### Current State
+### Architecture Changes
 
-**Active Feature:** MSN-006: Execution Flow Skills
-- 4 tasks, 0 completed
-- OBJ-001 ready (unblocked)
-- Sequential dependencies: OBJ-001 → OBJ-002 → OBJ-003 → OBJ-004
-
+**Before:**
 ```
-bd list --tree
-○ space-agents-05x [epic] Space Agents
-└── ○ space-agents-05x.2 MSN-006: Execution Flow Skills
-    ├── ○ .2.1 OBJ-001: Update /pod skill (READY)
-    ├── ○ .2.2 OBJ-002: Update /airlock (blocked)
-    ├── ○ .2.3 OBJ-003: Update /capcom (blocked)
-    └── ○ .2.4 OBJ-004: Update /handover (blocked)
+missions/staged/MSN-006/
+├── _mission.md
+├── handovers/OBJ-001.md
+└── prompts/OBJ-001.txt
 ```
 
-### Files Changed This Session
+**After:**
+```
+.beads/issues.jsonl     # All features, tasks, comments
+.space-agents/
+├── exploration/        # Scratchpad (drafts → ready)
+└── comms/              # capcom.md, handover.md
+```
 
-- `.beads/issues.jsonl` - Added MSN-006 feature + 4 tasks with full descriptions
-- `.beads/config.yaml` - Fixed prefix to space-agents
-- `.git/hooks/` - Installed beads hooks (pre-commit, post-merge, pre-push)
+---
 
-### Open Questions for Next Session
+## Current State
 
-User wants to brainstorm reorganizing the workflow:
-- Missions as "session containers" vs "work items"
-- How to scope what you're working on per session
-- Potentially update the MSN flow based on this
+### Beads Structure
+```
+sa-1 (Epic: Space Agents)
+├── sa-1.1  Execution Flow Skills        [area:execution]
+│   ├── sa-1.1.1  Update /pod for Model B
+│   ├── sa-1.1.2  Update /airlock
+│   ├── sa-1.1.3  Update /capcom
+│   └── sa-1.1.4  Update /handover
+├── sa-1.2  Agent Prompts and Terminology [area:agents]
+│   ├── sa-1.2.1  Update planning agents
+│   ├── sa-1.2.2  Update execution agents
+│   ├── sa-1.2.3  Update exploration agents
+│   └── sa-1.2.4  Validation sweep
+└── sa-1.3  Exploration & Planning Workflow [area:workflow]
+    ├── sa-1.3.1  Create folder structure
+    ├── sa-1.3.2  Update /exploration
+    ├── sa-1.3.3  Create /planning skill
+    ├── sa-1.3.4  Update CAPCOM
+    └── sa-1.3.5  Archive old folders
+```
+
+### Ready Tasks
+```bash
+bd ready -t task
+# Returns: sa-1.1.1, sa-1.2.1, sa-1.2.2, sa-1.3.1 (unblocked)
+```
+
+### Open Bugs
+None
+
+---
+
+## Files Changed This Session
+
+- `.beads/issues.jsonl` - Complete restructure (sa-1.x IDs)
+- `.space-agents/missions/staged/` - Renamed folders, updated mission files
+- `.claude-plugin/plugin.json` - Version 1.0.25
+- `.claude-plugin/marketplace.json` - Version 1.0.25
 
 ---
 
@@ -61,25 +86,25 @@ User wants to brainstorm reorganizing the workflow:
 
 ```bash
 # Check what's ready
-bd ready
+bd ready -t task
 
-# View MSN-006 feature
-bd show space-agents-05x.2
-
-# View first task (full instructions)
-bd show space-agents-05x.2.1
+# View a feature
+bd show sa-1.1
 
 # Tree view
 bd list --tree
+
+# Start working
+bd update sa-1.1.1 --status in_progress
 ```
 
 ---
 
 ## Next Session Suggestions
 
-1. **Brainstorm workflow** - Missions as session containers vs work items
-2. **Execute MSN-006** - Start with OBJ-001 (update /pod skill)
-3. **Cleanup** - Delete test feature space-agents-m87 if desired
+1. **Execute sa-1.1** - Execution Flow Skills (update /pod, /airlock, /capcom, /handover)
+2. **Execute sa-1.3** - Exploration workflow (create folder structure, /planning skill)
+3. **Execute sa-1.2** - Agent terminology updates (can parallelize 1-3)
 
 ---
 
