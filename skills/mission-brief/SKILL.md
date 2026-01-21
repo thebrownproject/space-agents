@@ -1,16 +1,16 @@
 ---
 name: mission-brief
-description: "Write mission plan with objectives. HOUSTON convenes planning council, synthesizes their input, and guides user through approval stages."
+description: "Write feature plan with tasks. HOUSTON convenes planning council, synthesizes their input, and guides user through approval stages."
 ---
 
-# /mission-brief - Mission Planning
+# /mission-brief - Feature Planning
 
-Turn an exploration report into an executable mission with objectives. HOUSTON reviews the exploration, convenes a planning council for input, then synthesizes everything into a plan for user approval.
+Turn an exploration report into an executable feature with tasks. HOUSTON reviews the exploration, convenes a planning council for input, then synthesizes everything into a plan for user approval.
 
 **Hierarchy:**
 - Project = the codebase (one per installation)
-- Mission = Feature (designed in /exploration)
-- Objectives = Tasks (created here)
+- Feature = scope of work (designed in /exploration)
+- Tasks = implementation units (created here)
 
 ## The Process
 
@@ -21,7 +21,7 @@ Turn an exploration report into an executable mission with objectives. HOUSTON r
 5. **Spawn council** - 3 agents analyze in parallel
 6. **Synthesize** - HOUSTON combines own analysis + council input
 7. **Present stages** - user approves each stage
-8. **Write plan** - SQLite records + markdown file
+8. **Write plan** - Beads records + markdown file
 9. **Handoff** - offer `/mission-go` to begin execution
 
 ## Step 1: Check What's Available
@@ -43,7 +43,7 @@ Which one should we plan? (or describe something new)
 ## Step 2: HOUSTON's Own Analysis
 
 Before spawning agents, read the exploration report yourself. Form your own view on:
-- How to break this into missions
+- How to break this into tasks
 - What the dependencies might be
 - Key implementation considerations
 
@@ -54,7 +54,7 @@ This gives you context to evaluate the council's input.
 After user confirms, ask before spawning:
 ```
 Ready to convene the planning council? I'll send out three agents to analyze:
-- Task Planner (mission/objective structure)
+- Task Planner (feature/task structure)
 - Sequencer (dependencies, execution order)
 - Implementer (TDD task breakdown)
 
@@ -65,9 +65,9 @@ They'll report back while we continue talking. Proceed?
 
 The council are **advisors**, not decision makers. They provide analysis, HOUSTON synthesizes and can override if their recommendations don't fit.
 
-- `space-agents:planning-task-planner` - Breaks feature into missions/objectives
+- `space-agents:planning-task-planner` - Breaks feature into tasks
 - `space-agents:planning-sequencer` - Analyzes dependencies, execution order
-- `space-agents:planning-implementer` - Creates TDD task breakdown per objective
+- `space-agents:planning-implementer` - Creates TDD task breakdown per task
 
 Spawn all 3 in parallel with `run_in_background: true`. Continue conversation while they work.
 
@@ -75,14 +75,14 @@ Spawn all 3 in parallel with `run_in_background: true`. Continue conversation wh
 
 Present each stage, get user approval before continuing:
 
-**Stage 1: Mission Structure**
+**Stage 1: Feature Structure**
 ```
-Council analysis complete. Proposed mission:
+Council analysis complete. Proposed feature:
 
-MISSION: [Feature Name]
+FEATURE: [Feature Name]
 Goal: [One sentence]
 
-Objectives:
+Tasks:
   1. [Name] (~X min) - [Brief description]
   2. [Name] (~Y min) - [Brief description]
   3. [Name] (~Z min) - [Brief description]
@@ -94,54 +94,63 @@ Does this structure look right?
 ```
 Execution sequence:
 
-1. Objective 1 (no dependencies)
-2. Objective 2 (depends on Obj 1)
-3. Objective 3 (depends on Obj 2)
+1. Task 1 (no dependencies)
+2. Task 2 (depends on Task 1)
+3. Task 3 (depends on Task 2)
 
 Any concerns with this order?
 ```
 
 **Stage 3: Implementation Details**
 ```
-Implementation approach for first objective:
+Implementation approach for first task:
 
-Objective 1: [Name]
+Task 1: [Name]
 Files: [list]
-Tasks:
+Steps:
   1. Write failing test
   2. Verify test fails
   3. Implement
   4. Verify test passes
   5. Commit
 
-This pattern applies to all objectives. Ready to write the plan?
+This pattern applies to all tasks. Ready to write the plan?
 ```
 
 ## Output
 
 After all approvals:
 
-1. **Create mission folder:** `.space-agents/missions/staged/<mission-id>/`
-2. **Move exploration:** Copy `exploration.md` into mission folder, delete exploration folder
-3. **Write _mission.md:** Mission context (goal, objectives list, key files)
-4. **Write implementation-plan.md:** Detailed plan with TDD tasks per objective
-5. **Insert SQLite records:**
-   ```sql
-   INSERT INTO missions (id, title, status) VALUES ('<mission_id>', '<title>', 'staged');
-   INSERT INTO objectives (mission_id, id, title, description, status, priority)
-   VALUES ('<mission_id>', 'OBJ-001', '<title>', '<desc>', 'pending', 1);
-   ```
-6. **Confirm:** "Mission ready. Run `/mission-go` to begin execution."
+1. **Create feature folder:** `.space-agents/features/staged/<feature-slug>/`
+2. **Move exploration:** Copy `exploration.md` into feature folder, delete exploration folder
+3. **Write _feature.md:** Feature context (goal, tasks list, key files)
+4. **Write implementation-plan.md:** Detailed plan with TDD steps per task
+5. **Create Beads records:**
+   ```bash
+   # Get active epic
+   EPIC_ID=$(bd list -t epic --status open --json | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 
-**Mission ID format:** `MSN-001-Short-description`
-**Objective ID format:** `OBJ-001`, `OBJ-002`... (resets per mission, composite key)
+   # Create feature under epic
+   bd create "Feature title" -t feature --parent "$EPIC_ID" -p 1
+
+   # Get the feature ID just created
+   FEATURE_ID=$(bd list -t feature --status open --json | grep -o '"id":"[^"]*"' | tail -1 | cut -d'"' -f4)
+
+   # Create tasks under feature
+   bd create "Task 1 title" -t task --parent "$FEATURE_ID" -p 1
+   bd create "Task 2 title" -t task --parent "$FEATURE_ID" -p 2
+   bd sync
+   ```
+6. **Confirm:** "Feature ready. Run `/mission-go` to begin execution."
+
+**Note:** Beads auto-generates IDs for features and tasks.
 
 **Folder lifecycle:** `staged/` → `active/` (on /mission-go) → `complete/` (on finish)
 
-## _mission.md Structure
+## _feature.md Structure
 
 ```markdown
-# MSN-XXX-Description: [Feature Name]
+# {feature-slug}: [Feature Name]
 
 **Status:** Staged
 **Created:** [timestamp]
@@ -149,9 +158,9 @@ After all approvals:
 ## Goal
 [One sentence]
 
-## Objectives
-1. OBJ-001 - [Name]
-2. OBJ-002 - [Name]
+## Tasks
+1. [Task ID] - [Name]
+2. [Task ID] - [Name]
 
 ## Key Files
 [List of files to create/modify]
@@ -162,13 +171,13 @@ After all approvals:
 ```markdown
 # [Feature] Implementation Plan
 
-**Mission:** MSN-XXX-Description
+**Feature:** {feature-slug}
 **Created:** [timestamp]
 
-## Objectives
+## Tasks
 
-| # | Objective | Est. | Status |
-|---|-----------|------|--------|
+| # | Task | Est. | Status |
+|---|------|------|--------|
 | 1 | [Name] | X min | pending |
 | 2 | [Name] | Y min | pending |
 
@@ -178,12 +187,12 @@ After all approvals:
 
 ---
 
-## Objective 1: [Name]
+## Task 1: [Name]
 
 **Goal:** [One sentence]
 **Files:** [Create/Modify/Test]
 
-**Tasks:**
+**Steps:**
 1. Write failing test - [code snippet]
 2. Run test - [command + expected output]
 3. Implement - [code snippet]
@@ -192,14 +201,14 @@ After all approvals:
 
 ---
 
-[Continue for all objectives]
+[Continue for all tasks]
 ```
 
 ## Remember
 
-- Mission = feature (one per /exploration report)
-- Objectives = tasks (3-5 per mission, Pod-sized chunks)
-- Mission IDs are descriptive: `MSN-001-Schema-v2`
+- Feature = scope of work (one per /exploration report)
+- Tasks = implementation units (3-5 per feature, Pod-sized chunks)
+- Beads auto-generates IDs for features and tasks
 - Create in `staged/`, moves to `active/` on execution
 - Council are advisors - HOUSTON synthesizes and can override
 - User approves each stage before anything is written
