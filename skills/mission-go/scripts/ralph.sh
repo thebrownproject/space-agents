@@ -1,17 +1,17 @@
 #!/bin/bash
 # ============================================================================
-# Ralph - Space-Agents Execution Loop
+# Ralph - Space-Agents Execution Loop (Beads Edition)
 # ============================================================================
 # Named after the "Ralph Wiggum Loop" pattern: fresh agent spawned each cycle,
-# state persists in SQLite. Agents are compute, not memory.
+# state persists in Beads. Agents are compute, not memory.
 #
 # Usage:
-#   ./ralph.sh <mission_id> [--visible]
+#   ./ralph.sh <feature_id> [--visible]
 #
 # Exit codes:
-#   0 - Mission complete (all objectives done)
-#   1 - Mission failed (critical alert)
-#   2 - Configuration error (DB missing, mission not found, etc.)
+#   0 - Feature complete (all tasks done)
+#   1 - Feature failed (critical bug)
+#   2 - Configuration error (Beads not initialized, feature not found, etc.)
 # ============================================================================
 
 set -euo pipefail
@@ -26,10 +26,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Visible mode flag (set by --visible-internal when launched from mprocs)
 VISIBLE_MODE=false
 
-# Find project root (directory containing .space-agents)
+# Find project root (directory containing .beads)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+BEADS_DIR="${PROJECT_ROOT}/.beads"
 SPACE_AGENTS_DIR="${PROJECT_ROOT}/.space-agents"
-DB="${SPACE_AGENTS_DIR}/comms/space-agents.db"
 NOTIFICATIONS_FILE="${SPACE_AGENTS_DIR}/comms/notifications.md"
 NOTIFY_SCRIPT="${SPACE_AGENTS_DIR}/scripts/notify.sh"
 
@@ -60,11 +60,11 @@ log() {
 }
 
 log_capcom() {
-    local mission_id="$1"
+    local feature_id="$1"
     local message="$2"
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    local capcom_log="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/capcom.log"
+    local capcom_log="${SPACE_AGENTS_DIR}/comms/capcom.md"
 
     # Ensure directory exists
     mkdir -p "$(dirname "$capcom_log")"
@@ -77,23 +77,16 @@ log_capcom() {
 # ----------------------------------------------------------------------------
 
 check_prerequisites() {
-    # Check .space-agents directory exists
-    if [[ ! -d "$SPACE_AGENTS_DIR" ]]; then
-        log ERROR "Space-Agents directory not found: $SPACE_AGENTS_DIR"
-        log ERROR "Run /launch first to initialize Space-Agents"
+    # Check .beads directory exists
+    if [[ ! -d "$BEADS_DIR" ]]; then
+        log ERROR "Beads directory not found: $BEADS_DIR"
+        log ERROR "Run 'bd init' first to initialize Beads"
         exit 2
     fi
 
-    # Check database exists
-    if [[ ! -f "$DB" ]]; then
-        log ERROR "Database not found: $DB"
-        log ERROR "Run /launch first to initialize the database"
-        exit 2
-    fi
-
-    # Check sqlite3 is available
-    if ! command -v sqlite3 &> /dev/null; then
-        log ERROR "sqlite3 command not found. Please install SQLite."
+    # Check bd CLI is available
+    if ! command -v bd &> /dev/null; then
+        log ERROR "bd command not found. Please install Beads CLI."
         exit 2
     fi
 
@@ -104,26 +97,33 @@ check_prerequisites() {
     fi
 }
 
-check_mission() {
-    local mission_id="$1"
+check_feature() {
+    local feature_id="$1"
 
-    # Check mission exists
-    local mission_status
-    mission_status=$(sqlite3 "$DB" "SELECT status FROM missions WHERE id = '$mission_id';")
+    # Check feature exists and get its status
+    local feature_json
+    feature_json=$(bd show "$feature_id" --json 2>/dev/null) || {
+        log ERROR "Feature not found: $feature_id"
+        exit 2
+    }
 
-    if [[ -z "$mission_status" ]]; then
-        log ERROR "Mission not found: $mission_id"
+    # Extract status from JSON (simple grep, no jq)
+    local feature_status
+    feature_status=$(echo "$feature_json" | grep -o '"status": *"[^"]*"' | head -1 | cut -d'"' -f4)
+
+    if [[ -z "$feature_status" ]]; then
+        log ERROR "Could not determine feature status: $feature_id"
         exit 2
     fi
 
-    # Check mission is active
-    if [[ "$mission_status" != "active" ]]; then
-        log ERROR "Mission is not active (status: $mission_status)"
-        log ERROR "Only active missions can be executed"
+    # Check feature is open or in_progress
+    if [[ "$feature_status" != "open" ]] && [[ "$feature_status" != "in_progress" ]]; then
+        log ERROR "Feature is not active (status: $feature_status)"
+        log ERROR "Only open or in_progress features can be executed"
         exit 2
     fi
 
-    log INFO "Mission validated: $mission_id (status: $mission_status)"
+    log INFO "Feature validated: $feature_id (status: $feature_status)"
 }
 
 # ----------------------------------------------------------------------------
@@ -135,6 +135,9 @@ send_notification() {
     local message="$2"
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Ensure notifications directory exists
+    mkdir -p "$(dirname "$NOTIFICATIONS_FILE")"
 
     # Write to notifications file (for in-session pickup via hooks)
     echo "[$timestamp] $title: $message" >> "$NOTIFICATIONS_FILE"
@@ -151,25 +154,12 @@ send_notification() {
 }
 
 # ----------------------------------------------------------------------------
-# SQLite Query Helpers
-# ----------------------------------------------------------------------------
-
-sql_query() {
-    sqlite3 "$DB" "$1"
-}
-
-sql_query_row() {
-    # Returns a single row with pipe-separated values
-    sqlite3 -separator '|' "$DB" "$1"
-}
-
-# ----------------------------------------------------------------------------
 # Signal File Infrastructure
 # ----------------------------------------------------------------------------
 
 create_signal_dir() {
-    local mission_id="$1"
-    local signal_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/signals"
+    local feature_id="$1"
+    local signal_dir="${SPACE_AGENTS_DIR}/tmp/${feature_id}/signals"
     mkdir -p "$signal_dir"
     echo "$signal_dir"
 }
@@ -188,160 +178,197 @@ wait_for_signal() {
 }
 
 cleanup_signals() {
-    local mission_id="$1"
-    local signal_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}/signals"
+    local feature_id="$1"
+    local signal_dir="${SPACE_AGENTS_DIR}/tmp/${feature_id}/signals"
     rm -rf "$signal_dir"
 }
 
 # ----------------------------------------------------------------------------
-# Objective Management
+# Task Management (Beads)
 # ----------------------------------------------------------------------------
 
-get_next_objective() {
-    local mission_id="$1"
+get_next_task() {
+    local feature_id="$1"
 
-    # Get next pending objective, ordered by priority (ASC = 1 first) then created_at (ASC)
-    # Returns: id|title|description
-    sql_query_row "
-        SELECT id, title, description
-        FROM objectives
-        WHERE mission_id = '$mission_id'
-          AND status = 'pending'
-        ORDER BY priority ASC, created_at ASC
-        LIMIT 1;
-    "
+    # Get next ready task under this feature
+    # bd ready returns only unblocked issues
+    local ready_tasks
+    ready_tasks=$(bd ready -t task --json 2>/dev/null) || {
+        log ERROR "bd ready failed"
+        return 1
+    }
+
+    # Find first task whose ID starts with feature_id (hierarchical naming)
+    # Extract IDs and titles using grep on the flat JSON output
+    local task_id=""
+    local task_title=""
+
+    # Get all IDs from the JSON
+    while IFS= read -r line; do
+        if [[ "$line" =~ \"id\":\ *\"([^\"]+)\" ]]; then
+            local current_id="${BASH_REMATCH[1]}"
+            # Check if this ID starts with our feature ID
+            if [[ "$current_id" == "${feature_id}."* ]]; then
+                task_id="$current_id"
+            fi
+        elif [[ -n "$task_id" ]] && [[ "$line" =~ \"title\":\ *\"([^\"]+)\" ]]; then
+            task_title="${BASH_REMATCH[1]}"
+            echo "${task_id}|${task_title}|"
+            return 0
+        fi
+    done <<< "$ready_tasks"
+
+    # No task found
+    return 0
 }
 
-# Note: mark_objective_in_progress is handled by the Pod (Phase 1.5 of /pod skill)
+mark_task_in_progress() {
+    local task_id="$1"
 
-mark_objective_complete() {
-    local objective_id="$1"
-    # Uses MISSION_ID from outer scope
-
-    sql_query "
-        UPDATE objectives
-        SET status = 'complete', completed_at = CURRENT_TIMESTAMP
-        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
-    "
+    bd update "$task_id" --status in_progress || {
+        log ERROR "Failed to mark task in_progress: $task_id"
+        return 1
+    }
 }
 
-mark_objective_failed() {
-    local objective_id="$1"
-    # Uses MISSION_ID from outer scope
+mark_task_complete() {
+    local task_id="$1"
 
-    sql_query "
-        UPDATE objectives
-        SET status = 'failed'
-        WHERE mission_id = '$MISSION_ID' AND id = '$objective_id';
-    "
+    bd close "$task_id" --reason "Completed by Ralph" || {
+        log ERROR "Failed to close task: $task_id"
+        return 1
+    }
+
+    # Sync changes
+    bd sync || log WARNING "bd sync failed (will retry later)"
 }
 
-get_mission_info() {
-    local mission_id="$1"
+mark_task_failed() {
+    local task_id="$1"
+    local reason="${2:-Task failed}"
+    local feature_id="$3"
 
-    # Returns: mission_title
-    sql_query "
-        SELECT title
-        FROM missions
-        WHERE id = '$mission_id';
-    "
+    # Beads has no "failed" status. Create a blocking bug instead.
+    local bug_id
+    bug_id=$(bd create "BLOCKER: $reason" -t bug --parent "$feature_id" 2>&1 | grep -o 'Created issue: [^ ]*' | cut -d' ' -f3) || {
+        log ERROR "Failed to create blocking bug"
+        return 1
+    }
+
+    # Link bug as blocker for the task
+    bd dep add "$task_id" "$bug_id" || {
+        log ERROR "Failed to link bug as blocker"
+        return 1
+    }
+
+    log WARNING "Created blocking bug: $bug_id"
+
+    # Sync changes
+    bd sync || log WARNING "bd sync failed (will retry later)"
 }
 
-check_mission_complete() {
-    local mission_id="$1"
+get_feature_info() {
+    local feature_id="$1"
 
-    # Count remaining pending or in_progress objectives
-    local remaining
-    remaining=$(sql_query "
-        SELECT COUNT(*)
-        FROM objectives
-        WHERE mission_id = '$mission_id'
-          AND status IN ('pending', 'in_progress');
-    ")
+    # Returns: feature title
+    local feature_json
+    feature_json=$(bd show "$feature_id" --json 2>/dev/null) || {
+        echo "Unknown Feature"
+        return
+    }
 
-    [[ "$remaining" -eq 0 ]]
+    echo "$feature_json" | grep -o '"title": *"[^"]*"' | head -1 | cut -d'"' -f4
 }
 
-mark_mission_complete() {
-    local mission_id="$1"
+check_feature_complete() {
+    local feature_id="$1"
 
-    sql_query "
-        UPDATE missions
-        SET status = 'complete'
-        WHERE id = '$mission_id';
-    "
+    # Check if any tasks under this feature are still open/in_progress
+    # Filter by ID prefix (hierarchical: feature.1, feature.2, etc.)
+    local open_output in_progress_output
+    open_output=$(bd list -t task --status open --json 2>/dev/null || echo "[]")
+    in_progress_output=$(bd list -t task --status in_progress --json 2>/dev/null || echo "[]")
 
-    # Move mission folder from active/ to complete/
-    local active_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}"
-    local complete_dir="${SPACE_AGENTS_DIR}/missions/complete/${mission_id}"
+    local open_tasks in_progress_tasks
+    open_tasks=$(echo "$open_output" | grep -c "\"id\": *\"${feature_id}\." 2>/dev/null || true)
+    in_progress_tasks=$(echo "$in_progress_output" | grep -c "\"id\": *\"${feature_id}\." 2>/dev/null || true)
 
-    if [[ -d "$active_dir" ]]; then
-        # Clean up tmp/ folder before moving (signals, prompts)
-        rm -rf "${active_dir}/tmp"
+    # Ensure valid numbers
+    open_tasks=${open_tasks:-0}
+    open_tasks=${open_tasks//[^0-9]/}
+    [[ -z "$open_tasks" ]] && open_tasks=0
 
-        mkdir -p "${SPACE_AGENTS_DIR}/missions/complete"
-        mv "$active_dir" "$complete_dir"
-        log INFO "Moved mission folder to complete/"
-    fi
+    in_progress_tasks=${in_progress_tasks:-0}
+    in_progress_tasks=${in_progress_tasks//[^0-9]/}
+    [[ -z "$in_progress_tasks" ]] && in_progress_tasks=0
 
-    # Clean up staged folder if it still exists
-    local staged_dir="${SPACE_AGENTS_DIR}/missions/staged/${mission_id}"
-    if [[ -d "$staged_dir" ]]; then
-        rm -rf "$staged_dir"
-        log INFO "Cleaned up staged folder"
-    fi
+    [[ "$open_tasks" -eq 0 ]] && [[ "$in_progress_tasks" -eq 0 ]]
 }
 
-check_critical_alerts() {
-    local mission_id="$1"
+mark_feature_complete() {
+    local feature_id="$1"
 
-    # Check for any active critical (severity 0) alerts for this mission
+    bd close "$feature_id" --reason "All tasks completed" || {
+        log ERROR "Failed to close feature: $feature_id"
+        return 1
+    }
+
+    # Sync changes
+    bd sync || log WARNING "bd sync failed (will retry later)"
+}
+
+check_critical_bugs() {
+    local feature_id="$1"
+
+    # Check for any open bugs with severity:critical label under this feature
+    local bug_output
+    bug_output=$(bd list -t bug --status open --json 2>/dev/null || echo "[]")
+
     local critical_count
-    critical_count=$(sql_query "
-        SELECT COUNT(*)
-        FROM alerts
-        WHERE mission_id = '$mission_id'
-          AND severity = 0
-          AND status = 'active';
-    ")
+    critical_count=$(echo "$bug_output" | grep -c '"severity:critical"' 2>/dev/null || true)
+
+    # Ensure we have a valid number
+    critical_count=${critical_count:-0}
+    critical_count=${critical_count//[^0-9]/}
+    [[ -z "$critical_count" ]] && critical_count=0
 
     [[ "$critical_count" -gt 0 ]]
 }
 
 # ----------------------------------------------------------------------------
-# Alert Management
+# Bug Creation
 # ----------------------------------------------------------------------------
 
-create_alert() {
+create_bug() {
     local severity="$1"
-    local mission_id="$2"
-    local objective_id="$3"
+    local feature_id="$2"
+    local task_id="$3"
     local source="$4"
     local description="$5"
 
-    # Generate next alert ID
-    local next_num
-    next_num=$(sql_query "SELECT COALESCE(MAX(CAST(SUBSTR(id, 5) AS INTEGER)), 0) + 1 FROM alerts;")
-    local alert_id
-    alert_id=$(printf "ALT-%03d" "$next_num")
+    local severity_label="severity:info"
+    case "$severity" in
+        0) severity_label="severity:critical" ;;
+        1) severity_label="severity:blocker" ;;
+        2) severity_label="severity:warning" ;;
+        3) severity_label="severity:info" ;;
+    esac
 
-    # Escape single quotes in description
-    local safe_description="${description//\'/\'\'}"
+    local bug_id
+    bug_id=$(bd create "[$source] $description" -t bug --parent "$feature_id" --label "$severity_label" 2>&1 | grep -o 'Created issue: [^ ]*' | cut -d' ' -f3) || {
+        log ERROR "Failed to create bug"
+        return 1
+    }
 
-    # objective_id can be empty for mission-level alerts
-    local obj_value
-    if [[ -z "$objective_id" ]]; then
-        obj_value="NULL"
-    else
-        obj_value="'$objective_id'"
+    # If task_id provided, link bug as blocker
+    if [[ -n "$task_id" ]]; then
+        bd dep add "$task_id" "$bug_id" || log WARNING "Failed to link bug to task"
     fi
 
-    sql_query "
-        INSERT INTO alerts (id, severity, mission_id, objective_id, source, description, status)
-        VALUES ('$alert_id', $severity, '$mission_id', $obj_value, '$source', '$safe_description', 'active');
-    "
+    log WARNING "Bug created: $bug_id ($severity_label) - $description"
 
-    log WARNING "Alert created: $alert_id (severity $severity) - $description"
+    # Sync changes
+    bd sync || log WARNING "bd sync failed (will retry later)"
 }
 
 # ----------------------------------------------------------------------------
@@ -349,19 +376,18 @@ create_alert() {
 # ----------------------------------------------------------------------------
 
 spawn_pod_visible() {
-    local objective_id="$1"
+    local task_id="$1"
     local pod_prompt="$2"
     local pod_agent="$3"
-    local mission_id="$4"
-    local mission_dir="${SPACE_AGENTS_DIR}/missions/active/${mission_id}"
-    local tmp_dir="${mission_dir}/tmp"
+    local feature_id="$4"
+    local tmp_dir="${SPACE_AGENTS_DIR}/tmp/${feature_id}"
     local signal_dir="${tmp_dir}/signals"
 
     # Ensure tmp directories exist
     mkdir -p "$signal_dir"
 
     # Write prompt to file (avoids quoting issues with mprocs)
-    local prompt_file="${tmp_dir}/prompts/${objective_id}.txt"
+    local prompt_file="${tmp_dir}/prompts/${task_id}.txt"
     mkdir -p "$(dirname "$prompt_file")"
     echo "$pod_prompt" > "$prompt_file"
 
@@ -374,11 +400,11 @@ spawn_pod_visible() {
     fi
 
     # Spawn via mprocs ctl (connect to server started by ralph-visible.sh)
-    log INFO "Adding Pod to mprocs: Pod-${objective_id}"
-    mprocs --server 127.0.0.1:4050 --ctl "{\"c\": \"add-proc\", \"cmd\": \"$cmd\", \"name\": \"Pod-${objective_id}\"}"
+    log INFO "Adding Pod to mprocs: Pod-${task_id}"
+    mprocs --server 127.0.0.1:4050 --ctl "{\"c\": \"add-proc\", \"cmd\": \"$cmd\", \"name\": \"Pod-${task_id}\"}"
 
     # Wait for signal file
-    local signal_file="${signal_dir}/${objective_id}.done"
+    local signal_file="${signal_dir}/${task_id}.done"
     log INFO "Waiting for Pod completion signal: ${signal_file}"
 
     if wait_for_signal "$signal_file" 600; then
@@ -392,22 +418,22 @@ spawn_pod_visible() {
 }
 
 spawn_pod() {
-    local objective_id="$1"
-    local objective_title="$2"
-    local objective_description="$3"
-    local mission_id="$4"
+    local task_id="$1"
+    local task_title="$2"
+    local task_description="$3"
+    local feature_id="$4"
 
-    log INFO "Spawning Pod for objective: $objective_title"
+    log INFO "Spawning Pod for task: $task_title"
 
     # Simple prompt that invokes the /pod skill
     # The skill handles context loading, crew dispatch, and handover
-    local pod_prompt="Run /pod ${objective_id} ${mission_id}"
+    local pod_prompt="Run /pod ${task_id} ${feature_id}"
 
     local exit_code=0
 
     if [[ "$VISIBLE_MODE" == "true" ]]; then
         # Visible mode: spawn via mprocs, wait for signal
-        spawn_pod_visible "$objective_id" "$pod_prompt" "" "$mission_id" || exit_code=$?
+        spawn_pod_visible "$task_id" "$pod_prompt" "" "$feature_id" || exit_code=$?
     else
         # Headless mode: run claude with the prompt
         echo "$pod_prompt" | claude -p --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,Skill" 2>&1 || exit_code=$?
@@ -421,7 +447,7 @@ spawn_pod() {
 # ----------------------------------------------------------------------------
 
 main() {
-    local mission_id=""
+    local feature_id=""
     local visible_flag=false
 
     # Parse arguments
@@ -445,8 +471,8 @@ main() {
                 exit 2
                 ;;
             *)
-                if [[ -z "$mission_id" ]]; then
-                    mission_id="$1"
+                if [[ -z "$feature_id" ]]; then
+                    feature_id="$1"
                 fi
                 shift
                 ;;
@@ -454,38 +480,41 @@ main() {
     done
 
     # Validate arguments
-    if [[ -z "$mission_id" ]]; then
-        echo "Usage: ralph.sh <mission_id> [--visible]"
+    if [[ -z "$feature_id" ]]; then
+        echo "Usage: ralph.sh <feature_id> [--visible]"
         echo ""
         echo "Options:"
-        echo "  mission_id   The ID of the mission to execute"
+        echo "  feature_id   The Beads ID of the feature to execute"
         echo "  --visible    Run in visible mode (mprocs TUI for real-time pod visibility)"
         exit 2
     fi
 
     # If --visible and not already internal, launch wrapper
     if [[ "$visible_flag" == "true" ]] && [[ "$VISIBLE_MODE" != "true" ]]; then
-        exec "${SCRIPT_DIR}/ralph-visible.sh" "$mission_id"
+        exec "${SCRIPT_DIR}/ralph-visible.sh" "$feature_id"
     fi
 
-    # Set global MISSION_ID for use by helper functions
-    MISSION_ID="$mission_id"
+    # Set global FEATURE_ID for use by helper functions
+    FEATURE_ID="$feature_id"
 
     # Run prerequisites
     check_prerequisites
-    check_mission "$MISSION_ID"
+    check_feature "$FEATURE_ID"
 
-    # Get mission info for logging
-    local mission_title
-    mission_title=$(get_mission_info "$mission_id")
+    # Mark feature as in_progress
+    bd update "$FEATURE_ID" --status in_progress 2>/dev/null || true
+
+    # Get feature info for logging
+    local feature_title
+    feature_title=$(get_feature_info "$feature_id")
 
     log INFO "============================================"
     log INFO "RALPH LOOP STARTING"
     log INFO "============================================"
-    log INFO "Mission: $mission_title ($mission_id)"
+    log INFO "Feature: $feature_title ($feature_id)"
     log INFO "============================================"
 
-    log_capcom "$mission_id" "Ralph loop starting"
+    log_capcom "$feature_id" "Ralph loop starting"
 
     local iteration=0
     local max_iterations=100  # Safety limit
@@ -497,93 +526,91 @@ main() {
         # Safety: prevent infinite loops
         if [[ $iteration -gt $max_iterations ]]; then
             log ERROR "Max iterations ($max_iterations) reached. Halting."
-            create_alert 0 "$mission_id" "" "Ralph" "Max iterations reached - possible infinite loop"
+            create_bug 0 "$feature_id" "" "Ralph" "Max iterations reached - possible infinite loop"
             send_notification "Space-Agents" "Ralph halted: max iterations reached"
             exit 1
         fi
 
         log INFO "--- Iteration $iteration ---"
 
-        # Check for critical alerts before continuing
-        if check_critical_alerts "$mission_id"; then
-            log ERROR "Critical alert detected. Halting Ralph loop."
-            log_capcom "$mission_id" "Ralph halted: critical alert detected"
-            send_notification "Space-Agents CRITICAL" "Mission halted due to critical alert"
+        # Check for critical bugs before continuing
+        if check_critical_bugs "$feature_id"; then
+            log ERROR "Critical bug detected. Halting Ralph loop."
+            log_capcom "$feature_id" "Ralph halted: critical bug detected"
+            send_notification "Space-Agents CRITICAL" "Feature halted due to critical bug"
             exit 1
         fi
 
-        # Get next pending objective
-        local objective_row
-        objective_row=$(get_next_objective "$mission_id")
+        # Get next ready task
+        local task_row
+        task_row=$(get_next_task "$feature_id")
 
         # Check if queue is empty
-        if [[ -z "$objective_row" ]]; then
-            log INFO "No pending objectives remaining"
+        if [[ -z "$task_row" ]]; then
+            log INFO "No ready tasks remaining"
 
-            # Check if mission is complete
-            if check_mission_complete "$mission_id"; then
-                mark_mission_complete "$mission_id"
+            # Check if feature is complete
+            if check_feature_complete "$feature_id"; then
+                mark_feature_complete "$feature_id"
                 log SUCCESS "============================================"
-                log SUCCESS "MISSION COMPLETE: $mission_title"
+                log SUCCESS "FEATURE COMPLETE: $feature_title"
                 log SUCCESS "============================================"
-                log_capcom "$mission_id" "Mission complete: $mission_id"
-                send_notification "Space-Agents" "Mission complete: $mission_title"
+                log_capcom "$feature_id" "Feature complete: $feature_id"
+                send_notification "Space-Agents" "Feature complete: $feature_title"
                 exit 0
             else
-                # Some objectives may be in failed state
-                log WARNING "No pending objectives, but mission not fully complete"
-                log WARNING "Check failed objectives and alerts"
-                log_capcom "$mission_id" "Ralph stopped: no pending objectives, some may have failed"
-                send_notification "Space-Agents" "Mission stalled: check failed objectives"
+                # Some tasks may be blocked
+                log WARNING "No ready tasks, but feature not fully complete"
+                log WARNING "Check blocked tasks and bugs"
+                log_capcom "$feature_id" "Ralph stopped: no ready tasks, some may be blocked"
+                send_notification "Space-Agents" "Feature stalled: check blocked tasks"
                 exit 1
             fi
         fi
 
-        # Parse objective data
-        local objective_id objective_title objective_description
-        IFS='|' read -r objective_id objective_title objective_description <<< "$objective_row"
+        # Parse task data
+        local task_id task_title task_description
+        IFS='|' read -r task_id task_title task_description <<< "$task_row"
 
-        log INFO "Selected objective: $objective_title ($objective_id)"
-        log_capcom "$mission_id" "Starting objective: $objective_id - $objective_title"
+        log INFO "Selected task: $task_title ($task_id)"
+        log_capcom "$feature_id" "Starting task: $task_id - $task_title"
 
-        # Note: Pod marks objective as in_progress (Phase 1.5 of /pod skill)
+        # Mark task as in_progress
+        mark_task_in_progress "$task_id"
 
-        # Spawn Pod for this objective
+        # Spawn Pod for this task
         local pod_exit_code=0
-        spawn_pod "$objective_id" "$objective_title" "$objective_description" "$mission_id" || pod_exit_code=$?
+        spawn_pod "$task_id" "$task_title" "$task_description" "$feature_id" || pod_exit_code=$?
 
         # Handle Pod exit code
         case $pod_exit_code in
             0)
                 # Success
-                log SUCCESS "Pod completed objective: $objective_title"
-                mark_objective_complete "$objective_id"
-                log_capcom "$mission_id" "Objective complete: $objective_id"
+                log SUCCESS "Pod completed task: $task_title"
+                mark_task_complete "$task_id"
+                log_capcom "$feature_id" "Task complete: $task_id"
                 ;;
             1)
-                # Blocker - objective failed, but try next
-                log WARNING "Pod reported blocker for: $objective_title"
-                mark_objective_failed "$objective_id"
-                create_alert 1 "$mission_id" "$objective_id" "Pod" "Objective failed with blocker"
-                log_capcom "$mission_id" "Objective failed (blocker): $objective_id"
-                log INFO "Continuing to next objective..."
+                # Blocker - task failed, but try next
+                log WARNING "Pod reported blocker for: $task_title"
+                mark_task_failed "$task_id" "Pod reported blocker" "$feature_id"
+                log_capcom "$feature_id" "Task blocked: $task_id"
+                log INFO "Continuing to next task..."
                 ;;
             2)
                 # Critical - halt the loop
-                log ERROR "Pod reported CRITICAL failure for: $objective_title"
-                mark_objective_failed "$objective_id"
-                create_alert 0 "$mission_id" "$objective_id" "Pod" "Critical failure - Ralph loop halted"
-                log_capcom "$mission_id" "CRITICAL: Ralph halted at objective $objective_id"
-                send_notification "Space-Agents CRITICAL" "Mission halted: $objective_title"
+                log ERROR "Pod reported CRITICAL failure for: $task_title"
+                create_bug 0 "$feature_id" "$task_id" "Pod" "Critical failure - Ralph loop halted"
+                log_capcom "$feature_id" "CRITICAL: Ralph halted at task $task_id"
+                send_notification "Space-Agents CRITICAL" "Feature halted: $task_title"
                 exit 1
                 ;;
             *)
                 # Unknown exit code - treat as blocker
                 log WARNING "Pod exited with unexpected code: $pod_exit_code"
-                mark_objective_failed "$objective_id"
-                create_alert 1 "$mission_id" "$objective_id" "Pod" "Unexpected exit code: $pod_exit_code"
-                log_capcom "$mission_id" "Objective failed (exit $pod_exit_code): $objective_id"
-                log INFO "Continuing to next objective..."
+                mark_task_failed "$task_id" "Unexpected exit code: $pod_exit_code" "$feature_id"
+                log_capcom "$feature_id" "Task blocked (exit $pod_exit_code): $task_id"
+                log INFO "Continuing to next task..."
                 ;;
         esac
 
