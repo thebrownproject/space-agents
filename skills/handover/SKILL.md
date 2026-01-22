@@ -11,34 +11,11 @@ Generate a structured handover prompt when context is filling up or you need to 
 
 ## Context
 
-You are HOUSTON, the Flight Director. When context gets heavy or the user needs to switch sessions, `/handover` creates a portable context dump from Beads.
+Session handover for fresh Claude sessions. Captures Beads state to `.space-agents/comms/handover.md`.
 
-### Session vs Task Handovers
+**Use when:** Context full, switching sessions, ending for day.
 
-| Type | Purpose | Storage |
-|------|---------|---------|
-| Task handover | Context for next task in sequence | `bd comments` on task |
-| Session handover | Context for next human session | `.space-agents/comms/handover.md` |
-
-**Task handovers** are created by Workers/Inspectors when completing tasks, stored as `[HANDOVER]` comments on the task itself. They capture implementation details for the next task.
-
-**Session handovers** (this skill) capture the broader project state for when a human returns to continue work in a new Claude Code session.
-
-### When to Use
-
-- Context window getting full (Claude will warn)
-- Switching focus, need to preserve state
-- Long-running session needs a fresh start
-- Before ending for the day
-
-### What Gets Captured
-
-- Dependency tree of current work
-- Next ready tasks
-- In-progress tasks with recent progress comments
-- Open bugs
-- Completed task handover comments
-- Git status (uncommitted changes)
+**Captures:** Dependency tree, ready tasks, in-progress work with comments, open bugs, git status.
 
 ---
 
@@ -66,20 +43,11 @@ bd list -t bug -s open --limit 0
 
 ### Step 2: Gather Task Comments
 
-For each in-progress task, check for recent `[PROGRESS]` or `[ATTEMPT]` comments:
-
 ```bash
+# For in-progress tasks - get [PROGRESS], [ATTEMPT], [BLOCKER] comments
 bd comments <task-id>
-```
 
-Look for comments with these prefixes:
-- `[PROGRESS]` - Work completed so far
-- `[ATTEMPT]` - Failed approaches tried
-- `[BLOCKER]` - Issues preventing progress
-
-For recently completed tasks (closed in this session), gather `[HANDOVER]` comments:
-
-```bash
+# For recently completed tasks - get [HANDOVER] comments
 bd list -s closed --closed-after today --limit 10
 bd comments <completed-task-id>
 ```
@@ -176,164 +144,14 @@ Write the handover prompt to `.space-agents/comms/handover.md`
 
 ### Step 6: Display to User
 
-Show the handover in a copyable format:
-
-```
-------------------------------------------------------------------------
-HANDOVER GENERATED
-------------------------------------------------------------------------
-
-Handover saved to: .space-agents/comms/handover.md
-
-To continue in a fresh session:
-1. Copy the content below (or from the file above)
-2. Paste into a new Claude Code session
-3. Run /launch
-
-------------------------------------------------------------------------
-
-[Display full handover content here]
-
-------------------------------------------------------------------------
-```
-
----
-
-## Handover Structure
-
-| Section | Purpose | Source |
-|---------|---------|--------|
-| Dependency Tree | Full work hierarchy | `bd list --tree` |
-| Ready Tasks | What can be started | `bd ready -t task` |
-| In-Progress Work | Active work with context | `bd list -s in_progress` + comments |
-| Open Bugs | Issues needing attention | `bd list -t bug -s open` |
-| Task Handovers | Context from completed tasks | `[HANDOVER]` comments |
-| Git State | Uncommitted work | `git status` |
-| Next Steps | What to do next | Synthesized from above |
-
----
-
-## Example Handover
-
-```markdown
-# Space-Agents Handover
-
-**Generated:** 2026-01-22 15:30
-**Branch:** feature/execution-skills
-
----
-
-## Dependency Tree
-
-space-agents-1.1 [feature] [in_progress] - Execution Flow Skills
-  space-agents-1.1.1 [task] [closed] - Define Pod execution model
-  space-agents-1.1.2 [task] [closed] - Create Worker agent skill
-  space-agents-1.1.3 [task] [in_progress] - Create Inspector agent skill
-  space-agents-1.1.4 [task] [open] - Update /handover for session context
-  space-agents-1.1.5 [task] [open] - Update /dock for clean session end
-
----
-
-## Ready Tasks
-
-space-agents-1.1.4 [P2] [task] - Update /handover for session context
-space-agents-1.1.5 [P2] [task] - Update /dock for clean session end
-
----
-
-## In-Progress Work
-
-### space-agents-1.1.3 - Create Inspector agent skill
-**Status:** in_progress
-**Recent Progress:**
-[PROGRESS] Created base Inspector skill structure. Defined review checklist format.
-[PROGRESS] Implemented acceptance criteria validation logic.
-
-**Attempted Approaches:**
-[ATTEMPT] Tried inline review - too verbose. Switched to checklist format.
-
----
-
-## Open Bugs
-
-(none)
-
----
-
-## Recent Task Handovers
-
-### space-agents-1.1.2 - Create Worker agent skill
-[HANDOVER] Worker skill complete. Key files: skills/worker/skill.md. Uses TDD approach.
-Next task should follow same structure. Alert format defined: [ALERT:severity] message.
-
----
-
-## Git State
-
-**Branch:** feature/execution-skills
-**Uncommitted Changes:**
- skills/inspector/skill.md | 45 +++++++++++++++
- 1 file changed, 45 insertions(+)
-
----
-
-## Recommended Next Steps
-
-1. Complete Inspector skill (space-agents-1.1.3)
-2. Update handover skill (space-agents-1.1.4)
-3. Update dock skill (space-agents-1.1.5)
-
----
-
-## To Continue
-
-Paste this into a fresh Claude Code session, then run:
-```
-/launch
-```
-
-HOUSTON will sync with Beads and continue from here.
-
----
-
-*Handover generated by Space-Agents*
-```
+Show path to saved file and instructions: copy content, paste into new session, run `/launch`.
 
 ---
 
 ## Error Handling
 
-**If no active work:**
-```
-HANDOVER: No in-progress or ready tasks found.
-
-Run `bd ready` to see available work, or check `bd list --tree`
-for the full dependency structure.
-```
-
-**If Beads not initialized:**
-```
-HANDOVER: Beads not found in this project.
-
-Run `/install` to initialize Space-Agents with Beads tracking.
-```
-
-**If git not available:**
-```
-Note: Git status unavailable. Include uncommitted changes manually
-if relevant.
-```
-
----
-
-## Key Principles
-
-1. **Beads-driven** - All state comes from Beads, not memory
-2. **Comment-aware** - Captures task-level context from comments
-3. **Portable** - Copy/paste into any session
-4. **Actionable** - Clear next steps based on ready tasks
-5. **Persistent** - Saved to `.space-agents/comms/handover.md`
-
----
-
-HOUSTON ready for handover. Session context will be captured from Beads state.
+| Condition | Response |
+|-----------|----------|
+| No active work | Point to `bd ready` and `bd list --tree` |
+| Beads not initialized | Point to `/install` |
+| Git unavailable | Note and continue without git state |

@@ -1,26 +1,11 @@
 ---
 name: capcom
-description: "Check mission status and progress via fresh subagent. Queries SQLite for missions, objectives, and alerts. Keeps HOUSTON context lean."
+description: "Check mission status and progress via fresh subagent. Queries Beads for features, tasks, bugs, and recent work activity. Keeps HOUSTON context lean."
 ---
 
 # /capcom - Status Check
 
-Check current mission status and progress. Spawns a fresh subagent to do the heavy lifting, keeping HOUSTON's context lean.
-
----
-
-## Context
-
-You are HOUSTON, the Flight Director. When the user runs `/capcom`, you spawn a subagent to gather status information and return a formatted report.
-
-### Why Subagent?
-
-HOUSTON should stay lean. Status checks involve:
-- Multiple SQLite queries
-- Log parsing
-- Formatting output
-
-Offloading to a subagent keeps your context clean for planning and coordination.
+Check current status and progress using Beads. Spawns a fresh subagent to do the heavy lifting, keeping HOUSTON's context lean.
 
 ---
 
@@ -35,181 +20,122 @@ Use the Task tool with subagent_type `general-purpose`:
 ```
 You are a CAPCOM status agent for Space-Agents.
 
-TASK: Query the current state and return a formatted status report.
+TASK: Query the current state using Beads and return a formatted status report.
 
-DATABASE: .space-agents/comms/space-agents.db
+Run these Beads commands:
 
-Run these queries:
+1. Statistics overview:
+   bd stats
 
-1. Active missions:
-   SELECT id, title, status, created_at FROM missions
-   WHERE status IN ('staged', 'active') ORDER BY created_at DESC;
+2. Features (in_progress first, then open):
+   bd list -t feature --status in_progress
+   bd list -t feature --status open
 
-2. Objectives status:
-   SELECT o.id, o.title, o.status, m.title as mission
-   FROM objectives o JOIN missions m ON o.mission_id = m.id
-   WHERE m.status IN ('staged', 'active')
-   ORDER BY o.priority;
+3. Tasks by status:
+   bd list -t task --status in_progress
+   bd list -t task --status open
 
-3. Active alerts:
-   SELECT id, severity, mission_id, objective_id, source, description, created_at
-   FROM alerts WHERE status = 'active'
-   ORDER BY severity, created_at DESC;
+4. Open bugs:
+   bd list -t bug --status open
+
+5. Blocked issues:
+   bd blocked
+
+6. Dependency tree (full structure):
+   bd list --tree
+
+7. Recent work activity (check comments on in_progress issues):
+   For each in_progress issue, run: bd comments {issue-id}
+   Filter comments containing [ATTEMPT], [PROGRESS], [BLOCKED], or [HANDOVER] titles
 
 FORMAT your response as:
 
 [CAPCOM_REPORT]
 
-MISSIONS: X total (Y active, Z staged)
+STATISTICS
 ─────────────────
-[List each mission with status]
+[bd stats summary]
 
-OBJECTIVES: X pending, Y in_progress, Z complete
+FEATURES
 ─────────────────
-[List objectives grouped by mission with status indicators]
+[In Progress]
+{list in_progress features with status indicator}
 
-ALERTS: X active
+[Open]
+{list open features with priority}
+
+TASKS
 ─────────────────
-[List alerts by severity: CRITICAL first, then BLOCKER, WARNING, INFO]
+[In Progress]
+{list in_progress tasks}
+
+[Open/Ready]
+{list open tasks}
+
+BUGS
+─────────────────
+{list open bugs by priority}
+
+BLOCKED
+─────────────────
+{list blocked issues with what blocks them}
+
+DEPENDENCY TREE
+─────────────────
+{bd list --tree output}
+
+RECENT ACTIVITY
+─────────────────
+{Recent [ATTEMPT], [PROGRESS], [BLOCKED] comments from active work}
 
 End with [CAPCOM_COMPLETE]
 ```
 
-### Step 2: Display Report
+### Step 2: Display and Highlight
 
-When the subagent returns, display the formatted report to the user:
-
-```
-────────────────────────────────────────────────────────────────────
-CAPCOM STATUS REPORT
-────────────────────────────────────────────────────────────────────
-
-[Insert subagent report here]
-
-────────────────────────────────────────────────────────────────────
-HOUSTON standing by. What would you like to do next?
-────────────────────────────────────────────────────────────────────
-```
-
-### Step 3: Highlight Critical Issues
-
-If there are CRITICAL or BLOCKER alerts, emphasize them:
-
-```
-⚠️  ATTENTION REQUIRED
-
-[0] CRITICAL  ALT-XXX  {source}: {description}
-[1] BLOCKER   ALT-XXX  {source}: {description}
-
-These issues are blocking progress. Address before continuing.
-```
-
----
-
-## Status Indicators
-
-Use these indicators in the report:
-
-| Status | Indicator | Meaning |
-|--------|-----------|---------|
-| pending | `○` | Not started |
-| in_progress | `◐` | Currently executing |
-| complete | `●` | Finished |
-| failed | `✗` | Failed, needs attention |
-| blocked | `⊘` | Blocked by alert |
-
----
-
-## Alert Severity Display
-
-| Severity | Display | Color Hint |
-|----------|---------|------------|
-| 0 (Critical) | `[CRITICAL]` | Red |
-| 1 (Blocker) | `[BLOCKER]` | Orange |
-| 2 (Warning) | `[WARNING]` | Yellow |
-| 3 (Info) | `[INFO]` | Blue |
+Display subagent report. Emphasize blocked issues and critical bugs.
 
 ---
 
 ## Example Output
 
 ```
-────────────────────────────────────────────────────────────────────
 CAPCOM STATUS REPORT
-────────────────────────────────────────────────────────────────────
+────────────────────
+STATISTICS: 25 issues (13 open, 2 in_progress, 5 blocked)
 
-MISSIONS: 2 total (1 active, 1 complete)
-─────────────────
-● MSN-001: Database Schema (complete)
-◐ MSN-002: JWT Implementation (active)
+FEATURES [In Progress]
+◐ space-agents-1.1: Execution Flow Skills (P1)
 
-OBJECTIVES: 2 pending, 1 in_progress, 5 complete
-─────────────────
-MSN-002: JWT Implementation
-  ● OBJ-004: Create token signing function
-  ● OBJ-005: Add token verification
-  ◐ OBJ-006: Implement token refresh
-  ○ OBJ-007: Add expiry handling
+TASKS [In Progress]
+◐ space-agents-1.1.3: Update /capcom...
 
-ALERTS: 1 active
-─────────────────
-[WARNING] ALT-002 Analyst: Deprecated sign() method in jwt.ts:45
+BLOCKED
+● space-agents-1.3.2 ← space-agents-1.3.1
 
-────────────────────────────────────────────────────────────────────
-HOUSTON standing by. What would you like to do next?
-────────────────────────────────────────────────────────────────────
+DEPENDENCY TREE
+[bd list --tree output]
+
+RECENT ACTIVITY
+[PROGRESS] space-agents-1.1.3 (10m): Updated skill...
+────────────────────
+HOUSTON standing by.
 ```
 
 ---
 
 ## Optional Filters
 
-Users can request filtered status:
-
-- `/capcom alerts` - Show only alerts
-- `/capcom mission MSN-XXX` - Show specific mission
-
-Adjust the subagent query accordingly.
+- `/capcom bugs` - Show only bugs
+- `/capcom blocked` - Show only blocked issues
+- `/capcom feature {id}` - Show specific feature and its tasks
 
 ---
 
 ## Error Handling
 
-**If database not found:**
-```
-CAPCOM: Unable to connect to mission database.
-Run /launch to verify installation.
-```
-
-**If subagent fails:**
-```
-CAPCOM: Status check encountered an error.
-Attempting direct query...
-
-[Fall back to basic SQLite queries directly]
-```
-
-**If no active work:**
-```
-CAPCOM STATUS REPORT
-────────────────────────────────────────────────────────────────────
-
-No active missions.
-
-Ready to start? Describe what you want to build, or run /exploration
-to explore ideas.
-────────────────────────────────────────────────────────────────────
-```
-
----
-
-## Key Principles
-
-1. **Subagent does heavy lifting** - Keeps HOUSTON lean
-2. **Formatted for scanning** - Easy to read at a glance
-3. **Alerts highlighted** - Critical issues stand out
-4. **Actionable** - Always offer next steps
-
----
-
-CAPCOM ready. Standing by for status request.
+| Condition | Response |
+|-----------|----------|
+| Beads not initialized | Prompt `/install` |
+| Subagent fails | Fall back to direct `bd stats && bd list --tree` |
+| No active work | Suggest `/exploration` or `bd create` |

@@ -8,68 +8,24 @@ args: "[task_id]"
 
 You are a **Pod** - a fresh spacecraft that fetches and executes ONE task from the Beads queue.
 
-## Invocation
-
-```
-/pod [task_id]
-```
-
-If no task_id provided, Pod self-selects the next ready task.
-
----
-
 ## Phase 1: Task Selection
 
-### 1.1 Find Ready Work
-
-If no task_id argument provided, query for ready tasks:
-
 ```bash
+# 1. Find work (if no task_id provided)
 bd ready -t task --limit 1
-```
 
-If a task_id is provided, use that directly.
-
-### 1.2 Claim the Task
-
-Atomically claim the task to prevent other agents from picking it up:
-
-```bash
+# 2. Claim task
 bd update <task_id> --status in_progress
-```
 
-### 1.3 Load Task Details
-
-Get full task information:
-
-```bash
+# 3. Load task details (title, description, acceptance criteria, parent ID)
 bd show <task_id>
-```
 
-Extract from the output:
-- Task title and description
-- Acceptance criteria
-- Parent feature ID (if any)
-
-### 1.4 Load Parent Feature Context
-
-If the task has a parent feature, load the mission context:
-
-```bash
+# 4. Load parent feature context (if has parent)
 bd show <parent_id>
-```
 
-This provides the broader mission requirements and design constraints.
-
-### 1.5 Load Dependency Handovers
-
-Check for handover comments from dependency tasks:
-
-```bash
+# 5. Load dependency handovers (filter for [HANDOVER] prefix)
 bd comments <task_id>
 ```
-
-Filter for comments with `[HANDOVER]` prefix - these contain context from completed dependencies that this task builds upon.
 
 ---
 
@@ -116,53 +72,20 @@ Worker --- [COMPLETE] ---> Inspector --- [PASS] ---> Analyst --- [PASS] ---> Air
 Before dispatching Worker, log the start:
 
 ```bash
-bd comments add <task_id> "[PROGRESS] Starting implementation - attempt 1"
+bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
 ```
 
-### 3.2 Dispatch Worker
+### 3.2 Dispatch Crew
 
-Use Task tool with `subagent_type: "space-agents:worker"`:
+| Agent | subagent_type | Context to provide | On success | On fail |
+|-------|---------------|-------------------|------------|---------|
+| **Worker** | `space-agents:worker` | Task details, feature context, dependency handovers | → Inspector | Retry (max 3) |
+| **Inspector** | `space-agents:inspector` | Requirements, files changed, git diff | → Analyst | → Worker retry |
+| **Analyst** | `space-agents:analyst` | Task title, git diff, conventions | → Airlock | blocker=Exit, warning=Continue |
 
-Provide context:
-- Task ID, title, description
-- Feature context summary
-- Dependency handover summaries
-- Relevant files to modify
+### 3.3 Run Airlock
 
-**On [COMPLETE]:** Proceed to Inspector
-**On [FAILED]:** Increment attempts, retry if < 3, else mark blocked
-
-### 3.3 Dispatch Inspector
-
-Use Task tool with `subagent_type: "space-agents:inspector"`:
-
-Provide context:
-- Task description (requirements)
-- Files changed by Worker
-- Git diff output
-
-**On [PASS]:** Proceed to Analyst
-**On [FAIL]:** Increment attempts, return to Worker if < 3
-
-### 3.4 Dispatch Analyst
-
-Use Task tool with `subagent_type: "space-agents:analyst"`:
-
-Provide context:
-- Task title
-- Git diff output
-- Project conventions
-
-**On [PASS]:** Proceed to Airlock
-**On [FAIL] with [ALERT:blocker]:** Exit failure
-**On [FAIL] with warnings:** Log warning comment, proceed to Airlock
-
-### 3.5 Run Airlock
-
-Invoke the `/airlock` skill to run project validation (tests, lint, type checking).
-
-**Exit 0:** Proceed to completion
-**Exit non-zero:** Create blocked comment, exit failure
+Invoke `/airlock` for validation. Exit 0 → completion. Exit non-zero → blocked.
 
 ---
 
@@ -205,38 +128,18 @@ Exit with code 0.
 
 ## Failure Protocol
 
-On any failure that cannot be retried:
-
-### 1. Write Blocked Comment
+On unrecoverable failure:
 
 ```bash
-bd comments add <task_id> "[BLOCKED] <reason>
+# 1. Write blocked comment
+bd comments add <task_id> "[BLOCKED] <reason>: what failed, what tried, suggested fix"
 
-## What Failed
-<description of the failure>
+# 2. Create bug if applicable
+bd create -t bug --title "Bug in <task_id>: <summary>" --parent <task_id>
 
-## Attempted Solutions
-<what was tried>
-
-## Suggested Resolution
-<how this might be unblocked>"
-```
-
-### 2. Create Bug Issue (if applicable)
-
-If the failure reveals an underlying bug:
-
-```bash
-bd create -t bug --title "Bug discovered during <task_id>" --description "<details>" --parent <task_id>
-```
-
-### 3. Update Task Status
-
-```bash
+# 3. Update status
 bd update <task_id> --status blocked
 ```
-
-### 4. Exit Failure
 
 Exit with code 1.
 
@@ -248,6 +151,7 @@ Use these standard prefixes for structured comments:
 
 | Prefix | Purpose |
 |--------|---------|
+| `[ATTEMPT]` | Worker attempt start (includes attempt number) |
 | `[HANDOVER]` | Completion summary for dependent tasks |
 | `[PROGRESS]` | Work log entry during execution |
 | `[BLOCKED]` | Blocker description with context |
@@ -271,6 +175,3 @@ Use these standard prefixes for structured comments:
 - Continue after critical failure
 - Scope creep beyond the task
 
----
-
-Pod ready for launch. Awaiting task assignment.
