@@ -14,7 +14,9 @@
       "Bash(bd ready:*)",
       "Bash(bd show:*)",
       "Bash(bd update:*)",
-      "Skill(space-agents:exploration)"
+      "Skill(space-agents:exploration)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

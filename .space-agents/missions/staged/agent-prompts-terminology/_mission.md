@@ -54,6 +54,23 @@ OBJ-003 ─┘
 |-----|-----|
 | `[ALERT:severity]` | `[BUG:severity]` |
 
+### Comment Title Convention
+Agents should use titled comments for parsing (see MSN-006):
+
+| Title | When to Use |
+|-------|-------------|
+| `[ATTEMPT]` | Starting work on a task |
+| `[PROGRESS]` | Partial progress update |
+| `[BLOCKED]` | Hit a blocker, creating bug |
+| `[HANDOVER]` | Task complete, context for next task |
+| `[CONTEXT]` | Background info (e.g., bug details) |
+
+Example:
+```bash
+bd comments add $TASK_ID "[ATTEMPT] Starting work on auth module..."
+bd comments add $TASK_ID "[HANDOVER] Complete. Files: auth.ts, login.ts. Notes: Used JWT."
+```
+
 ---
 
 ## OBJ-001: Update planning agent prompts
@@ -208,6 +225,7 @@ grep -rn "sqlite3\|SQLite" agents/ skills/ --include="*.md"
 - [ ] All 9 agent prompts use feature/task terminology
 - [ ] Prompts include bd CLI examples where relevant
 - [ ] `[ALERT:]` → `[BUG:]` format in all agents
+- [ ] Agents use titled comment convention: `[ATTEMPT]`, `[PROGRESS]`, `[BLOCKED]`, `[HANDOVER]`, `[CONTEXT]`
 - [ ] No references to old terminology in codebase
 - [ ] Validation grep returns 0 unexpected hits
 - [ ] Agent files renamed (mission-* → feature-*)

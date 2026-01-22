@@ -17,12 +17,28 @@ Update /pod, /airlock, /capcom, and /handover for Beads-first execution. Pod sel
 - Ralph becomes simpler: spawn Pods until `bd ready` returns empty
 
 ### Comments as Work Log
-Task comments track the full work history:
+Task comments track the full work history with structured titles for parsing:
+
+| Title | Purpose | When Used |
+|-------|---------|-----------|
+| `[ATTEMPT]` | Work attempt log | Starting work on task |
+| `[PROGRESS]` | Progress update | Partial work done |
+| `[BLOCKED]` | Hit a blocker | Creating bug, pausing work |
+| `[HANDOVER]` | Final handover | Task complete, context for next task |
+| `[CONTEXT]` | Additional context | Feature-level background info |
+
 ```
-[Attempt 1] Starting work...
-[Attempt 1 - Blocked] Progress: X done. Hit blocker Y. Creating bug.
-[Attempt 2] Resumed after bug fix. Continuing...
-[Handover] Complete. Files changed: X. Notes for next task: Y.
+[ATTEMPT] Starting work on task...
+[PROGRESS] Completed X, moving to Y...
+[BLOCKED] Hit blocker: Z. Creating bug. Progress so far: X done.
+[ATTEMPT] Resumed after bug fix. Continuing from Y...
+[HANDOVER] Complete. Files: foo.ts, bar.ts. Notes: Used approach X because Y.
+```
+
+Pods can filter comments by title:
+```bash
+bd comments $TASK_ID | grep "^\[HANDOVER\]"  # Get final handover only
+bd comments $TASK_ID | grep "^\[BLOCKED\]"   # See what blockers occurred
 ```
 
 ### No Mission Folders
@@ -30,6 +46,17 @@ Task comments track the full work history:
 - No `handovers/OBJ-XXX.md` files
 - No `prompts/OBJ-XXX.txt` files
 - Everything lives in Beads (features, tasks, comments)
+
+### Beads Description Convention
+Features and tasks should have descriptions populated so Pod can get all context from Beads:
+
+| Field | Contains | Example |
+|-------|----------|---------|
+| **Feature description** | Goal, key changes, success criteria | "Update /pod, /airlock, /capcom, /handover for Beads-first execution..." |
+| **Task description** | Specific work details, file targets, verification steps | "File: skills/pod/skill.md. Implement Model B flow..." |
+| **Task comments** | Work log, handovers (added during execution) | `[HANDOVER] Complete. Files: X. Notes: Y.` |
+
+This ensures Pod reads `bd show $FEATURE_ID` and `bd show $TASK_ID` to get full context without needing external files.
 
 ## Prerequisites
 
@@ -74,24 +101,32 @@ bd update $TASK_ID --status in_progress
 # 3. Get task details
 bd show $TASK_ID --json
 
-# 4. Get dependency handovers (context from previous tasks)
+# 4. Get parent feature for mission requirements
+FEATURE_ID=$(bd show $TASK_ID --json | jq -r '.[0].parent')
+echo "=== Feature Requirements ==="
+bd show $FEATURE_ID --json  # Contains goal, description, acceptance criteria
+
+# 5. Get dependency handovers (context from previous tasks)
 DEPS=$(bd dep list $TASK_ID --json | jq -r '.[] | select(.dependency_type == "blocks") | .id')
 for DEP in $DEPS; do
     echo "=== Handover from $DEP ==="
-    bd comments $DEP
+    bd comments $DEP | grep "^\[HANDOVER\]"  # Get final handover only
 done
 
-# 5. Work on task, log progress as comments
-bd comments add $TASK_ID "[Attempt 1] Starting work..."
+# 6. Work on task, log progress as comments
+bd comments add $TASK_ID "[ATTEMPT] Starting work..."
 
-# 6. If blocked, write partial handover and create bug
-bd comments add $TASK_ID "[Attempt 1 - Blocked] Progress: X. Hit blocker: Y"
+# 7. Log progress during work
+bd comments add $TASK_ID "[PROGRESS] Completed X, moving to Y..."
+
+# 8. If blocked, write partial handover and create bug
+bd comments add $TASK_ID "[BLOCKED] Hit blocker: Y. Progress so far: X done."
 BUG_ID=$(bd create "Bug: Y" -t bug --parent $FEATURE_ID -p 0)
 bd dep add $TASK_ID $BUG_ID
 bd update $TASK_ID --status open  # Back to open, now blocked
 
-# 7. On success, write handover and close
-bd comments add $TASK_ID "[Handover] Complete. Files: X. Notes: Y"
+# 9. On success, write handover and close
+bd comments add $TASK_ID "[HANDOVER] Complete. Files: X. Notes: Y. Next task needs: Z."
 bd close $TASK_ID --reason "Completed"
 bd sync
 ```
@@ -111,9 +146,10 @@ bd sync
 ### Success Criteria
 - [ ] Pod queries `bd ready -t task` to select work (Model B)
 - [ ] Pod claims task via `bd update --status in_progress`
-- [ ] Pod reads dependency comments for handover context
-- [ ] Pod writes progress as `bd comments add`
-- [ ] Pod writes final handover as comment before closing
+- [ ] Pod reads parent feature for mission requirements (`bd show $FEATURE_ID`)
+- [ ] Pod reads dependency comments for handover context (filter by `[HANDOVER]`)
+- [ ] Pod writes progress with titled comments: `[ATTEMPT]`, `[PROGRESS]`, `[BLOCKED]`
+- [ ] Pod writes final handover as `[HANDOVER]` comment before closing
 - [ ] Pod creates blocking bug on failure via `bd create -t bug`
 - [ ] No SQLite references remain
 - [ ] No mission folder references remain
@@ -139,7 +175,7 @@ BUG_ID=$(bd create "Bug: Tests failed - $SUMMARY" \
     --json | jq -r '.id')
 
 # Add context for Worker that will fix it
-bd comments add $BUG_ID "## Bug Context
+bd comments add $BUG_ID "[CONTEXT] Bug Context
 **Task blocked:** $TASK_ID
 **Failure type:** $FAILURE_TYPE
 **Test output:**
@@ -166,7 +202,7 @@ bd sync
 
 ### Success Criteria
 - [ ] Airlock creates bug via `bd create -t bug`
-- [ ] Bug includes context comment (for Worker fixing it)
+- [ ] Bug includes `[CONTEXT]` comment with failure details (for Worker fixing it)
 - [ ] Bug blocks task via `bd dep add`
 - [ ] Blocked task NOT in `bd ready` output
 - [ ] Bug IS in `bd ready` output (highest priority)
@@ -206,7 +242,8 @@ bd stats
 # Recent activity (comments on in-progress tasks)
 for TASK_ID in $(bd list -t task --status in_progress --json | jq -r '.[].id'); do
     echo "### $TASK_ID"
-    bd comments $TASK_ID | tail -3
+    # Show latest progress/attempt, filter out noise
+    bd comments $TASK_ID | grep -E "^\[(ATTEMPT|PROGRESS|BLOCKED)\]" | tail -3
 done
 ```
 
@@ -257,10 +294,20 @@ echo "### Open Bugs"
 bd list -t bug --status open --json | jq -r '.[] | "- \(.id): \(.title)"'
 echo ""
 echo "### Recent Activity"
-# Last comment from each in-progress task
+# Last progress comment from each in-progress task
 for TASK_ID in $(bd list -t task --status in_progress --json | jq -r '.[].id'); do
     echo "**$TASK_ID:**"
-    bd comments $TASK_ID | tail -1
+    bd comments $TASK_ID | grep -E "^\[(ATTEMPT|PROGRESS|BLOCKED)\]" | tail -1
+done
+
+echo ""
+echo "### Completed Task Handovers"
+# Handovers from recently closed tasks (for context)
+for TASK_ID in $(bd list -t task --status closed --json | jq -r '.[0:3] | .[].id'); do
+    HANDOVER=$(bd comments $TASK_ID | grep "^\[HANDOVER\]" | tail -1)
+    if [ -n "$HANDOVER" ]; then
+        echo "**$TASK_ID:** $HANDOVER"
+    fi
 done
 ```
 
@@ -299,10 +346,11 @@ When `bd ready` returns a bug:
 ## Success Criteria
 
 - [ ] Pod uses Model B (self-fetch, comment handovers)
-- [ ] Airlock creates blocking bugs with context
+- [ ] Comments use titled format: `[ATTEMPT]`, `[PROGRESS]`, `[BLOCKED]`, `[HANDOVER]`, `[CONTEXT]`
+- [ ] Airlock creates blocking bugs with `[CONTEXT]` comment
 - [ ] Bug-blocking flow works end-to-end
-- [ ] CAPCOM shows accurate Beads status with work log
-- [ ] Session handover generates from Beads
+- [ ] CAPCOM shows accurate Beads status with work log (filtered by comment titles)
+- [ ] Session handover generates from Beads including `[HANDOVER]` comments
 - [ ] No SQLite references in any skill
 - [ ] No mission folder references in any skill
 

@@ -40,6 +40,20 @@ Implement the exploration folder as a scratchpad/kanban for ideas and draft plan
 | **Features/Tasks** | Beads | Execution-ready work items |
 | **Missions** | CAPCOM entries | Session containers (start/end logs) |
 
+## Comment Title Convention
+
+Task comments use titled prefixes for parsing (see MSN-006):
+
+| Title | Purpose | Example |
+|-------|---------|---------|
+| `[ATTEMPT]` | Starting work | `[ATTEMPT] Starting task implementation...` |
+| `[PROGRESS]` | Progress update | `[PROGRESS] Completed auth module, moving to tests...` |
+| `[BLOCKED]` | Hit a blocker | `[BLOCKED] Tests failing due to missing mock. Creating bug.` |
+| `[HANDOVER]` | Final handover | `[HANDOVER] Complete. Files: auth.ts. Notes: Used JWT approach.` |
+| `[CONTEXT]` | Background info | `[CONTEXT] Bug context: Test output, suggested fix...` |
+
+This allows filtering: `bd comments $ID | grep "^\[HANDOVER\]"`
+
 ## Objectives (5 total)
 
 1. **OBJ-001** - Create exploration folder structure with kanban
@@ -307,6 +321,24 @@ COMPLETED=$(bd list -t task --status closed --json | jq -r '...')
 IN_PROGRESS=$(bd list -t task --status in_progress --json | jq -r '...')
 BUGS=$(bd list -t bug --status open --json | jq -r '...')
 
+# Get handovers from completed tasks (using titled comments)
+HANDOVERS=""
+for TASK_ID in $(bd list -t task --status closed --json | jq -r '.[].id'); do
+    HANDOVER=$(bd comments $TASK_ID | grep "^\[HANDOVER\]" | tail -1)
+    if [ -n "$HANDOVER" ]; then
+        HANDOVERS="$HANDOVERS\n- **$TASK_ID:** $HANDOVER"
+    fi
+done
+
+# Get blockers from in-progress tasks
+BLOCKERS=""
+for TASK_ID in $(bd list -t task --status in_progress --json | jq -r '.[].id'); do
+    BLOCKED=$(bd comments $TASK_ID | grep "^\[BLOCKED\]" | tail -1)
+    if [ -n "$BLOCKED" ]; then
+        BLOCKERS="$BLOCKERS\n- **$TASK_ID:** $BLOCKED"
+    fi
+done
+
 # Log mission end
 cat >> .space-agents/comms/capcom.md << EOF
 
@@ -317,8 +349,14 @@ cat >> .space-agents/comms/capcom.md << EOF
 ### Completed
 $COMPLETED
 
+### Handovers (from [HANDOVER] comments)
+$HANDOVERS
+
 ### In Progress
 $IN_PROGRESS
+
+### Blockers (from [BLOCKED] comments)
+$BLOCKERS
 
 ### Created
 $BUGS
