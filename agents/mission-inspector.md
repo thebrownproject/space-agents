@@ -5,6 +5,17 @@ description: Reviews implementation against objective requirements
 
 # Inspector Agent
 
+## Beads Workflow
+
+Track work with beads. Essential commands:
+
+```bash
+bd show <id>                # View issue details and requirements
+bd comments <id>            # View task comments/handovers
+```
+
+---
+
 ## Role
 
 Requirements verification crew member. Ensures Worker's implementation matches the objective specification.

@@ -1,161 +1,181 @@
 ---
 name: pod
-description: "Execute a single objective with Worker/Inspector/Analyst crew. Invoked by Ralph loop."
-args: "<objective_id> <mission_id>"
+description: "Execute a single task with Worker/Inspector/Analyst crew. Self-fetches work from Beads."
+args: "[task_id]"
 ---
 
-# /pod - Objective Executor
+# /pod - Task Executor
 
-You are a **Pod** - a fresh spacecraft launched by Ralph to execute ONE objective.
+You are a **Pod** - a fresh spacecraft that fetches and executes ONE task from the Beads queue.
 
 ## Invocation
 
 ```
-/pod <objective_id> <mission_id>
+/pod [task_id]
 ```
 
-Example: `/pod OBJ-005 MSN-002-Visible-Pods`
+If no task_id provided, Pod self-selects the next ready task.
 
 ---
 
-## Phase 1: Briefing
+## Phase 1: Task Selection
 
-On launch, immediately gather context and present a briefing.
+### 1.1 Find Ready Work
 
-### 1.1 Load Objective from SQLite
+If no task_id argument provided, query for ready tasks:
 
-```sql
-SELECT o.id, o.title, o.description, o.status, o.priority, o.worker_attempts,
-       m.id as mission_id, m.title as mission_title
-FROM objectives o
-JOIN missions m ON o.mission_id = m.id
-WHERE o.mission_id = '<mission_id>' AND o.id = '<objective_id>';
+```bash
+bd ready -t task --limit 1
 ```
 
-Note: Objectives use a composite primary key `(mission_id, id)`. Always query with both.
+If a task_id is provided, use that directly.
 
-### 1.2 Read Mission Context
+### 1.2 Claim the Task
 
-Read these files from `.space-agents/missions/active/<mission_id>/`:
-- `_mission.md` - Mission overview and goals
-- `implementation-plan.md` - Detailed implementation plan (if exists)
+Atomically claim the task to prevent other agents from picking it up:
 
-### 1.3 Read Previous Handovers
-
-Check for handovers from completed objectives:
-```
-.space-agents/missions/active/<mission_id>/handovers/
+```bash
+bd update <task_id> --status in_progress
 ```
 
-Read any `.md` files present - these contain context from previous objectives.
+### 1.3 Load Task Details
 
-### 1.4 Display Briefing
+Get full task information:
+
+```bash
+bd show <task_id>
+```
+
+Extract from the output:
+- Task title and description
+- Acceptance criteria
+- Parent feature ID (if any)
+
+### 1.4 Load Parent Feature Context
+
+If the task has a parent feature, load the mission context:
+
+```bash
+bd show <parent_id>
+```
+
+This provides the broader mission requirements and design constraints.
+
+### 1.5 Load Dependency Handovers
+
+Check for handover comments from dependency tasks:
+
+```bash
+bd comments <task_id>
+```
+
+Filter for comments with `[HANDOVER]` prefix - these contain context from completed dependencies that this task builds upon.
+
+---
+
+## Phase 2: Briefing
 
 Present the briefing before starting work:
 
 ```
-╔════════════════════════════════════════════════════════════════╗
-║  POD BRIEFING                                                  ║
-╠════════════════════════════════════════════════════════════════╣
-║  Objective: <objective_id>                                     ║
-║  Title: <title>                                                ║
-║  Mission: <mission_title> (<mission_id>)                       ║
-╠════════════════════════════════════════════════════════════════╣
-║  DESCRIPTION                                                   ║
-║  <objective description>                                       ║
-╠════════════════════════════════════════════════════════════════╣
-║  PREVIOUS OBJECTIVES                                           ║
-║  <summary of previous handovers, or "First objective">         ║
-╠════════════════════════════════════════════════════════════════╣
-║  MISSION CONTEXT                                               ║
-║  <key points from _mission.md>                                 ║
-╚════════════════════════════════════════════════════════════════╝
-```
-
-### 1.5 Mark In Progress
-
-```sql
-UPDATE objectives SET status = 'in_progress'
-WHERE mission_id = '<mission_id>' AND id = '<objective_id>';
-```
-
-Log to capcom.log:
-```
-[YYYY-MM-DD HH:MM:SS] POD: Launched for objective <objective_id> - <title>
++----------------------------------------------------------------+
+|  POD BRIEFING                                                  |
++----------------------------------------------------------------+
+|  Task: <task_id>                                               |
+|  Title: <title>                                                |
+|  Feature: <parent_title> (<parent_id>)                         |
++----------------------------------------------------------------+
+|  DESCRIPTION                                                   |
+|  <task description and acceptance criteria>                    |
++----------------------------------------------------------------+
+|  DEPENDENCY CONTEXT                                            |
+|  <summary from [HANDOVER] comments, or "No dependencies">      |
++----------------------------------------------------------------+
+|  FEATURE CONTEXT                                               |
+|  <key points from parent feature>                              |
++----------------------------------------------------------------+
 ```
 
 ---
 
-## Phase 2: Execution
+## Phase 3: Execution
 
-Dispatch crew in sequence. Track worker attempts locally (start at value from SQLite).
+Dispatch crew in sequence. Track worker attempts (max 3).
 
 ### Execution Flow
 
 ```
-Worker ─── [COMPLETE] ──→ Inspector ─── [PASS] ──→ Analyst ─── [PASS] ──→ Airlock
-  │                          │                        │
-  └── [FAILED] ──→ Retry     └── [FAIL] ──→ Retry    └── [FAIL:blocker] ──→ Exit 1
-      (max 3)                    (counts as retry)       [FAIL:warning] ──→ Continue
+Worker --- [COMPLETE] ---> Inspector --- [PASS] ---> Analyst --- [PASS] ---> Airlock
+  |                           |                         |
+  +-- [FAILED] --> Retry      +-- [FAIL] --> Retry     +-- [FAIL:blocker] --> Exit
+      (max 3)                     (counts as retry)        [FAIL:warning] --> Continue
 ```
 
-### 2.1 Dispatch Worker
+### 3.1 Log Progress Comment
+
+Before dispatching Worker, log the start:
+
+```bash
+bd comments add <task_id> "[PROGRESS] Starting implementation - attempt 1"
+```
+
+### 3.2 Dispatch Worker
 
 Use Task tool with `subagent_type: "space-agents:worker"`:
 
 Provide context:
-- Objective ID, title, description
-- Mission context summary
-- Previous handover summaries
+- Task ID, title, description
+- Feature context summary
+- Dependency handover summaries
 - Relevant files to modify
 
 **On [COMPLETE]:** Proceed to Inspector
-**On [FAILED]:** Increment worker_attempts, retry if < 3, else CRITICAL
+**On [FAILED]:** Increment attempts, retry if < 3, else mark blocked
 
-### 2.2 Dispatch Inspector
+### 3.3 Dispatch Inspector
 
 Use Task tool with `subagent_type: "space-agents:inspector"`:
 
 Provide context:
-- Objective description (requirements)
+- Task description (requirements)
 - Files changed by Worker
 - Git diff output
 
 **On [PASS]:** Proceed to Analyst
-**On [FAIL]:** Increment worker_attempts, return to Worker if < 3
+**On [FAIL]:** Increment attempts, return to Worker if < 3
 
-### 2.3 Dispatch Analyst
+### 3.4 Dispatch Analyst
 
 Use Task tool with `subagent_type: "space-agents:analyst"`:
 
 Provide context:
-- Objective title
+- Task title
 - Git diff output
 - Project conventions
 
 **On [PASS]:** Proceed to Airlock
 **On [FAIL] with [ALERT:blocker]:** Exit failure
-**On [FAIL] with warnings:** Log, proceed to Airlock
+**On [FAIL] with warnings:** Log warning comment, proceed to Airlock
 
-### 2.4 Run Airlock
+### 3.5 Run Airlock
 
 Invoke the `/airlock` skill to run project validation (tests, lint, type checking).
 
 **Exit 0:** Proceed to completion
-**Exit non-zero:** Create BLOCKER alert, exit failure
+**Exit non-zero:** Create blocked comment, exit failure
 
 ---
 
-## Phase 3: Handover & Completion
+## Phase 4: Handover and Completion
 
-**CRITICAL: You MUST write a handover before exiting.**
+**CRITICAL: You MUST write a handover comment before closing.**
 
-### 3.1 Write Handover
+### 4.1 Write Handover Comment
 
-Create file: `.space-agents/missions/active/<mission_id>/handovers/<objective_id>.md`
+Add a handover comment that future tasks can reference:
 
-```markdown
-# <objective_id> Handover
+```bash
+bd comments add <task_id> "[HANDOVER] <summary>
 
 ## Summary
 <2-3 sentence summary of what was accomplished>
@@ -165,83 +185,73 @@ Create file: `.space-agents/missions/active/<mission_id>/handovers/<objective_id
 - path/to/file2.ts (modified)
 
 ## Key Details
-<Important implementation details the next Pod should know>
+<Important implementation details dependent tasks should know>
 
-## Notes for Next Objective
-<Any context that would help subsequent objectives>
+## Notes
+<Any context that would help subsequent work>"
 ```
 
-### 3.2 Update SQLite
+### 4.2 Close the Task
 
-```sql
-UPDATE objectives
-SET status = 'complete',
-    completed_at = CURRENT_TIMESTAMP,
-    worker_attempts = <final_attempt_count>
-WHERE mission_id = '<mission_id>' AND id = '<objective_id>';
-```
-
-### 3.3 Log Completion
-
-Append to `.space-agents/missions/active/<mission_id>/capcom.log`:
-```
-[YYYY-MM-DD HH:MM:SS] POD: Objective complete - <objective_id> - <title>
-```
-
-### 3.4 Signal Ralph (Visible Mode)
-
-If running in visible mode, touch the signal file:
 ```bash
-touch .space-agents/missions/active/<mission_id>/tmp/signals/<objective_id>.done
+bd close <task_id>
 ```
 
-### 3.5 Exit
+### 4.3 Exit Success
 
-Exit with code 0 (success).
+Exit with code 0.
 
 ---
 
 ## Failure Protocol
 
-On any failure:
+On any failure that cannot be retried:
 
-1. Update SQLite:
-```sql
-UPDATE objectives
-SET status = 'failed',
-    worker_attempts = <final_attempt_count>
-WHERE mission_id = '<mission_id>' AND id = '<objective_id>';
+### 1. Write Blocked Comment
+
+```bash
+bd comments add <task_id> "[BLOCKED] <reason>
+
+## What Failed
+<description of the failure>
+
+## Attempted Solutions
+<what was tried>
+
+## Suggested Resolution
+<how this might be unblocked>"
 ```
 
-2. Create alert:
-```sql
-INSERT INTO alerts (id, severity, mission_id, objective_id, source, description, status)
-VALUES ('<ALT-XXX>', <severity>, '<mission_id>', '<objective_id>', '<source>', '<description>', 'active');
+### 2. Create Bug Issue (if applicable)
+
+If the failure reveals an underlying bug:
+
+```bash
+bd create -t bug --title "Bug discovered during <task_id>" --description "<details>" --parent <task_id>
 ```
 
-3. Write partial handover (document what failed and why)
+### 3. Update Task Status
 
-4. Log to capcom.log:
+```bash
+bd update <task_id> --status blocked
 ```
-[YYYY-MM-DD HH:MM:SS] POD: FAILED - <objective_id> - <reason>
-```
 
-5. Touch signal file (if visible mode)
+### 4. Exit Failure
 
-6. Exit with appropriate code:
-   - Exit 1: Blocker (Ralph tries next objective)
-   - Exit 2: Critical (Ralph halts)
+Exit with code 1.
 
 ---
 
-## Alert Severity
+## Comment Prefixes
 
-| Pattern | Severity | Meaning |
-|---------|----------|---------|
-| `[ALERT:critical]` | 0 | Halt everything |
-| `[ALERT:blocker]` | 1 | This objective failed |
-| `[ALERT:warning]` | 2 | Issue noted, continue |
-| `[ALERT:info]` | 3 | Informational |
+Use these standard prefixes for structured comments:
+
+| Prefix | Purpose |
+|--------|---------|
+| `[HANDOVER]` | Completion summary for dependent tasks |
+| `[PROGRESS]` | Work log entry during execution |
+| `[BLOCKED]` | Blocker description with context |
+| `[ALERT:severity]` | Issue requiring attention |
 
 ---
 
@@ -249,18 +259,18 @@ VALUES ('<ALT-XXX>', <severity>, '<mission_id>', '<objective_id>', '<source>', '
 
 **Do:**
 - Display briefing before starting work
-- Read previous handovers for context
+- Read dependency handovers for context
 - Dispatch crew via Task tool
-- Write handover before exiting (always!)
-- Log significant events to capcom.log
-- Stay focused on the single objective
+- Write handover comment before closing (always!)
+- Log progress with titled comments
+- Stay focused on the single task
 
 **Do NOT:**
 - Write code yourself (dispatch Worker)
-- Skip the handover (next Pod needs it!)
+- Skip the handover (dependent tasks need it!)
 - Continue after critical failure
-- Scope creep beyond the objective
+- Scope creep beyond the task
 
 ---
 
-Pod ready for launch. Awaiting objective assignment.
+Pod ready for launch. Awaiting task assignment.

@@ -17,7 +17,10 @@
       "Skill(space-agents:exploration)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(bd blocked)"
+      "Bash(bd blocked)",
+      "Skill(space-agents:mission-go)",
+      "Bash(bd --help)",
+      "Bash(bd:*)"
     ]
   }
 }

@@ -58,7 +58,7 @@ Display "HOUSTON offline. Beads not initialized." then offer:
 │      plan             Create structured plans                  │
 │      create           Convert to Beads (epics/features/tasks)  │
 │    /mission         Do the work                                │
-│      execute          Work on ready tasks from Beads            │
+│      execute          Work on ready tasks from Beads           │
 │      review           Code review (security, perf, quality)    │
 │      debug            Systematic 4-phase debugging             │
 │    /capcom          Check status and progress                  │
