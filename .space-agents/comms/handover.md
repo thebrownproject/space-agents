@@ -1,84 +1,62 @@
 # Space-Agents Handover
 
-**Generated:** 2026-01-21 22:45
-**Version:** 1.0.25
+**Generated:** 2026-01-22 08:36
+**Version:** 1.0.28
 
 ---
 
 ## Session Summary
 
-Major workflow redesign session. Exploration + planning, no task execution.
+Debugging session focused on subagent hook configuration. No tasks executed.
 
-### Key Decisions
+### Key Discovery
+**SubagentStart hooks run in the PARENT session, not inside the subagent.** To inject context into subagents, add it directly to the agent's markdown file.
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Handover storage | Beads comments on tasks | Queryable, no separate files |
-| Pod context | Model B (self-fetch) | Resilient to pivots, simpler Ralph |
-| Mission folders | Eliminated | Beads is single source of truth |
-| ID prefix | sa- (was space-agents-05x) | Clean, short IDs |
-| Feature naming | Descriptive titles | No MSN/OBJ prefixes |
-
-### Architecture Changes
-
-**Before:**
-```
-missions/staged/MSN-006/
-├── _mission.md
-├── handovers/OBJ-001.md
-└── prompts/OBJ-001.txt
-```
-
-**After:**
-```
-.beads/issues.jsonl     # All features, tasks, comments
-.space-agents/
-├── exploration/        # Scratchpad (drafts → ready)
-└── comms/              # capcom.md, handover.md
-```
+### Changes Made
+- Added beads workflow context to `agents/mission-worker.md`
+- Added beads workflow context to `agents/mission-inspector.md`
+- Added beads workflow context to `agents/mission-analyst.md`
+- Bumped plugin version: 1.0.27 → 1.0.28
+- Verified worker subagent now receives bd commands context
 
 ---
 
 ## Current State
 
-### Beads Structure
-```
-sa-1 (Epic: Space Agents)
-├── sa-1.1  Execution Flow Skills        [area:execution]
-│   ├── sa-1.1.1  Update /pod for Model B
-│   ├── sa-1.1.2  Update /airlock
-│   ├── sa-1.1.3  Update /capcom
-│   └── sa-1.1.4  Update /handover
-├── sa-1.2  Agent Prompts and Terminology [area:agents]
-│   ├── sa-1.2.1  Update planning agents
-│   ├── sa-1.2.2  Update execution agents
-│   ├── sa-1.2.3  Update exploration agents
-│   └── sa-1.2.4  Validation sweep
-└── sa-1.3  Exploration & Planning Workflow [area:workflow]
-    ├── sa-1.3.1  Create folder structure
-    ├── sa-1.3.2  Update /exploration
-    ├── sa-1.3.3  Create /planning skill
-    ├── sa-1.3.4  Update CAPCOM
-    └── sa-1.3.5  Archive old folders
-```
+### Active Feature
+- **ID:** space-agents-1.1
+- **Title:** Execution Flow Skills
+- **Status:** in_progress
+- **Progress:** 0/4 tasks complete
 
-### Ready Tasks
-```bash
-bd ready -t task
-# Returns: sa-1.1.1, sa-1.2.1, sa-1.2.2, sa-1.3.1 (unblocked)
-```
+### In-Progress Task
+- **ID:** space-agents-1.1.1
+- **Title:** Update /pod for Model B with Beads comments
+- **Status:** in_progress (but /pod file already in Model B format)
 
-### Open Bugs
-None
+### Remaining Tasks
+```
+space-agents-1.1.2: Update /airlock to create blocking bugs
+space-agents-1.1.3: Update /capcom for Beads queries with work log
+space-agents-1.1.4: Update /handover for session context
+```
 
 ---
 
-## Files Changed This Session
+## Git State
 
-- `.beads/issues.jsonl` - Complete restructure (sa-1.x IDs)
-- `.space-agents/missions/staged/` - Renamed folders, updated mission files
-- `.claude-plugin/plugin.json` - Version 1.0.25
-- `.claude-plugin/marketplace.json` - Version 1.0.25
+**Branch:** main
+**Uncommitted Changes:**
+- .space-agents/comms/capcom.md (modified)
+
+---
+
+## Recommended Next Steps
+
+1. Run `bd sync` to commit beads changes
+2. Continue orchestrated execution for space-agents-1.1
+3. Mark space-agents-1.1.1 complete if /pod verified correct
+4. Execute remaining tasks (1.1.2, 1.1.3, 1.1.4)
 
 ---
 
@@ -88,23 +66,9 @@ None
 # Check what's ready
 bd ready -t task
 
-# View a feature
-bd show sa-1.1
-
-# Tree view
-bd list --tree
-
-# Start working
-bd update sa-1.1.1 --status in_progress
+# Continue feature execution
+/mission-go
 ```
-
----
-
-## Next Session Suggestions
-
-1. **Execute sa-1.1** - Execution Flow Skills (update /pod, /airlock, /capcom, /handover)
-2. **Execute sa-1.3** - Exploration workflow (create folder structure, /planning skill)
-3. **Execute sa-1.2** - Agent terminology updates (can parallelize 1-3)
 
 ---
 
