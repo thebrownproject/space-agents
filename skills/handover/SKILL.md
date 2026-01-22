@@ -3,15 +3,26 @@ name: handover
 description: "Mid-session context dump for fresh sessions. Generates structured handover prompt with current state, saves to comms/handover.md for copy/paste into new session."
 ---
 
-# /handover - Context Dump for Fresh Session
+# /handover - Session Context Dump
 
-Generate a structured handover prompt when context is filling up or you need to switch to a fresh session. The handover captures current state so the next session can continue seamlessly.
+Generate a structured handover prompt when context is filling up or you need to switch to a fresh session. The handover captures current Beads state so the next session can continue seamlessly.
 
 ---
 
 ## Context
 
-You are HOUSTON, the Flight Director. When context gets heavy or the user needs to switch sessions, `/handover` creates a portable context dump.
+You are HOUSTON, the Flight Director. When context gets heavy or the user needs to switch sessions, `/handover` creates a portable context dump from Beads.
+
+### Session vs Task Handovers
+
+| Type | Purpose | Storage |
+|------|---------|---------|
+| Task handover | Context for next task in sequence | `bd comments` on task |
+| Session handover | Context for next human session | `.space-agents/comms/handover.md` |
+
+**Task handovers** are created by Workers/Inspectors when completing tasks, stored as `[HANDOVER]` comments on the task itself. They capture implementation details for the next task.
+
+**Session handovers** (this skill) capture the broader project state for when a human returns to continue work in a new Claude Code session.
 
 ### When to Use
 
@@ -22,11 +33,12 @@ You are HOUSTON, the Flight Director. When context gets heavy or the user needs 
 
 ### What Gets Captured
 
-- Current voyage/mission/objective state
-- Active alerts
-- Recent decisions and context
+- Dependency tree of current work
+- Next ready tasks
+- In-progress tasks with recent progress comments
+- Open bugs
+- Completed task handover comments
 - Git status (uncommitted changes)
-- Session buffer contents
 
 ---
 
@@ -34,39 +46,52 @@ You are HOUSTON, the Flight Director. When context gets heavy or the user needs 
 
 When the user runs `/handover`, execute these steps:
 
-### Step 1: Query Current State
+### Step 1: Gather Beads State
 
-Run SQLite queries to gather state:
+Run these Beads commands to gather state:
 
-```sql
--- Active missions with progress
-SELECT m.id, m.title, m.status,
-       (SELECT COUNT(*) FROM objectives o
-        WHERE o.mission_id = m.id AND o.status = 'complete') as done,
-       (SELECT COUNT(*) FROM objectives o
-        WHERE o.mission_id = m.id) as total
-FROM missions m WHERE m.status IN ('staged', 'active');
+```bash
+# Full dependency tree view
+bd list --tree --limit 0
 
--- In-progress objectives
-SELECT o.id, o.title, o.description, m.title as mission
-FROM objectives o
-JOIN missions m ON o.mission_id = m.id
-WHERE o.status = 'in_progress';
+# Ready tasks (no blockers)
+bd ready -t task --limit 10
 
--- Active alerts
-SELECT id, severity, mission_id, objective_id, source, description
-FROM alerts WHERE status = 'active'
-ORDER BY severity;
+# In-progress work
+bd list -s in_progress --limit 0
+
+# Open bugs
+bd list -t bug -s open --limit 0
 ```
 
-### Step 2: Check Git Status
+### Step 2: Gather Task Comments
+
+For each in-progress task, check for recent `[PROGRESS]` or `[ATTEMPT]` comments:
+
+```bash
+bd comments <task-id>
+```
+
+Look for comments with these prefixes:
+- `[PROGRESS]` - Work completed so far
+- `[ATTEMPT]` - Failed approaches tried
+- `[BLOCKER]` - Issues preventing progress
+
+For recently completed tasks (closed in this session), gather `[HANDOVER]` comments:
+
+```bash
+bd list -s closed --closed-after today --limit 10
+bd comments <completed-task-id>
+```
+
+### Step 3: Check Git Status
 
 Run `git status` and `git diff --stat` to capture:
 - Uncommitted changes
 - Current branch
 - Files modified
 
-### Step 3: Generate Handover Prompt
+### Step 4: Generate Handover Prompt
 
 Create a structured prompt that the next session can use:
 
@@ -74,25 +99,44 @@ Create a structured prompt that the next session can use:
 # Space-Agents Handover
 
 **Generated:** [YYYY-MM-DD HH:MM]
-**From Session:** [session identifier if available]
+**Branch:** [current git branch]
 
 ---
 
-## Current State
+## Dependency Tree
 
-### Active Mission
-- **ID:** MSN-XXX
-- **Title:** [Mission title]
-- **Status:** [active/staged]
-- **Progress:** X/Y objectives complete
+[Output of bd list --tree]
 
-### In-Progress Work
-- **Objective:** OBJ-XXX - [Title]
-- **Mission:** MSN-XXX - [Mission title]
-- **Status:** [Current status, what's been done, what's next]
+---
 
-### Active Alerts
-- [SEVERITY] ALT-XXX: [description]
+## Ready Tasks
+
+[Output of bd ready -t task]
+
+---
+
+## In-Progress Work
+
+### [task-id] - [title]
+**Status:** in_progress
+**Recent Progress:**
+[PROGRESS] comments from bd comments
+
+**Attempted Approaches:**
+[ATTEMPT] comments if any
+
+---
+
+## Open Bugs
+
+[Output of bd list -t bug -s open]
+
+---
+
+## Recent Task Handovers
+
+### [completed-task-id] - [title]
+[HANDOVER] comment content
 
 ---
 
@@ -100,45 +144,44 @@ Create a structured prompt that the next session can use:
 
 **Branch:** [current branch]
 **Uncommitted Changes:**
-[list of modified files]
+[list of modified files from git diff --stat]
 
 ---
 
 ## Recommended Next Steps
 
-1. [Most important next action]
-2. [Secondary action]
-3. [Tertiary action]
+1. [Based on ready tasks and in-progress work]
+2. [Address any open bugs]
+3. [Continue from handover comments]
 
 ---
 
 ## To Continue
 
 Paste this into a fresh Claude Code session, then run:
-
 ```
 /launch
 ```
 
-HOUSTON will load state from SQLite and continue from here.
+HOUSTON will sync with Beads and continue from here.
 
 ---
 
 *Handover generated by Space-Agents*
 ```
 
-### Step 4: Save Handover
+### Step 5: Save Handover
 
 Write the handover prompt to `.space-agents/comms/handover.md`
 
-### Step 5: Display to User
+### Step 6: Display to User
 
 Show the handover in a copyable format:
 
 ```
-────────────────────────────────────────────────────────────────────
+------------------------------------------------------------------------
 HANDOVER GENERATED
-────────────────────────────────────────────────────────────────────
+------------------------------------------------------------------------
 
 Handover saved to: .space-agents/comms/handover.md
 
@@ -147,11 +190,11 @@ To continue in a fresh session:
 2. Paste into a new Claude Code session
 3. Run /launch
 
-────────────────────────────────────────────────────────────────────
+------------------------------------------------------------------------
 
 [Display full handover content here]
 
-────────────────────────────────────────────────────────────────────
+------------------------------------------------------------------------
 ```
 
 ---
@@ -160,10 +203,12 @@ To continue in a fresh session:
 
 | Section | Purpose | Source |
 |---------|---------|--------|
-| Current State | Active missions and progress | SQLite queries |
-| In-Progress Work | What's actively being worked on | SQLite |
-| Active Alerts | Issues needing attention | SQLite alerts table |
-| Git State | Uncommitted work | git status |
+| Dependency Tree | Full work hierarchy | `bd list --tree` |
+| Ready Tasks | What can be started | `bd ready -t task` |
+| In-Progress Work | Active work with context | `bd list -s in_progress` + comments |
+| Open Bugs | Issues needing attention | `bd list -t bug -s open` |
+| Task Handovers | Context from completed tasks | `[HANDOVER]` comments |
+| Git State | Uncommitted work | `git status` |
 | Next Steps | What to do next | Synthesized from above |
 
 ---
@@ -173,55 +218,81 @@ To continue in a fresh session:
 ```markdown
 # Space-Agents Handover
 
-**Generated:** 2026-01-17 15:30
-**From Session:** JWT Implementation
+**Generated:** 2026-01-22 15:30
+**Branch:** feature/execution-skills
 
 ---
 
-## Current State
+## Dependency Tree
 
-### Active Mission
-- **ID:** MSN-002
-- **Title:** JWT Implementation
-- **Status:** active
-- **Progress:** 5/10 objectives complete
+space-agents-1.1 [feature] [in_progress] - Execution Flow Skills
+  space-agents-1.1.1 [task] [closed] - Define Pod execution model
+  space-agents-1.1.2 [task] [closed] - Create Worker agent skill
+  space-agents-1.1.3 [task] [in_progress] - Create Inspector agent skill
+  space-agents-1.1.4 [task] [open] - Update /handover for session context
+  space-agents-1.1.5 [task] [open] - Update /dock for clean session end
 
-### In-Progress Work
-- **Objective:** OBJ-006 - Implement token refresh
-- **Mission:** MSN-002 - JWT Implementation
-- **Status:** Worker completed initial implementation, Inspector reviewing
+---
 
-### Active Alerts
-- [WARNING] ALT-002: Deprecated sign() method in jwt.ts:45
+## Ready Tasks
+
+space-agents-1.1.4 [P2] [task] - Update /handover for session context
+space-agents-1.1.5 [P2] [task] - Update /dock for clean session end
+
+---
+
+## In-Progress Work
+
+### space-agents-1.1.3 - Create Inspector agent skill
+**Status:** in_progress
+**Recent Progress:**
+[PROGRESS] Created base Inspector skill structure. Defined review checklist format.
+[PROGRESS] Implemented acceptance criteria validation logic.
+
+**Attempted Approaches:**
+[ATTEMPT] Tried inline review - too verbose. Switched to checklist format.
+
+---
+
+## Open Bugs
+
+(none)
+
+---
+
+## Recent Task Handovers
+
+### space-agents-1.1.2 - Create Worker agent skill
+[HANDOVER] Worker skill complete. Key files: skills/worker/skill.md. Uses TDD approach.
+Next task should follow same structure. Alert format defined: [ALERT:severity] message.
 
 ---
 
 ## Git State
 
-**Branch:** feature/jwt-auth
+**Branch:** feature/execution-skills
 **Uncommitted Changes:**
-- src/auth/jwt.ts (modified)
-- tests/auth/jwt.test.ts (new)
+ skills/inspector/skill.md | 45 +++++++++++++++
+ 1 file changed, 45 insertions(+)
 
 ---
 
 ## Recommended Next Steps
 
-1. Complete Inspector review of token refresh
-2. Address deprecated sign() method warning
-3. Continue to OBJ-007 (expiry handling)
+1. Complete Inspector skill (space-agents-1.1.3)
+2. Update handover skill (space-agents-1.1.4)
+3. Update dock skill (space-agents-1.1.5)
 
 ---
 
 ## To Continue
 
 Paste this into a fresh Claude Code session, then run:
-
 ```
 /launch
 ```
 
-HOUSTON will load state from SQLite and continue from here.
+HOUSTON will sync with Beads and continue from here.
 
 ---
 
@@ -234,19 +305,17 @@ HOUSTON will load state from SQLite and continue from here.
 
 **If no active work:**
 ```
-HANDOVER: No active missions or in-progress work to hand over.
+HANDOVER: No in-progress or ready tasks found.
 
-Current session state saved to buffer. Run /dock to end cleanly,
-or /launch in a new session to start fresh.
+Run `bd ready` to see available work, or check `bd list --tree`
+for the full dependency structure.
 ```
 
-**If SQLite query fails:**
+**If Beads not initialized:**
 ```
-HANDOVER: Unable to query mission state.
+HANDOVER: Beads not found in this project.
 
-Generating partial handover from available context...
-
-[Generate with SQLite and git status only]
+Run `/install` to initialize Space-Agents with Beads tracking.
 ```
 
 **If git not available:**
@@ -259,11 +328,12 @@ if relevant.
 
 ## Key Principles
 
-1. **Complete context** - Everything needed to continue
-2. **Portable** - Copy/paste into any session
-3. **Actionable** - Clear next steps
-4. **Persistent** - Saved to file for later use
+1. **Beads-driven** - All state comes from Beads, not memory
+2. **Comment-aware** - Captures task-level context from comments
+3. **Portable** - Copy/paste into any session
+4. **Actionable** - Clear next steps based on ready tasks
+5. **Persistent** - Saved to `.space-agents/comms/handover.md`
 
 ---
 
-HOUSTON ready for handover. Context will be preserved for next session.
+HOUSTON ready for handover. Session context will be captured from Beads state.
