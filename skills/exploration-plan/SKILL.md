@@ -1,9 +1,9 @@
 ---
-name: mission-brief
+name: exploration-plan
 description: "Write feature plan with tasks. HOUSTON convenes planning council, synthesizes their input, and guides user through approval stages."
 ---
 
-# /mission-brief - Feature Planning
+# /exploration-plan - Feature Planning
 
 Turn an exploration report into an executable feature with tasks. HOUSTON reviews the exploration, convenes a planning council for input, then synthesizes everything into a plan for user approval.
 
@@ -65,9 +65,9 @@ They'll report back while we continue talking. Proceed?
 
 The council are **advisors**, not decision makers. They provide analysis, HOUSTON synthesizes and can override if their recommendations don't fit.
 
-- `space-agents:planning-task-planner` - Breaks feature into tasks
-- `space-agents:planning-sequencer` - Analyzes dependencies, execution order
-- `space-agents:planning-implementer` - Creates TDD task breakdown per task
+- `space-agents:plan-task-planner` - Breaks feature into tasks
+- `space-agents:plan-sequencer` - Analyzes dependencies, execution order
+- `space-agents:plan-implementer` - Creates TDD task breakdown per task
 
 Spawn all 3 in parallel with `run_in_background: true`. Continue conversation while they work.
 
@@ -141,11 +141,11 @@ After all approvals:
    bd create "Task 2 title" -t task --parent "$FEATURE_ID" -p 2
    bd sync
    ```
-6. **Confirm:** "Feature ready. Run `/mission-go` to begin execution."
+6. **Confirm:** "Feature ready. Run `/mission` to begin execution."
 
 **Note:** Beads auto-generates IDs for features and tasks.
 
-**Folder lifecycle:** `staged/` → `active/` (on /mission-go) → `complete/` (on finish)
+**Folder lifecycle:** `staged/` → `active/` (on /mission) → `complete/` (on finish)
 
 ## _feature.md Structure
 

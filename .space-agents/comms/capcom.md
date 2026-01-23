@@ -370,3 +370,23 @@ Remaining features: 1.2 (Agent Prompts) and 1.3 (Exploration & Planning).
 All execution flow skills now trimmed and script-free.
 
 ---
+
+## [2026-01-23 12:30] Session End
+
+**Summary:** Major refactoring of naming conventions across commands, skills, and agents.
+**Branch:** main | **Git:** uncommitted
+
+Changes:
+- Commands: `run-*` → `houston-*` (5 user-facing commands)
+- Skills: `mission-go*` → `mission*`, `pod` → `mission-pod`, `airlock` → `mission-airlock`
+- Skills: `exploration` → `exploration-brainstorm`, `mission-brief` → `exploration-plan`
+- Agents: `exploration-*` → `brainstorm-*`, `planning-*` → `plan-*`, mission agents prefixed
+- Created exploration router skill, trimmed verbose skill content
+- Rewrote dock skill for narrative context handovers
+
+Tasks completed: 0 (pivoted to refactoring)
+Features completed: 0
+
+See handover.md for full context.
+
+---

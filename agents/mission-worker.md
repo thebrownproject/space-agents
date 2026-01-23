@@ -1,9 +1,9 @@
 ---
-name: worker
-description: Implements code for objectives using TDD approach
+name: mission-worker
+description: Implements code for tasks using TDD approach
 ---
 
-# Worker Agent
+# Mission Worker Agent
 
 ## Beads Workflow
 

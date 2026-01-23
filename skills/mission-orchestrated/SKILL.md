@@ -1,31 +1,31 @@
 ---
-name: mission-go-orchestrated
-description: "HOUSTON spawns Task agents: Worker, Inspector, Analyst per task. Recommended for most features."
+name: mission-orchestrated
+description: "HOUSTON spawns Task agents: Worker, Inspector, Analyst per task. Best for medium features (4-10 tasks)."
 ---
 
-# /mission-go-orchestrated - Agent-Per-Task Execution
+# /mission-orchestrated - Agents-Per-Task Execution
 
-HOUSTON coordinates execution by spawning fresh agents for each task. Recommended mode - prevents context rot.
+HOUSTON coordinates execution by spawning fresh agents for each task. Prevents context rot.
 
 ## The Process
 
 1. **Load feature** - Run `bd show FEATURE_ID` to get details
 2. **Activate feature** - Run `bd update FEATURE_ID --status in_progress`
 3. **Task loop** - For each task:
-   - Get next task via `bd_get_next_task FEATURE_ID`
+   - Get next task: `bd list --parent FEATURE_ID --status open` (pick highest priority)
    - Spawn Worker agent (implements the task)
    - Wait for Worker completion
    - Spawn Inspector agent (verifies requirements met)
    - Spawn Analyst agent (reviews code quality)
    - HOUSTON decides: continue, fix issues, or escalate
-   - Mark task complete via `bd_mark_task_complete TASK_ID`
+   - Mark task complete: `bd close TASK_ID`
 4. **Complete feature** - Run `bd close FEATURE_ID`
 
 ## Spawning Agents
 
 Use Task tool with `run_in_background: false` (wait for completion):
 
-**Worker** (`subagent_type: "space-agents:worker"`):
+**Worker** (`subagent_type: "space-agents:mission-worker"`):
 ```
 "Execute task TASK_ID for feature FEATURE_ID.
  Task: [title]
@@ -33,13 +33,13 @@ Use Task tool with `run_in_background: false` (wait for completion):
  Context files: [relevant files from feature brief]"
 ```
 
-**Inspector** (`subagent_type: "space-agents:inspector"`):
+**Inspector** (`subagent_type: "space-agents:mission-inspector"`):
 ```
 "Review task TASK_ID implementation.
  Verify: requirements met, tests pass, acceptance criteria satisfied."
 ```
 
-**Analyst** (`subagent_type: "space-agents:analyst"`):
+**Analyst** (`subagent_type: "space-agents:mission-analyst"`):
 ```
 "Analyze task TASK_ID code quality.
  Check: patterns followed, no regressions, maintainable."
@@ -53,15 +53,8 @@ After Inspector/Analyst return, HOUSTON decides:
 |--------|--------|
 | All pass | Mark complete, continue to next task |
 | Minor issues | Log warning, continue |
-| Blocker found | Create bug via `bd_mark_task_failed`, ask user |
+| Blocker found | Create bug via `bd create -t bug`, ask user |
 | Critical issue | Halt, escalate to user |
-
-## Helper Functions
-
-Source `skills/mission-go/scripts/beads-helpers.sh` for:
-- `bd_get_next_task FEATURE_ID`
-- `bd_mark_task_complete TASK_ID`
-- `bd_mark_task_failed TASK_ID "reason"`
 
 ## On Completion
 

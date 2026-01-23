@@ -20,7 +20,9 @@
       "Bash(bd blocked)",
       "Skill(space-agents:mission-go)",
       "Bash(bd --help)",
-      "Bash(bd:*)"
+      "Bash(bd:*)",
+      "mcp__tavily-mcp__tavily-search",
+      "mcp__mcp-brave-search__brave_web_search"
     ]
   }
 }

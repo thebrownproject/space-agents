@@ -1,9 +1,9 @@
 ---
-name: planning-sequencer
-description: Analyze dependencies and sequence objectives during planning
+name: plan-sequencer
+description: Analyze dependencies and sequence tasks during planning
 ---
 
-# Sequencer Agent
+# Plan Sequencer Agent
 
 Analyze dependencies between objectives. Determine optimal execution order.
 

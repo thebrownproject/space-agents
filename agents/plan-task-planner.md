@@ -1,9 +1,9 @@
 ---
-name: planning-task-planner
-description: Break a mission into objectives during planning
+name: plan-task-planner
+description: Break a feature into tasks during planning
 ---
 
-# Task Planner Agent
+# Plan Task Planner Agent
 
 Break the exploration report (mission design) into objectives (tasks).
 

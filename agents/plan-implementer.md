@@ -1,9 +1,9 @@
 ---
-name: planning-implementer
-description: Create detailed TDD task breakdown for objectives
+name: plan-implementer
+description: Create detailed TDD task breakdown for tasks
 ---
 
-# Implementer Agent
+# Plan Implementer Agent
 
 Create detailed, executable task breakdowns for each objective. These tasks are what Worker agents execute via Ralph.
 

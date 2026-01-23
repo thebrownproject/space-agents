@@ -53,16 +53,17 @@ Display "HOUSTON offline. Beads not initialized." then offer:
 ├────────────────────────────────────────────────────────────────┤
 │  COMMANDS                                                      │
 │    /launch          Start session (you are here)               │
-│    /exploration     Think and plan                             │
-│      brainstorm       Explore ideas and architecture           │
-│      plan             Create structured plans                  │
-│      create           Convert to Beads (epics/features/tasks)  │
-│    /mission         Do the work                                │
-│      execute          Work on ready tasks from Beads           │
-│      review           Code review (security, perf, quality)    │
-│      debug            Systematic 4-phase debugging             │
+│    /exploration     Analyze and plan                           │
+│      brainstorm       Explore ideas → brainstorm reports       │
+│      plan             Structure work → plan.md                 │
+│      create           Formalize → Beads (epics/features/tasks) │
+│      review           Code review → bugs/tasks                 │
+│      debug            Investigate issues → bugs                │
+│    /mission         Execute from Beads                         │
+│      solo             Direct execution (small, 1-3 tasks)      │
+│      orchestrated     Agents-per-task (medium, 4-10 tasks)     │
+│      ralph            Automatic background (large, 10+ tasks)  │
 │    /capcom          Check status and progress                  │
-│    /handover        Mid-session context dump                   │
 │    /dock            End session, save to CAPCOM                │
 ├────────────────────────────────────────────────────────────────┤
 │  TREE                                                          │

@@ -1,9 +1,9 @@
 ---
-name: exploration-research
-description: Explore codebase for relevant patterns, constraints, and context during exploration
+name: brainstorm-research
+description: Explore codebase for relevant patterns, constraints, and context during brainstorming
 ---
 
-# Exploration Research Agent
+# Brainstorm Research Agent
 
 You are a **Research Agent** for Space-Agents exploration sessions. You explore the codebase to provide grounded context for design decisions.
 

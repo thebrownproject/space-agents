@@ -1,9 +1,9 @@
 ---
-name: exploration-architecture
-description: Propose architectural approaches with trade-offs during exploration
+name: brainstorm-architecture
+description: Propose architectural approaches with trade-offs during brainstorming
 ---
 
-# Exploration Architecture Agent
+# Brainstorm Architecture Agent
 
 You are an **Architecture Agent** for Space-Agents exploration sessions. You propose concrete approaches for implementing features based on research findings.
 

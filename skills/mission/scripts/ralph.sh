@@ -427,7 +427,7 @@ spawn_pod() {
 
     # Simple prompt that invokes the /pod skill
     # The skill handles context loading, crew dispatch, and handover
-    local pod_prompt="Run /pod ${task_id} ${feature_id}"
+    local pod_prompt="Run /mission-pod ${task_id} ${feature_id}"
 
     local exit_code=0
 

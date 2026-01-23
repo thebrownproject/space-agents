@@ -1,9 +1,9 @@
 ---
-name: mission-go-ralph
-description: "Launch ralph.sh in background. Automatic execution until completion or critical blocker."
+name: mission-ralph
+description: "Launch ralph.sh in background. Best for large features (10+ tasks). Automatic execution until completion."
 ---
 
-# /mission-go-ralph - Automatic Background Execution
+# /mission-ralph - Automatic Background Execution
 
 Launch the Ralph loop in background. Runs automatically until all tasks complete or a critical blocker halts execution.
 
@@ -18,12 +18,12 @@ Launch the Ralph loop in background. Runs automatically until all tasks complete
 ## Launch Command
 
 ```bash
-bash skills/mission-go/scripts/ralph.sh FEATURE_ID &
+bash skills/mission/scripts/ralph.sh FEATURE_ID &
 ```
 
 Or with visible mode (mprocs TUI):
 ```bash
-bash skills/mission-go/scripts/ralph.sh FEATURE_ID --visible
+bash skills/mission/scripts/ralph.sh FEATURE_ID --visible
 ```
 
 ## What Ralph Does

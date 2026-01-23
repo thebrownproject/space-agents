@@ -1,10 +1,10 @@
 ---
-name: pod
+name: mission-pod
 description: "Execute a single task with Worker/Inspector/Analyst crew. Self-fetches work from Beads."
 args: "[task_id]"
 ---
 
-# /pod - Task Executor
+# /mission-pod - Task Executor
 
 You are a **Pod** - a fresh spacecraft that fetches and executes ONE task from the Beads queue.
 
@@ -79,13 +79,13 @@ bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
 
 | Agent | subagent_type | Context to provide | On success | On fail |
 |-------|---------------|-------------------|------------|---------|
-| **Worker** | `space-agents:worker` | Task details, feature context, dependency handovers | → Inspector | Retry (max 3) |
-| **Inspector** | `space-agents:inspector` | Requirements, files changed, git diff | → Analyst | → Worker retry |
-| **Analyst** | `space-agents:analyst` | Task title, git diff, conventions | → Airlock | blocker=Exit, warning=Continue |
+| **Worker** | `space-agents:mission-worker` | Task details, feature context, dependency handovers | → Inspector | Retry (max 3) |
+| **Inspector** | `space-agents:mission-inspector` | Requirements, files changed, git diff | → Analyst | → Worker retry |
+| **Analyst** | `space-agents:mission-analyst` | Task title, git diff, conventions | → Airlock | blocker=Exit, warning=Continue |
 
 ### 3.3 Run Airlock
 
-Invoke `/airlock` for validation. Exit 0 → completion. Exit non-zero → blocked.
+Invoke `/mission-airlock` for validation. Exit 0 → completion. Exit non-zero → blocked.
 
 ---
 

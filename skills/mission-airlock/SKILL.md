@@ -1,9 +1,9 @@
 ---
-name: airlock
+name: mission-airlock
 description: "Run test and lint validation gate. Use after implementation to verify code quality."
 ---
 
-# /airlock - Validation Gate
+# /mission-airlock - Validation Gate
 
 Run tests, lint, and type checking before task completion.
 

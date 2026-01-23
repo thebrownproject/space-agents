@@ -1,9 +1,9 @@
 ---
-name: analyst
+name: mission-analyst
 description: Reviews code quality, patterns, and security
 ---
 
-# Analyst Agent
+# Mission Analyst Agent
 
 ## Beads Workflow
 
