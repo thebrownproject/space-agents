@@ -13,13 +13,13 @@
         ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
 ```
 
-Agent orchestration plugin for Claude Code, powered by [Beads](https://github.com/steveyegge/beads) and [Ralph](https://ghuntley.com/ralph/).
+Agent orchestration plugin for Claude Code, powered by [Beads](https://github.com/steveyegge/beads) and the [Ralph loop](https://ghuntley.com/ralph/).
 
 ## Features
 
 - **Multi-session persistence** — Beads tracks issues, dependencies, and context across sessions
 - **Structured exploration** — Brainstorm ideas, create plans, review code, debug issues
-- **Agent orchestration** — Solo (direct), Orchestrated (agents per task), or Ralph (background automation)
+- **Agent orchestration** — Solo (direct), Orchestrated (agents per task), or Ralph loop (background automation)
 - **Session logging** — CAPCOM log preserves decisions and progress for future sessions
 
 ## Prerequisites
@@ -89,4 +89,4 @@ Scout → Worker → Inspector → Analyst
 | **Inspector** | Verifies requirements met, tests pass |
 | **Analyst** | Reviews code quality, patterns, security |
 
-Ralph spawns these as **Pods** — fresh context each iteration, looping until all tasks complete or a blocker halts execution. When issues are found, bugs are inserted into Beads as blockers; Ralph resolves these before continuing to the next task.
+The Ralph loop spawns these as **Pods** — fresh context each iteration, looping until all tasks complete or a blocker halts execution. When issues are found, bugs are inserted into Beads as blockers; Ralph resolves these before continuing to the next task.
