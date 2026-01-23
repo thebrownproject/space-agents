@@ -589,3 +589,48 @@ Complete task 1.2.2: Update execution agents (mission-worker/inspector/analyst) 
 Start feature 1.3: Exploration & Planning Workflow. First task is 1.3.1 (Create exploration folder structure) which unblocks 4 other tasks.
 
 ---
+
+## [2026-01-23 17:25] Session 1
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**1. Closed Feature 1.3: Exploration & Planning Workflow (5 tasks)**
+- Tasks were already implemented in previous sessions with evolved design
+- Folder structure uses `ideas/planned/staged/complete` kanban (not `drafts/ready`)
+- Closed all tasks: 1.3.1 through 1.3.5
+
+**2. Renamed /dock command to /land**
+- Renamed `commands/houston-dock.md` → `commands/houston-land.md`
+- Updated skill reference from `/dock` to `/land`
+
+**3. Updated /land skill for session numbering**
+- Sessions now numbered sequentially (Session 1, Session 2, etc.)
+- Changed from "Session End" to "Session {N}"
+
+**4. Fixed install skill**
+- Removed old `missions/staged/active/complete` structure
+- Added correct `exploration/{ideas,planned,staged,complete}` kanban
+- Removed `notifications.md` from created files
+
+**5. Terminology cleanup**
+- Removed "voyage" from `skills/install/SKILL.md:153`
+- Verified no "objective/objectives" remain
+- Confirmed "mission" only refers to execution mode
+
+**6. Cleanup**
+- Removed `.space-agents/comms/notifications.md` (unused)
+- Removed `.space-agents/comms/space-agents.db` (old SQLite)
+- Moved completed features from `staged/` to `complete/`
+
+### Decisions Made
+
+- **Session numbering**: Sessions are numbered sequentially rather than using "Session End"
+- **Keep comms/ folder**: Left `capcom.md` in `comms/` rather than moving to root - not worth updating all skill references
+
+### Next Action
+
+Write a short README.md for the GitHub repo.
+
+---

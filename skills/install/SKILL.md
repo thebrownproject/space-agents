@@ -44,10 +44,7 @@ Create the full Space-Agents directory structure:
 
 ```bash
 mkdir -p .space-agents/comms
-mkdir -p .space-agents/exploration
-mkdir -p .space-agents/missions/staged
-mkdir -p .space-agents/missions/active
-mkdir -p .space-agents/missions/complete
+mkdir -p .space-agents/exploration/{ideas,planned,staged,complete}
 ```
 
 **Directory structure:**
@@ -56,13 +53,12 @@ mkdir -p .space-agents/missions/complete
 .space-agents/
 ├── comms/
 │   ├── capcom.md            # Master CAPCOM log (append-only)
-│   ├── handover.md          # Context dump for fresh sessions
-│   └── notifications.md     # Event notifications
-├── exploration/             # Exploration sessions (/exploration output)
-└── missions/
-    ├── staged/              # Planned missions ready for execution
-    ├── active/              # In-progress work
-    └── complete/            # Archived work
+│   └── handover.md          # Context dump for fresh sessions
+└── exploration/             # Exploration kanban
+    ├── ideas/               # Early brainstorming
+    ├── planned/             # Has plan.md, ready for Beads
+    ├── staged/              # Converted to Beads, ready to execute
+    └── complete/            # Done
 ```
 
 ---
@@ -115,15 +111,6 @@ Space-Agents installed. HOUSTON standing by.
 [No handover pending]
 ```
 
-**`.space-agents/comms/notifications.md`:**
-```markdown
-# Space-Agents Notifications
-
-*Event log from Ralph loop*
-
----
-```
-
 ---
 
 ### Step 5: Display Installation Complete
@@ -143,14 +130,11 @@ Show the installation success screen:
 |    [x] .space-agents/ directory structure                        |
 |    [x] Beads initialized (.beads/)                               |
 |    [x] CAPCOM master log                                         |
-|    [x] Handover and notifications files                          |
+|    [x] Handover file                                             |
 |                                                                  |
 +------------------------------------------------------------------+
 |                                                                  |
-|  Next steps:                                                     |
-|    1. Run /launch to start a session                             |
-|    2. Describe what you want to build                            |
-|    3. HOUSTON will plan the voyage                               |
+|  Next step: Run /launch to start a session                       |
 |                                                                  |
 +------------------------------------------------------------------+
 ```
@@ -192,9 +176,9 @@ What would you like to do?
 
 The `/install` skill:
 1. Checks for existing installation
-2. Creates directory structure (comms/, exploration/, missions/)
+2. Creates directory structure (comms/, exploration/ with kanban folders)
 3. Initializes Beads for issue tracking
-4. Creates initialization files (capcom.md, handover.md, notifications.md)
+4. Creates initialization files (capcom.md, handover.md)
 5. Displays installation complete screen
 6. Guides user to run `/launch`
 

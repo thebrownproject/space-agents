@@ -38,10 +38,16 @@ From your session memory, note:
 
 ### Step 2: Append to CAPCOM
 
+Get next session number:
+```bash
+grep -c "^## \[.*\] Session [0-9]" .space-agents/comms/capcom.md 2>/dev/null || echo 0
+```
+Add 1 to get the next session number.
+
 Append full session context to `.space-agents/comms/capcom.md`:
 
 ```markdown
-## [YYYY-MM-DD HH:MM] Session End
+## [YYYY-MM-DD HH:MM] Session {N}
 
 **Branch:** {branch} | **Git:** {clean/uncommitted}
 
