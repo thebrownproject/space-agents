@@ -89,7 +89,6 @@ git status           # Review pending changes
 git add <specific files>   # Stage code changes (not -A)
 bd sync                    # Sync beads
 git commit -m "feat: <summary from session>"   # Meaningful message
-bd sync                    # Catch any new beads changes
 git push
 ```
 
