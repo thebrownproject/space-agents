@@ -23,7 +23,8 @@
       "Bash(bd:*)",
       "mcp__tavily-mcp__tavily-search",
       "mcp__mcp-brave-search__brave_web_search",
-      "Skill(space-agents:exploration-brainstorm)"
+      "Skill(space-agents:exploration-brainstorm)",
+      "Bash(git push)"
     ]
   }
 }
