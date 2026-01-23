@@ -18,8 +18,7 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style.
    bd stats                    # Counts
    ```
 4. Read last CAPCOM entry: `grep -n "^## \[" .space-agents/comms/capcom.md | tail -1` then read from that line
-5. Read `comms/handover.md`
-6. Display welcome screen
+5. Display welcome screen
 
 ## If Not Installed
 
@@ -83,4 +82,4 @@ Display "HOUSTON offline. Beads not initialized." then offer:
 - `{feature_count}`, `{task_count}`, `{bugs}`: From `bd stats`
 - `{tree}`: Output of `bd list --tree` (indent with `│  `)
 - `{ready}`: Output of `bd ready` or "No unblocked tasks"
-- `{briefing}`: Summary from CAPCOM/handover. If nothing: "All quiet. Ready for orders."
+- `{briefing}`: Summary from last CAPCOM entry. If nothing: "All quiet. Ready for orders."

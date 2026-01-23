@@ -26,4 +26,4 @@ Use AskUserQuestion, then invoke the corresponding skill:
 
 Invoke with: `Skill: exploration-brainstorm`, `exploration-plan`, `exploration-create`, `exploration-review`, or `exploration-debug`
 
-**Not yet implemented:** create, review, debug
+**Not yet implemented:** create

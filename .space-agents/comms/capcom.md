@@ -390,3 +390,40 @@ Features completed: 0
 See handover.md for full context.
 
 ---
+
+## [2026-01-23 14:35] Session End
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+Created two of three missing exploration skills:
+
+1. **exploration-debug** (`skills/exploration-debug/SKILL.md`) - Interactive debugging through conversation, adapting systematic-debugging's 4-phase process (Understand → Evidence → Root Cause → Resolution). User chooses to fix now OR create bug Bead.
+
+2. **exploration-review** (`skills/exploration-review/SKILL.md`) - Interactive code review with configurable categories. User selects focus: Quality, Security, Performance, or All. Spawns specialized review agents.
+
+Created supporting agents:
+- `agents/debug.md` - Traces code paths, gathers evidence
+- `agents/review-quality.md` - Readability, structure, patterns
+- `agents/review-security.md` - OWASP-based security checks
+- `agents/review-performance.md` - Algorithms, queries, caching
+
+Updated `skills/exploration/SKILL.md` router - only `create` remains unimplemented.
+
+### Decisions Made
+
+- Debug agent named simply "debug" (not "brainstorm-debug")
+- No time limit on debug agent - debugging shouldn't be rushed
+- Three separate review agents rather than one configurable agent
+- Review output is report + optional Beads (not automatic creation)
+
+### In Progress
+
+`exploration-create` is the last missing skill. User noted it needs more brainstorming - it formalizes exploration outputs (brainstorm reports, plans) into Beads.
+
+### Next Action
+
+Commit new skills/agents, then brainstorm exploration-create design.
+
+---
