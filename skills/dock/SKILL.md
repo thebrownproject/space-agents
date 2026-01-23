@@ -1,6 +1,6 @@
 ---
 name: dock
-description: "End session. Appends full context to CAPCOM, syncs Beads."
+description: "End session. Appends full context to CAPCOM, syncs Beads, displays session stats."
 ---
 
 # /dock - End Session
@@ -9,13 +9,20 @@ Capture session context in CAPCOM. Focus on what's in your head that Beads can't
 
 ## Procedure
 
-### Step 1: Gather Git State
+### Step 1: Gather State
 
 ```bash
 git branch --show-current
 git status --short
 git log -1 --oneline
+bd stats
+bd list -t feature --status in_progress
 ```
+
+From your session memory, note:
+- Tasks completed this session
+- Bugs fixed this session
+- Active feature and its progress (done/total tasks)
 
 ### Step 2: Append to CAPCOM
 
@@ -77,10 +84,29 @@ git add -A && git commit -m "dock: session end" && git push
 ├────────────────────────────────────────────────────────────────┤
 │                      SESSION COMPLETE                          │
 ├────────────────────────────────────────────────────────────────┤
-│  {one_line_summary}                                            │
-│                                                                │
+│  SESSION SUMMARY                                               │
+│  Tasks completed:      {tasks_completed}                       │
+│  Bugs fixed:           {bugs_fixed}                            │
+├────────────────────────────────────────────────────────────────┤
+│  FEATURE PROGRESS                                              │
+│  {feature_name}        [{progress_bar}] {done}/{total}         │
+├────────────────────────────────────────────────────────────────┤
 │  Context saved to CAPCOM. Run /launch to continue.             │
 │                                                                │
 │                 Safe travels, Commander.                       │
 └────────────────────────────────────────────────────────────────┘
 ```
+
+**Placeholders:**
+
+| Placeholder | Source | Example |
+|-------------|--------|---------|
+| `{tasks_completed}` | Session memory | `3` |
+| `{bugs_fixed}` | Session memory | `1` |
+| `{feature_name}` | Active feature from Beads | `user-auth` |
+| `{progress_bar}` | Visual bar (10 chars): █ for done, ░ for remaining | `████████░░` |
+| `{done}/{total}` | Completed/Total tasks in feature | `8/10` |
+
+**Progress bar formula:** `done / total * 10` filled blocks, rest empty.
+
+**If no active feature:** Show "No active features" instead of progress section.
