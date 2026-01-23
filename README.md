@@ -1,3 +1,4 @@
+```
 ███████╗██████╗  █████╗  ██████╗███████╗
 ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝
 ███████╗██████╔╝███████║██║     █████╗
@@ -10,8 +11,16 @@
         ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║
         ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║
         ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
+```
 
 Agent orchestration plugin for Claude Code, powered by [Beads](https://github.com/steveyegge/beads) and [Ralph](https://ghuntley.com/ralph/).
+
+## Features
+
+- **Multi-session persistence** — Beads tracks issues, dependencies, and context across sessions
+- **Structured exploration** — Brainstorm ideas, create plans, review code, debug issues
+- **Agent orchestration** — Solo (direct), Orchestrated (agents per task), or Ralph (background automation)
+- **Session logging** — CAPCOM log preserves decisions and progress for future sessions
 
 ## Prerequisites
 
@@ -47,13 +56,6 @@ This creates the `.space-agents/` directory structure and initializes Beads for 
 | `/exploration` | Brainstorm, plan, review, or debug |
 | `/mission` | Execute work from Beads |
 | `/land` | End session, save context to CAPCOM |
-
-## Features
-
-- **Multi-session persistence** — Beads tracks issues, dependencies, and context across sessions
-- **Structured exploration** — Brainstorm ideas, create plans, review code, debug issues
-- **Agent orchestration** — Solo (direct), Orchestrated (agents per task), or Ralph (background automation)
-- **Session logging** — CAPCOM log preserves decisions and progress for future sessions
 
 ## Exploration Modes
 
