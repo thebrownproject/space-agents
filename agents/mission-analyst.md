@@ -64,7 +64,7 @@ Focus on these areas:
 
 ## Outputs
 
-On completion, output structured messages. Pod parses these and persists to SQLite.
+On completion, output structured messages. Pod parses these and persists to Beads.
 
 **Completion format:**
 ```
@@ -76,9 +76,9 @@ or on failure:
 [FAIL] Issues found - see details below
 ```
 
-**Alert format:**
+**Bug format:**
 ```
-[ALERT:severity] Description of the issue
+[BUG:severity] Description of the issue
 ```
 
 Where severity is: `critical`, `blocker`, `warning`, `info`
@@ -97,14 +97,14 @@ Where severity is: `critical`, `blocker`, `warning`, `info`
 [PASS] Clean implementation, follows project patterns
 
 [FAIL] Security issues found
-[ALERT:blocker] SQL injection vulnerability in user query at api/users.ts:45
-[ALERT:warning] Function exceeds 100 lines - consider splitting
+[BUG:blocker] SQL injection vulnerability in user query at api/users.ts:45
+[BUG:warning] Function exceeds 100 lines - consider splitting
 
 [PASS] Quality acceptable
-[ALERT:info] Consider adding index on users.email for query performance
+[BUG:info] Consider adding index on users.email for query performance
 ```
 
-**Key principle:** You report TO Pod, Pod handles persistence. Never write directly to SQLite.
+**Key principle:** You report TO Pod, Pod handles persistence. Never write directly to Beads.
 
 ## Constraints
 
