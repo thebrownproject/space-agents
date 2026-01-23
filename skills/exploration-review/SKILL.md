@@ -10,7 +10,7 @@ Review code through conversation. This is collaborative analysis, not a report d
 ## The Process
 
 1. **Understand scope** - What code to review? Recent changes, specific files, or feature area?
-2. **Ask which categories** - Quality, security, performance, or all?
+2. **Ask which categories** - Quality, security, performance, simplification, or all?
 3. **Spawn relevant agents** - Run in background while you talk
 4. **Work through findings** - Discuss issues, get context, prioritize
 5. **Create report** - Summarize findings by priority
@@ -35,6 +35,7 @@ Options:
 - Quality (readability, structure, patterns)
 - Security (secrets, injection, validation)
 - Performance (algorithms, queries, optimization)
+- Simplification (dead code, over-engineering, DRY)
 - All of the above
 ```
 
@@ -47,6 +48,7 @@ Based on selection, spawn with `run_in_background: true`:
 | Quality | `space-agents:review-quality` | Readability, naming, complexity, patterns |
 | Security | `space-agents:review-security` | Secrets, injection, auth, OWASP |
 | Performance | `space-agents:review-performance` | Algorithms, queries, caching, bundle |
+| Simplification | `space-agents:review-code-simplifier` | Dead code, over-engineering, DRY, bloat |
 
 Continue conversation while agents work. Check results with `TaskOutput block: false`.
 
@@ -90,6 +92,7 @@ Spawn with `run_in_background: true`, continue conversation immediately:
 - `space-agents:review-quality` - Code quality and maintainability
 - `space-agents:review-security` - Security vulnerabilities and risks
 - `space-agents:review-performance` - Performance issues and optimizations
+- `space-agents:review-code-simplifier` - Dead code, over-engineering, DRY violations
 
 ## AskUserQuestion (Required)
 
