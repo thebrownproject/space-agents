@@ -1,9 +1,0 @@
-# POC: mprocs config for Ralph loop visibility
-# Start with: cd .space-agents/experiments/mprocs-poc && mprocs
-
-server: 127.0.0.1:4050
-
-procs:
-  ralph:
-    shell: "./ralph-test.sh"
-    autostart: true

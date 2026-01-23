@@ -1,2 +1,0 @@
-Count how many tables exist in the SQLite database at .space-agents/space-agents.db and name them.
-When completely done, you MUST run this exact command: touch /Users/fraserbrown/Documents/space-agents/.space-agents/experiments/mprocs-poc/signals/pod2.done

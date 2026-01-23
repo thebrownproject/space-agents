@@ -54,8 +54,7 @@ Display "HOUSTON offline. Beads not initialized." then offer:
 │    /launch          Start session (you are here)               │
 │    /exploration     Analyze and plan                           │
 │      brainstorm       Explore ideas → brainstorm reports       │
-│      plan             Structure work → plan.md                 │
-│      create           Formalize → Beads (epics/features/tasks) │
+│      plan             Structure work → plan.md & Beads         │
 │      review           Code review → bugs/tasks                 │
 │      debug            Investigate issues → bugs                │
 │    /mission         Execute from Beads                         │

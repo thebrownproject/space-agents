@@ -472,3 +472,42 @@ Major restructure of exploration workflow and folder organization:
 Review all folders in `ideas/` next session - crosscheck what's actually been completed and ensure alignment with Beads. May create new Beads features if needed.
 
 ---
+
+## [2026-01-23 15:40] Session End
+
+**Branch:** main | **Git:** uncommitted (cleanup deletions)
+
+### What Happened
+
+Major housekeeping session focused on cleaning up outdated files and folders.
+
+**1. Ideas folder audit** - Went through all 8 folders one by one:
+- Deleted `space-agents-roadmap` - superseded by Beads
+- Deleted `review-debug` - implemented as /exploration modes
+- Deleted `space-ralph` - not needed, solo mode covers use case
+- Deleted `comms-voyages-redesign` - architecture evolved differently
+- Deleted `execution-flow-skills` - work already completed
+- Renamed `autopilot-manual` → `autopilot` (removed manual content)
+- Kept `gas-town-vision` (philosophy reference)
+- Kept `gamification` (future fun feature)
+
+**2. Other cleanup:**
+- Deleted `docs/archive/` - 14 outdated SQLite-era design docs
+- Deleted `test-beads/`, `test-frontend/` - test folders no longer needed
+- Deleted `.space-agents/experiments/` - old mprocs POC
+- Deleted `.bv/` - orphaned semantic search index
+- Moved `complete/*` → `complete/archive/` - organized old completed work
+
+**3. Fixed /launch skill** - Removed `create` line from welcome screen since it's now absorbed into `/plan` (which has 3 modes including Beads creation)
+
+### Decisions Made
+
+- `/manual` mode not needed - `/mission solo` covers lightweight execution use case
+- Lightweight background Ralph not needed - if it needs background, it needs tracking
+- Old architecture docs deleted rather than preserved - Beads is source of truth, gas-town-vision has the philosophy
+
+### Next Action
+
+Finalize features 1.2 (Agent Prompts) and 1.3 (Exploration Workflow) - then core system is ready to use on real projects.
+
+---

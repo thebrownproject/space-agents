@@ -1,4 +1,4 @@
-# Exploration: Autopilot & Manual Modes
+# Exploration: Autopilot Mode
 
 **Date:** 2026-01-18
 **Status:** Ready for implementation
@@ -7,62 +7,19 @@
 
 ## Overview
 
-Two complementary operating modes that complete the Space-Agents control spectrum:
-
-| Mode | Metaphor | Description |
-|------|----------|-------------|
-| **Missions** | Flight plan | Structured work with objectives and Ralph loop |
-| **Manual** | Hands on stick | User-directed work without mission overhead |
-| **Autopilot** | Cruise control | Autonomous agents working while you're away |
+Autonomous agents work overnight (or while you're away) running analysis, generating findings, and drafting missions. You wake up to a briefing, not a blank slate.
 
 ---
 
-## Feature 1: `/manual` - Manual Mode
-
-### Purpose
-Lightweight coding without mission ceremony. For quick fixes, experimentation, and user-guided work.
-
-### Entry/Exit
-
-| Action | Command |
-|--------|---------|
-| Enter manual mode | `/manual` |
-| Exit to dock | `/dock` |
-| Switch to missions | `/mission-brief` or `/mission-go` (auto-switches) |
-
-### Characteristics
-
-- **No missions/objectives** - Work isn't tracked in mission structure
-- **HOUSTON as copilot** - Same personality, but follows user's lead instead of directing
-- **Light logging** - Session summary saved to CAPCOM on exit (same as normal `/dock`)
-- **Optional guardrails** - User can run `/airlock` but it's not automatic
-
-### Escalation
-
-If work grows complex, HOUSTON offers: "This is getting involved - want to plan this as a mission?"
-
-### Use Cases
-
-- Quick bug fixes
-- Config changes
-- Experimentation/prototyping
-- User wants to direct Claude step-by-step
-- Any work that doesn't need mission overhead
-
----
-
-## Feature 2: `/autopilot` - Autonomous Agents
-
-### Purpose
-Agents work overnight (or while you're away) running analysis, generating findings, and drafting missions. You wake up to a briefing, not a blank slate.
-
-### The Vision
+## The Vision
 
 > "What if you could get a swarm of agents to rip through your codebase and make suggestions for features, or do a code review every morning before you get to work?"
 
 Key insight: **Read-only autonomy is safe autonomy**. Agents analyze and suggest, but never change production code.
 
-### What Autopilot Produces
+---
+
+## What Autopilot Produces
 
 | Output Type | Description |
 |-------------|-------------|
@@ -77,7 +34,9 @@ Key insight: **Read-only autonomy is safe autonomy**. Agents analyze and suggest
 | **Dead code detection** | Unused exports, orphaned files |
 | **Learning suggestions** | "This pattern could benefit from X" |
 
-### Execution Model
+---
+
+## Execution Model
 
 Autonomous work uses the **full Ralph loop / agent swarm machinery**, but outputs findings instead of code changes.
 
@@ -86,7 +45,9 @@ Configurable analysis types:
 - "Run feature discovery loop weekly"
 - "Run tech debt analysis on Mondays"
 
-### Runtime: Hybrid Approach
+---
+
+## Runtime: Hybrid Approach
 
 | Environment | Use Case |
 |-------------|----------|
@@ -99,7 +60,9 @@ Configurable analysis types:
 3. Commits directly to main branch
 4. When you `git pull` and `/launch`, findings are there
 
-### Morning Briefing UX
+---
+
+## Morning Briefing UX
 
 **Step 1: Dashboard on `/launch`**
 ```
@@ -115,7 +78,9 @@ Configurable analysis types:
 - Discuss each finding
 - Triage: accept to backlog, dismiss, or act now
 
-### Findings Lifecycle
+---
+
+## Findings Lifecycle
 
 ```
 Autonomous run produces findings
@@ -131,14 +96,18 @@ Backlog items pulled into missions when ready
 
 **Retention:** Findings accumulate forever (cleanup mode TBD later)
 
-### Configuration: `/autopilot-setup`
+---
+
+## Configuration: `/autopilot-setup`
 
 Interactive setup command:
 1. Which analysis types to run (from templates or custom)
 2. Schedule (nightly, weekly, specific days)
 3. Resource limits (time caps per analysis)
 
-### Templates
+---
+
+## Templates
 
 Ship predefined templates:
 - `nightly-review` - Code quality scan
@@ -146,13 +115,17 @@ Ship predefined templates:
 - `monday-tech-debt` - Technical debt inventory
 - Custom templates supported
 
-### Containment
+---
+
+## Containment
 
 **Convention-based:** Agents instructed to only read code and write to findings directory. No technical sandboxing in v1.
 
 The `.space-agents/briefings/` directory is the safe zone for autonomous output.
 
-### Resource Limits
+---
+
+## Resource Limits
 
 Time-based limits per analysis type:
 - Nightly review: 30 mins
@@ -160,38 +133,6 @@ Time-based limits per analysis type:
 - Deep analysis: 2 hours
 
 Token/cost limits: Future refinement
-
-### Notifications
-
-None in v1. Findings wait in `.space-agents/briefings/` until you `/launch`.
-
----
-
-## How Modes Interact
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Space-Agents Modes                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   /autopilot ──────► .space-agents/briefings/               │
-│   (overnight)              │                                 │
-│                            ▼                                 │
-│                      /briefing ──────► Backlog              │
-│                                           │                  │
-│                                           ▼                  │
-│   /manual ◄─────────────────────► /mission-brief            │
-│   (hands-on)                      (planning)                │
-│        │                              │                      │
-│        │                              ▼                      │
-│        │                        /mission-go                  │
-│        │                        (execution)                  │
-│        │                              │                      │
-│        └──────────────────────────────┘                      │
-│              (can switch between modes)                      │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -286,9 +227,6 @@ jobs:
 ## Next Steps
 
 When ready to implement:
-1. Start with `/manual` - simpler, immediate value
-2. Then `/autopilot-setup` and local execution
-3. Then CI/CD integration
-4. Then `/briefing` interactive triage
-
-Consider: `/manual` could ship in next release, `/autopilot` as a later milestone.
+1. `/autopilot-setup` and local execution
+2. CI/CD integration
+3. `/briefing` interactive triage

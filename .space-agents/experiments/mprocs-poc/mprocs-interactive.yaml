@@ -1,9 +1,0 @@
-# POC: Interactive Claude TUI test
-# Run: cd .space-agents/experiments/mprocs-poc && mprocs -c mprocs-interactive.yaml
-
-server: 127.0.0.1:4050
-
-procs:
-  ralph:
-    shell: "./ralph-interactive-test.sh"
-    autostart: true
