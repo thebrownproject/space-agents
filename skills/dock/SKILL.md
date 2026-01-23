@@ -67,6 +67,13 @@ git add -A && git commit -m "dock: session end" && git push
 
 ### Step 4: Display Logout Screen
 
+Query all features and their task progress:
+
+```bash
+bd list -t feature --status open,in_progress
+bd list --tree
+```
+
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │  ███████╗██████╗  █████╗  ██████╗███████╗                      │
@@ -88,8 +95,14 @@ git add -A && git commit -m "dock: session end" && git push
 │  Tasks completed:      {tasks_completed}                       │
 │  Bugs fixed:           {bugs_fixed}                            │
 ├────────────────────────────────────────────────────────────────┤
-│  FEATURE PROGRESS                                              │
-│  {feature_name}        [{progress_bar}] {done}/{total}         │
+│  PROGRESS                                                      │
+│  {feature_1}           [{progress_bar}] {done}/{total}         │
+│    ├─ {task_1}         {status_icon}                           │
+│    ├─ {task_2}         {status_icon}                           │
+│    └─ {task_3}         {status_icon}                           │
+│  {feature_2}           [{progress_bar}] {done}/{total}         │
+│    ├─ {task_1}         {status_icon}                           │
+│    └─ {task_2}         {status_icon}                           │
 ├────────────────────────────────────────────────────────────────┤
 │  Context saved to CAPCOM. Run /launch to continue.             │
 │                                                                │
@@ -103,10 +116,12 @@ git add -A && git commit -m "dock: session end" && git push
 |-------------|--------|---------|
 | `{tasks_completed}` | Session memory | `3` |
 | `{bugs_fixed}` | Session memory | `1` |
-| `{feature_name}` | Active feature from Beads | `user-auth` |
+| `{feature_N}` | Feature name (truncate to 20 chars) | `Agent Prompts...` |
 | `{progress_bar}` | Visual bar (10 chars): █ for done, ░ for remaining | `████████░░` |
 | `{done}/{total}` | Completed/Total tasks in feature | `8/10` |
+| `{task_N}` | Task name (truncate to 20 chars) | `Update planning...` |
+| `{status_icon}` | ✓ complete, ◐ in_progress, ○ open, ⊘ blocked | `○` |
 
 **Progress bar formula:** `done / total * 10` filled blocks, rest empty.
 
-**If no active feature:** Show "No active features" instead of progress section.
+**Show all open/in_progress features** with their child tasks. Skip closed features.
