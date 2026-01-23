@@ -175,7 +175,7 @@ exploration/
   ideas/       ← /brainstorm creates exploration.md here
   planned/     ← /plan creates plan.md, moves from ideas/
   staged/      ← /plan creates Beads, moves from planned/
-  complete/    ← /dock moves here when feature closes
+  complete/    ← /land moves here when feature closes
 ```
 
 ---

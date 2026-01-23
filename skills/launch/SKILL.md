@@ -62,7 +62,7 @@ Display "HOUSTON offline. Beads not initialized." then offer:
 │      orchestrated     Agents-per-task (medium, 4-10 tasks)     │
 │      ralph            Automatic background (large, 10+ tasks)  │
 │    /capcom          Check status and progress                  │
-│    /dock            End session, save to CAPCOM                │
+│    /land            End session, save to CAPCOM                │
 ├────────────────────────────────────────────────────────────────┤
 │  TREE                                                          │
 │  {tree}                                                        │

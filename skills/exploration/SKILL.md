@@ -32,5 +32,5 @@ exploration/
   ideas/       ← /brainstorm output
   planned/     ← /plan output (has plan.md)
   staged/      ← /plan output (has Beads)
-  complete/    ← /dock archives here
+  complete/    ← /land archives here
 ```

@@ -549,3 +549,43 @@ Scout uses Explore subagent to gather codebase context (files, patterns, depende
 Complete task 1.2.2: Update execution agents (mission-worker/inspector/analyst) - terminology changes and decide on file renaming.
 
 ---
+
+## [2026-01-23 15:45] Session End
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**1. Completed feature 1.2: Agent Prompts and Terminology (4 tasks)**
+
+- **Task 1.2.2**: Updated execution agents (mission-worker.md, mission-inspector.md, mission-analyst.md)
+  - `objective` → `task` throughout
+  - `[ALERT:severity]` → `[BUG:severity]` (aligns with Beads issue types)
+  - `SQLite` → `Beads` references
+  - Fixed invalid bd create syntax (pipe character in type flag)
+  - Kept file names as `mission-*.md` (correct - they operate in mission mode)
+
+- **Task 1.2.3**: Verified exploration agents (brainstorm-*.md, debug.md) - already clean
+
+- **Task 1.2.4**: Validation sweep - spawned Explore agent to crosscheck 14 agent files against Beads commands. Found 1 syntax issue, fixed.
+
+**2. Updated /dock skill → /land**
+- Renamed `skills/dock/` to `skills/land/`
+- Updated references in /launch, /exploration, /exploration-plan
+- Added improved landing protocol: `bd doctor --quiet` pre-flight, specific file staging, meaningful commit messages
+
+**3. Simplified /land logout screen**
+- Removed ASCII art banner (was crashing Claude Code)
+- Simplified to plain text summary showing all features from Beads
+
+### Decisions Made
+
+- **File naming stays as `mission-*.md`**: These are "mission mode" agents - the mode is /mission, so naming is correct. They implement features/tasks, but operate within mission mode.
+- **`[ALERT:]` → `[BUG:]`**: Beads has no "alert" issue type, only "bug". So agent-reported issues become bugs.
+- **`/dock` → `/land`**: Pairs with `/launch`. Space theme version of "landing the plane".
+
+### Next Action
+
+Start feature 1.3: Exploration & Planning Workflow. First task is 1.3.1 (Create exploration folder structure) which unblocks 4 other tasks.
+
+---
