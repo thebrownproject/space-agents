@@ -1,13 +1,25 @@
 ---
 name: dock
-description: "End session. Appends full context to CAPCOM, syncs Beads, displays session stats."
+description: "End session. Reconciles exploration folders, appends context to CAPCOM, syncs Beads, displays session stats."
 ---
 
 # /dock - End Session
 
-Capture session context in CAPCOM. Focus on what's in your head that Beads can't store.
+Capture session context in CAPCOM and reconcile any folder states that were missed during the session.
 
 ## Procedure
+
+### Step 0: Reconcile Exploration Folders
+
+Check for folder/state mismatches and fix them:
+
+| If folder in... | But has... | Move to... |
+|-----------------|------------|------------|
+| `ideas/` | `plan.md` | `planned/` |
+| `planned/` | Beads feature exists | `staged/` |
+| `staged/` | Beads feature closed | `complete/` |
+
+For each mismatch: show user, confirm, then `mv` the folder.
 
 ### Step 1: Gather State
 

@@ -427,3 +427,48 @@ Updated `skills/exploration/SKILL.md` router - only `create` remains unimplement
 Commit new skills/agents, then brainstorm exploration-create design.
 
 ---
+
+## [2026-01-23 15:10] Session End
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+Major restructure of exploration workflow and folder organization:
+
+**1. Brainstormed /plan skill redesign**
+- Decided to absorb `/exploration-create` into `/plan` (eliminated separate skill)
+- `/plan` now has 3 modes: plan from brainstorm, plan from scratch, create Beads from plan
+- Folder lifecycle: `ideas/` → `planned/` → `staged/` → `complete/`
+
+**2. Updated skills**
+- `skills/exploration-brainstorm/SKILL.md` - output path now `exploration/ideas/`
+- `skills/exploration/SKILL.md` - removed "Create" mode, added folder structure reference
+- `skills/exploration-plan/SKILL.md` - complete rewrite with 3-mode router
+- `skills/dock/SKILL.md` - added Step 0 folder reconciliation
+
+**3. Created exploration folder structure**
+- `.space-agents/exploration/ideas/` - brainstorm outputs, no Beads
+- `.space-agents/exploration/planned/` - has plan.md, no Beads yet
+- `.space-agents/exploration/staged/` - has Beads, ready to execute
+- `.space-agents/exploration/complete/` - archived finished work
+
+**4. Migrated and organized all folders**
+- Audited all exploration folders, moved to correct lifecycle location
+- Migrated all mission folders into exploration/
+- Deleted `missions/` folder entirely (Beads is source of truth)
+- Renamed `_mission.md` → `plan.md` everywhere
+- Staged folders use Beads ID prefix: `1.2-agent-prompts-terminology`, `1.3-exploration-planning-workflow`
+
+### Decisions Made
+
+- `/exploration-create` eliminated - absorbed into `/plan` mode 3
+- Lifecycle folders override previous "stable folders" decision - we now move folders
+- `staged/` folders named by Beads ID (e.g., `1.3-topic`), others by date
+- `missions/` folder removed entirely - exploration/ is the new unified location
+
+### Next Action
+
+Review all folders in `ideas/` next session - crosscheck what's actually been completed and ensure alignment with Beads. May create new Beads features if needed.
+
+---

@@ -41,6 +41,6 @@ Spawn with `run_in_background: true`, continue conversation immediately:
 When exploration reaches clarity, ask user if they want to capture it:
 
 1. **Ask first** - "We've reached a clear direction. Want me to write up an exploration report?"
-2. If yes: Create `.space-agents/exploration/YYYY-MM-DD-<topic>/exploration.md`
+2. If yes: Create `.space-agents/exploration/ideas/YYYY-MM-DD-<topic>/exploration.md`
 3. Report sections: architecture, components, data flow, error handling, testing approach
-4. Offer next step: `/exploration-plan` when ready to plan implementation
+4. Offer next step: `/plan` when ready to plan implementation

@@ -18,12 +18,19 @@ Use AskUserQuestion, then invoke the corresponding skill:
 
 | Mode | Skill | Purpose |
 |------|-------|---------|
-| Brainstorm | `exploration-brainstorm` | Explore ideas → reports |
-| Plan | `exploration-plan` | Structure work → plan.md |
-| Create | `exploration-create` | Formalize → Beads |
+| Brainstorm | `exploration-brainstorm` | Explore ideas → `ideas/` folder |
+| Plan | `exploration-plan` | Structure work → `planned/` folder → Beads |
 | Review | `exploration-review` | Code review → bugs |
 | Debug | `exploration-debug` | Investigate → bugs |
 
-Invoke with: `Skill: exploration-brainstorm`, `exploration-plan`, `exploration-create`, `exploration-review`, or `exploration-debug`
+Invoke with: `Skill: exploration-brainstorm`, `exploration-plan`, `exploration-review`, or `exploration-debug`
 
-**Not yet implemented:** create
+## Folder Structure
+
+```
+exploration/
+  ideas/       ← /brainstorm output
+  planned/     ← /plan output (has plan.md)
+  staged/      ← /plan output (has Beads)
+  complete/    ← /dock archives here
+```

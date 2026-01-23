@@ -1,69 +1,110 @@
 ---
 name: exploration-plan
-description: "Write feature plan with tasks. HOUSTON convenes planning council, synthesizes their input, and guides user through approval stages."
+description: "Structure work into plans and Beads. Three modes: plan from brainstorm, plan from scratch, or create Beads from existing plan."
 ---
 
-# /exploration-plan - Feature Planning
+# /exploration-plan - Planning & Beads Creation
 
-Turn an exploration report into an executable feature with tasks. HOUSTON reviews the exploration, convenes a planning council for input, then synthesizes everything into a plan for user approval.
-
-**Hierarchy:**
-- Project = the codebase (one per installation)
-- Feature = scope of work (designed in /exploration)
-- Tasks = implementation units (created here)
+Turn ideas into executable plans, and plans into Beads. This skill handles the full journey from exploration to tracked work items.
 
 ## The Process
 
-1. **Check exploration folder** - list available reports in `.space-agents/exploration/`
-2. **Confirm with user** - "I found X. Is this what you want to plan?"
-3. **Read and analyze** - HOUSTON reads the exploration report
-4. **Ask to convene council** - "Ready to send out the planning council?"
-5. **Spawn council** - 3 agents analyze in parallel
-6. **Synthesize** - HOUSTON combines own analysis + council input
-7. **Present stages** - user approves each stage
-8. **Write plan** - Beads records + markdown file
-9. **Handoff** - offer `/mission-go` to begin execution
+1. **Ask which mode** - Use AskUserQuestion with the three options
+2. **Execute the selected mode**
+3. **After creating plan.md** - Always offer to create Beads
 
-## Step 1: Check What's Available
+## Mode Selection
 
-List exploration reports:
 ```
-.space-agents/exploration/YYYY-MM-DD-*/exploration.md
+Which planning mode?
+  • Plan from brainstorm  → reads ideas/<topic>/exploration.md
+  • Plan from scratch     → start with just an idea
+  • Create Beads from plan → reads planned/<topic>/plan.md
 ```
 
-Present to user:
-```
-Found exploration reports:
-  [1] 2026-01-18-auth-system - "User authentication with JWT"
-  [2] 2026-01-15-caching-layer - "Redis caching for API"
+---
 
-Which one should we plan? (or describe something new)
-```
+## Mode 1: Plan from Brainstorm
 
-## Step 2: HOUSTON's Own Analysis
+**Input:** `exploration/ideas/YYYY-MM-DD-<topic>/exploration.md`
+**Output:** `plan.md` in same folder, then move to `planned/`
 
-Before spawning agents, read the exploration report yourself. Form your own view on:
-- How to break this into tasks
-- What the dependencies might be
-- Key implementation considerations
+### Steps
 
-This gives you context to evaluate the council's input.
+1. **List available explorations** in `exploration/ideas/`
+2. **Confirm selection** with user
+3. **Read exploration.md** - Form your own view first
+4. **Ask to convene council** - "Ready to send planning agents?"
+5. **Spawn council** - 3 agents analyze in parallel (see Council section)
+6. **Synthesize** - Combine your analysis + council input
+7. **Present for approval** - Feature structure, sequence, implementation approach
+8. **Write plan.md** - In the same folder
+9. **Move folder** - `ideas/<topic>/` → `planned/<topic>/`
+10. **Offer Beads** - "Create these as Beads now?"
 
-## Step 3: Convene the Council
+If user says yes to Beads, execute Mode 3.
 
-After user confirms, ask before spawning:
-```
-Ready to convene the planning council? I'll send out three agents to analyze:
-- Task Planner (feature/task structure)
-- Sequencer (dependencies, execution order)
-- Implementer (TDD task breakdown)
+---
 
-They'll report back while we continue talking. Proceed?
-```
+## Mode 2: Plan from Scratch
+
+**Input:** User describes idea
+**Output:** `planned/YYYY-MM-DD-<topic>/plan.md`
+
+### Steps
+
+1. **Discuss the idea** - Ask clarifying questions (use AskUserQuestion)
+2. **Ask to convene council** - Same as Mode 1
+3. **Spawn council** - 3 agents analyze in parallel
+4. **Synthesize** - Combine your analysis + council input
+5. **Present for approval** - Feature structure, sequence, implementation approach
+6. **Create folder** - `exploration/planned/YYYY-MM-DD-<topic>/`
+7. **Write plan.md** - No exploration.md (that's fine)
+8. **Offer Beads** - "Create these as Beads now?"
+
+If user says yes to Beads, execute Mode 3.
+
+---
+
+## Mode 3: Create Beads from Plan
+
+**Input:** `exploration/planned/YYYY-MM-DD-<topic>/plan.md`
+**Output:** Beads (feature + tasks), move folder to `staged/`
+
+### Steps
+
+1. **List available plans** in `exploration/planned/`
+2. **Confirm selection** with user
+3. **Read plan.md** - Parse the feature and tasks
+4. **Show what will be created** - List feature name + task names
+5. **Create Beads:**
+   ```bash
+   # Get active epic
+   EPIC_ID=$(bd list -t epic --status open --json | jq -r '.[0].id')
+
+   # Create feature under epic
+   bd create "Feature title" -t feature --parent "$EPIC_ID" -p 2
+
+   # Get the feature ID just created
+   FEATURE_ID=$(bd list -t feature --status open --json | jq -r '.[-1].id')
+
+   # Create tasks under feature
+   bd create "Task 1" -t task --parent "$FEATURE_ID" -p 1
+   bd create "Task 2" -t task --parent "$FEATURE_ID" -p 2
+
+   # Set up dependencies if specified in plan
+   bd dep add <task-id> <depends-on-id>
+
+   bd sync
+   ```
+6. **Move folder** - `planned/<topic>/` → `staged/<topic>/`
+7. **Confirm** - "Feature ready. Run `/mission` to begin execution."
+
+---
 
 ## The Council
 
-The council are **advisors**, not decision makers. They provide analysis, HOUSTON synthesizes and can override if their recommendations don't fit.
+Advisors, not decision makers. HOUSTON synthesizes and can override.
 
 - `space-agents:plan-task-planner` - Breaks feature into tasks
 - `space-agents:plan-sequencer` - Analyzes dependencies, execution order
@@ -71,144 +112,78 @@ The council are **advisors**, not decision makers. They provide analysis, HOUSTO
 
 Spawn all 3 in parallel with `run_in_background: true`. Continue conversation while they work.
 
-## Approval Stages
-
-Present each stage, get user approval before continuing:
-
-**Stage 1: Feature Structure**
-```
-Council analysis complete. Proposed feature:
-
-FEATURE: [Feature Name]
-Goal: [One sentence]
-
-Tasks:
-  1. [Name] (~X min) - [Brief description]
-  2. [Name] (~Y min) - [Brief description]
-  3. [Name] (~Z min) - [Brief description]
-
-Does this structure look right?
-```
-
-**Stage 2: Sequence**
-```
-Execution sequence:
-
-1. Task 1 (no dependencies)
-2. Task 2 (depends on Task 1)
-3. Task 3 (depends on Task 2)
-
-Any concerns with this order?
-```
-
-**Stage 3: Implementation Details**
-```
-Implementation approach for first task:
-
-Task 1: [Name]
-Files: [list]
-Steps:
-  1. Write failing test
-  2. Verify test fails
-  3. Implement
-  4. Verify test passes
-  5. Commit
-
-This pattern applies to all tasks. Ready to write the plan?
-```
-
-## Output
-
-After all approvals:
-
-1. **Create feature folder:** `.space-agents/features/staged/<feature-slug>/`
-2. **Move exploration:** Copy `exploration.md` into feature folder, delete exploration folder
-3. **Write _feature.md:** Feature context (goal, tasks list, key files)
-4. **Write implementation-plan.md:** Detailed plan with TDD steps per task
-5. **Create Beads records:**
-   ```bash
-   # Get active epic
-   EPIC_ID=$(bd list -t epic --status open --json | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-
-   # Create feature under epic
-   bd create "Feature title" -t feature --parent "$EPIC_ID" -p 1
-
-   # Get the feature ID just created
-   FEATURE_ID=$(bd list -t feature --status open --json | grep -o '"id":"[^"]*"' | tail -1 | cut -d'"' -f4)
-
-   # Create tasks under feature
-   bd create "Task 1 title" -t task --parent "$FEATURE_ID" -p 1
-   bd create "Task 2 title" -t task --parent "$FEATURE_ID" -p 2
-   bd sync
-   ```
-6. **Confirm:** "Feature ready. Run `/mission` to begin execution."
-
-**Note:** Beads auto-generates IDs for features and tasks.
-
-**Folder lifecycle:** `staged/` → `active/` (on /mission) → `complete/` (on finish)
-
-## _feature.md Structure
-
-```markdown
-# {feature-slug}: [Feature Name]
-
-**Status:** Staged
-**Created:** [timestamp]
-
-## Goal
-[One sentence]
-
-## Tasks
-1. [Task ID] - [Name]
-2. [Task ID] - [Name]
-
-## Key Files
-[List of files to create/modify]
-```
-
-## implementation-plan.md Structure
-
-```markdown
-# [Feature] Implementation Plan
-
-**Feature:** {feature-slug}
-**Created:** [timestamp]
-
-## Tasks
-
-| # | Task | Est. | Status |
-|---|------|------|--------|
-| 1 | [Name] | X min | pending |
-| 2 | [Name] | Y min | pending |
-
-## Sequence
-
-[Dependencies and execution order]
-
 ---
 
-## Task 1: [Name]
+## plan.md Structure
+
+Use explicit hierarchy that maps to Beads:
+
+```markdown
+# Feature: [Feature Name]
+
+**Goal:** [One sentence description]
+
+## Overview
+
+[Context, motivation, what this achieves]
+
+## Tasks
+
+### Task: [Task 1 Name]
 
 **Goal:** [One sentence]
 **Files:** [Create/Modify/Test]
+**Depends on:** [None or other task names]
 
 **Steps:**
-1. Write failing test - [code snippet]
-2. Run test - [command + expected output]
-3. Implement - [code snippet]
-4. Run test - [command + expected output]
-5. Commit - [command]
+1. [Step description]
+2. [Step description]
+
+### Task: [Task 2 Name]
+
+**Goal:** [One sentence]
+**Files:** [Create/Modify/Test]
+**Depends on:** Task 1 Name
+
+**Steps:**
+1. [Step description]
+2. [Step description]
+
+## Sequence
+
+1. Task 1 (no dependencies)
+2. Task 2 (depends on Task 1)
+3. Task 3 (can run parallel with Task 2)
+
+## Success Criteria
+
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
+```
+
+**Parsing rules:**
+- `# Feature:` → Creates Beads feature
+- `### Task:` → Creates Beads task
+- `**Depends on:**` → Sets up `bd dep add`
 
 ---
 
-[Continue for all tasks]
+## Folder Lifecycle
+
 ```
+exploration/
+  ideas/       ← /brainstorm creates exploration.md here
+  planned/     ← /plan creates plan.md, moves from ideas/
+  staged/      ← /plan creates Beads, moves from planned/
+  complete/    ← /dock moves here when feature closes
+```
+
+---
 
 ## Remember
 
-- Feature = scope of work (one per /exploration report)
-- Tasks = implementation units (3-5 per feature, Pod-sized chunks)
-- Beads auto-generates IDs for features and tasks
-- Create in `staged/`, moves to `active/` on execution
-- Council are advisors - HOUSTON synthesizes and can override
-- User approves each stage before anything is written
+- Always use AskUserQuestion for mode selection and approvals
+- Council are advisors - synthesize their input, don't just accept it
+- After writing plan.md, always offer to create Beads
+- Move folders at each transition
+- Beads auto-generates IDs
