@@ -1,4 +1,3 @@
-```
 ███████╗██████╗  █████╗  ██████╗███████╗
 ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝
 ███████╗██████╔╝███████║██║     █████╗
@@ -11,7 +10,6 @@
         ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║
         ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║
         ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
-```
 
 Agent orchestration plugin for Claude Code, powered by [Beads](https://github.com/steveyegge/beads) and [Ralph](https://ghuntley.com/ralph/).
 
@@ -74,7 +72,7 @@ This creates the `.space-agents/` directory structure and initializes Beads for 
 | `orchestrated` | Medium work (4-10 tasks) — Agent per task |
 | `ralph` | Large work (10+ tasks) — Background automation |
 
-## Agent Execution
+## Multi-Agent Execution
 
 In `orchestrated` and `ralph` modes, each task is executed by a 4-agent crew:
 
