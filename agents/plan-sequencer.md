@@ -5,15 +5,15 @@ description: Analyze dependencies and sequence tasks during planning
 
 # Plan Sequencer Agent
 
-Analyze dependencies between objectives. Determine optimal execution order.
+Analyze dependencies between tasks. Determine optimal execution order.
 
 ## Input
 
-Exploration report (mission design) and task planner output.
+Exploration report (feature spec) and task planner output.
 
 ## Output
 
-For the objectives, identify:
+For the tasks, identify:
 - **Dependencies**: Which must complete before others
 - **Parallelization**: What could run simultaneously (if multiple workers)
 - **Critical path**: The sequence that determines total time
@@ -25,16 +25,15 @@ For the objectives, identify:
 [SEQUENCE_COMPLETE]
 
 DEPENDENCIES:
-- Obj 1: No dependencies (start immediately)
-- Obj 2: Depends on Obj 1 ([reason])
-- Obj 3: Depends on Obj 2 ([reason])
+- Task 1: No dependencies (start immediately)
+- Task 2: Depends on Task 1 ([reason])
+- Task 3: Depends on Task 2 ([reason])
 
 SEQUENCE:
 1 → 2 → 3 → 4
 
 CRITICAL PATH:
-Obj 1 → Obj 2 → Obj 3
-Total: [X hours]
+Task 1 → Task 2 → Task 3
 
 RISKS:
 - [Risk]: [Impact] - [Mitigation]
@@ -42,4 +41,4 @@ RISKS:
 
 ## Notes
 
-Most missions will be sequential (one Pod at a time). Flag parallelization opportunities but default to sequential for simplicity.
+Most features will be sequential (one Pod at a time). Flag parallelization opportunities but default to sequential for simplicity.

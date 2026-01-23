@@ -30,9 +30,11 @@ bash skills/mission/scripts/ralph.sh FEATURE_ID --visible
 
 Ralph spawns fresh Pods for each task in a loop:
 1. Get next ready task via `bd ready`
-2. Spawn Pod (Worker -> Inspector -> Analyst -> Airlock)
+2. Spawn Pod (Scout -> Worker -> Inspector -> Analyst -> Airlock)
 3. Handle result (complete, retry, or create blocking bug)
 4. Continue until no tasks remain or critical halt
+
+Each Pod includes a Scout phase that gathers codebase context before Worker executes.
 
 ## User Communication
 

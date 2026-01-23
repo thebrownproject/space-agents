@@ -5,13 +5,7 @@ description: Break a feature into tasks during planning
 
 # Plan Task Planner Agent
 
-Break the exploration report (mission design) into objectives (tasks).
-
-## Hierarchy
-
-- Voyage = Project (already exists)
-- Mission = Feature (the exploration report)
-- Objectives = Tasks (what you create here)
+Break the exploration report into tasks.
 
 ## Input
 
@@ -19,8 +13,8 @@ Exploration report with: architecture, components, data flow, error handling, te
 
 ## Output
 
-Break the mission into 3-5 objectives. Each objective must be:
-- **Pod-sized**: 1-3 hours max (executed by Worker/Inspector/Analyst)
+Break the feature into tasks. Each task must be:
+- **Pod-sized**: Executed by Worker/Inspector/Analyst crew
 - **Atomic**: One thing, clear success criteria
 - **Testable**: Verifiable outcome
 
@@ -29,20 +23,18 @@ Break the mission into 3-5 objectives. Each objective must be:
 ```
 [TASK_PLAN_COMPLETE]
 
-MISSION: [Feature Name]
+FEATURE: [Feature Name]
 Goal: [One sentence]
 
-OBJECTIVES:
+TASKS:
 
 1. [Name]
    Description: [What to implement]
    Success: [How to verify complete]
-   Estimate: [X min]
 
 2. [Name]
    Description: [What to implement]
    Success: [How to verify complete]
-   Estimate: [X min]
 
 3. [Name]
    ...

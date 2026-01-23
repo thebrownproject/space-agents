@@ -54,6 +54,32 @@ Present the briefing before starting work:
 
 ---
 
+## Phase 2.5: Scout
+
+Dispatch Explore agent to gather codebase context for the Worker.
+
+```
+Task tool:
+  subagent_type: "Explore"
+  prompt: |
+    Scout the codebase for task: [task_title]
+
+    Task: [task_description]
+    Feature: [parent_feature_summary]
+
+    Report ONLY facts - no suggestions or implementation ideas:
+    1. Relevant directories and files
+    2. Files likely needing modification
+    3. Existing patterns in the codebase
+    4. Related code and dependencies
+
+    Just report what you find. Keep it concise.
+```
+
+Store scout output for Phase 3.
+
+---
+
 ## Phase 3: Execution
 
 Dispatch crew in sequence. Track worker attempts (max 3).
@@ -61,10 +87,10 @@ Dispatch crew in sequence. Track worker attempts (max 3).
 ### Execution Flow
 
 ```
-Worker --- [COMPLETE] ---> Inspector --- [PASS] ---> Analyst --- [PASS] ---> Airlock
-  |                           |                         |
-  +-- [FAILED] --> Retry      +-- [FAIL] --> Retry     +-- [FAIL:blocker] --> Exit
-      (max 3)                     (counts as retry)        [FAIL:warning] --> Continue
+Scout ---> Worker --- [COMPLETE] ---> Inspector --- [PASS] ---> Analyst --- [PASS] ---> Airlock
+             |                           |                         |
+             +-- [FAILED] --> Retry      +-- [FAIL] --> Retry     +-- [FAIL:blocker] --> Exit
+                 (max 3)                     (counts as retry)        [FAIL:warning] --> Continue
 ```
 
 ### 3.1 Log Progress Comment
@@ -79,7 +105,7 @@ bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
 
 | Agent | subagent_type | Context to provide | On success | On fail |
 |-------|---------------|-------------------|------------|---------|
-| **Worker** | `space-agents:mission-worker` | Task details, feature context, dependency handovers | → Inspector | Retry (max 3) |
+| **Worker** | `space-agents:mission-worker` | Task details, feature context, dependency handovers, **scout report** | → Inspector | Retry (max 3) |
 | **Inspector** | `space-agents:mission-inspector` | Requirements, files changed, git diff | → Analyst | → Worker retry |
 | **Analyst** | `space-agents:mission-analyst` | Task title, git diff, conventions | → Airlock | blocker=Exit, warning=Continue |
 

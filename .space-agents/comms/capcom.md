@@ -511,3 +511,41 @@ Major housekeeping session focused on cleaning up outdated files and folders.
 Finalize features 1.2 (Agent Prompts) and 1.3 (Exploration Workflow) - then core system is ready to use on real projects.
 
 ---
+
+## [2026-01-24 00:15] Session End
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**1. Completed task 1.2.1 (Planning agent prompts)**
+- Updated `agents/plan-task-planner.md`, `agents/plan-sequencer.md`, `agents/plan-implementer.md`
+- Removed old hierarchy block (Voyage/Mission/Objectives mapping)
+- Changed: mission→feature, objective→task, MISSION:→FEATURE:, OBJECTIVES:→TASKS:
+- Removed time estimates (X min, X hours)
+
+**2. Added Scout phase to all mission execution skills**
+- `skills/mission-pod/SKILL.md` - Added Phase 2.5 Scout with full documentation
+- `skills/mission-orchestrated/SKILL.md` - Added Scout in task loop
+- `skills/mission-solo/SKILL.md` - Added Scout as step 4
+- `skills/mission-ralph/SKILL.md` - Documented Scout runs via Pods
+
+Scout uses Explore subagent to gather codebase context (files, patterns, dependencies) before Worker executes. Reports facts only - no suggestions or implementation ideas.
+
+**3. Discussed task 1.2.2 scope**
+- Reviewed execution agents (mission-worker/inspector/analyst)
+- Found old terminology (objective, [ALERT:], SQLite references)
+- File renaming question raised but deferred to next session
+
+### Decisions Made
+
+- Scout runs per-task (not per-feature) for fresh context
+- Scout output is "facts only" - no suggestions or implementation ideas
+- Solo mode includes Scout for consistency across all execution modes
+- Confirmed hierarchy: Epic → Feature → Task (no more Voyage/Mission/Objectives)
+
+### Next Action
+
+Complete task 1.2.2: Update execution agents (mission-worker/inspector/analyst) - terminology changes and decide on file renaming.
+
+---

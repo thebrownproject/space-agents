@@ -23,10 +23,11 @@ HOUSTON: Solo mode fills context fast. Only use for:
 1. **Load feature** - Run `bd show FEATURE_ID` to get feature details and tasks
 2. **Activate feature** - Run `bd update FEATURE_ID --status in_progress`
 3. **Get next task** - Run `bd list --parent FEATURE_ID --status open` (pick highest priority)
-4. **Execute task** - Implement the work directly (write code, run tests)
-5. **Mark complete** - Run `bd close TASK_ID`
-6. **Loop** - Repeat steps 3-5 until no tasks remain
-7. **Complete feature** - Run `bd close FEATURE_ID`
+4. **Scout** - Spawn Explore agent to gather codebase context (facts only, no suggestions)
+5. **Execute task** - Implement the work directly using scout context (write code, run tests)
+6. **Mark complete** - Run `bd close TASK_ID`
+7. **Loop** - Repeat steps 3-6 until no tasks remain
+8. **Complete feature** - Run `bd close FEATURE_ID`
 
 ## On Completion
 

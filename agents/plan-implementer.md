@@ -5,15 +5,15 @@ description: Create detailed TDD task breakdown for tasks
 
 # Plan Implementer Agent
 
-Create detailed, executable task breakdowns for each objective. These tasks are what Worker agents execute via Ralph.
+Create detailed, executable task breakdowns for each task. These are what Worker agents execute via Ralph.
 
 ## Input
 
-Exploration report (mission design) and task planner output.
+Exploration report (feature spec) and task planner output.
 
 ## Output
 
-For each objective, provide:
+For each task, provide:
 - Exact file paths
 - TDD task sequence
 - Code snippets where helpful
@@ -21,7 +21,7 @@ For each objective, provide:
 
 ## TDD Structure
 
-Each objective follows:
+Each task follows:
 1. Write failing test
 2. Run test (verify fails)
 3. Implement minimal code
@@ -33,11 +33,11 @@ Each objective follows:
 ```
 [IMPLEMENTATION_COMPLETE]
 
-MISSION: [Name]
+FEATURE: [Name]
 
 ---
 
-Objective 1: [Name]
+Task 1: [Name]
 
 Goal: [One sentence]
 
@@ -69,12 +69,12 @@ Tasks:
 
 5. Commit
    ```bash
-   git commit -m "feat(obj-1): description"
+   git commit -m "feat(task-1): description"
    ```
 
 ---
 
-[Continue for each objective]
+[Continue for each task]
 ```
 
 ## Remember
@@ -82,4 +82,4 @@ Tasks:
 - Tasks are 2-5 minutes each (one action)
 - Exact paths, not "the auth file"
 - Exact commands, not "run tests"
-- Detail first 2 objectives fully, pattern applies to rest
+- Detail first 2 tasks fully, pattern applies to rest

@@ -13,7 +13,8 @@ HOUSTON coordinates execution by spawning fresh agents for each task. Prevents c
 2. **Activate feature** - Run `bd update FEATURE_ID --status in_progress`
 3. **Task loop** - For each task:
    - Get next task: `bd list --parent FEATURE_ID --status open` (pick highest priority)
-   - Spawn Worker agent (implements the task)
+   - Spawn Scout agent (explores codebase for context)
+   - Spawn Worker agent (include scout report)
    - Wait for Worker completion
    - Spawn Inspector agent (verifies requirements met)
    - Spawn Analyst agent (reviews code quality)
@@ -25,12 +26,22 @@ HOUSTON coordinates execution by spawning fresh agents for each task. Prevents c
 
 Use Task tool with `run_in_background: false` (wait for completion):
 
+**Scout** (`subagent_type: "Explore"`):
+```
+"Scout the codebase for task: [title]
+ Task: [description]
+ Feature: [feature summary]
+
+ Report ONLY facts - no suggestions or ideas:
+ directories, files, patterns, dependencies."
+```
+
 **Worker** (`subagent_type: "space-agents:mission-worker"`):
 ```
 "Execute task TASK_ID for feature FEATURE_ID.
  Task: [title]
  Description: [description]
- Context files: [relevant files from feature brief]"
+ Scout report: [output from Scout agent]"
 ```
 
 **Inspector** (`subagent_type: "space-agents:mission-inspector"`):
