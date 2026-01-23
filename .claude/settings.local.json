@@ -25,7 +25,9 @@
       "mcp__mcp-brave-search__brave_web_search",
       "Skill(space-agents:exploration-brainstorm)",
       "Bash(git push)",
-      "Skill(space-agents:mission)"
+      "Skill(space-agents:mission)",
+      "Skill(mission-solo)",
+      "Skill(space-agents:capcom)"
     ]
   }
 }
