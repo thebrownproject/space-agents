@@ -52,8 +52,7 @@ mkdir -p .space-agents/exploration/{ideas,planned,staged,complete}
 ```
 .space-agents/
 ├── comms/
-│   ├── capcom.md            # Master CAPCOM log (append-only)
-│   └── handover.md          # Context dump for fresh sessions
+│   └── capcom.md            # Master CAPCOM log (append-only)
 └── exploration/             # Exploration kanban
     ├── ideas/               # Early brainstorming
     ├── planned/             # Has plan.md, ready for Beads
@@ -100,17 +99,6 @@ Space-Agents installed. HOUSTON standing by.
 ---
 ```
 
-**`.space-agents/comms/handover.md`:**
-```markdown
-# Space-Agents Handover
-
-*Context dump for fresh sessions*
-
----
-
-[No handover pending]
-```
-
 ---
 
 ### Step 5: Display Installation Complete
@@ -118,25 +106,29 @@ Space-Agents installed. HOUSTON standing by.
 Show the installation success screen:
 
 ```
-+------------------------------------------------------------------+
-|                                                                  |
-|     SPACE AGENTS                                                 |
-|                                                                  |
-|             INSTALLATION COMPLETE                                |
-|                                                                  |
-+------------------------------------------------------------------+
-|                                                                  |
-|  Created:                                                        |
-|    [x] .space-agents/ directory structure                        |
-|    [x] Beads initialized (.beads/)                               |
-|    [x] CAPCOM master log                                         |
-|    [x] Handover file                                             |
-|                                                                  |
-+------------------------------------------------------------------+
-|                                                                  |
-|  Next step: Run /launch to start a session                       |
-|                                                                  |
-+------------------------------------------------------------------+
+┌────────────────────────────────────────────────────────────────┐
+│  ███████╗██████╗  █████╗  ██████╗███████╗                      │
+│  ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝                      │
+│  ███████╗██████╔╝███████║██║     █████╗                        │
+│  ╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝                        │
+│  ███████║██║     ██║  ██║╚██████╗███████╗                      │
+│  ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝                      │
+│           █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗  │
+│          ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝  │
+│          ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ███████╗  │
+│          ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║  │
+│          ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║  │
+│          ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝  │
+├────────────────────────────────────────────────────────────────┤
+│          INSTALLATION COMPLETE. HOUSTON standing by.           │
+├────────────────────────────────────────────────────────────────┤
+│  Created:                                                      │
+│    ✓ .space-agents/ directory structure                        │
+│    ✓ Beads initialized (.beads/)                               │
+│    ✓ CAPCOM master log                                         │
+├────────────────────────────────────────────────────────────────┤
+│  Next step: Run /launch to start a session                     │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -178,7 +170,7 @@ The `/install` skill:
 1. Checks for existing installation
 2. Creates directory structure (comms/, exploration/ with kanban folders)
 3. Initializes Beads for issue tracking
-4. Creates initialization files (capcom.md, handover.md)
+4. Creates CAPCOM master log
 5. Displays installation complete screen
 6. Guides user to run `/launch`
 
