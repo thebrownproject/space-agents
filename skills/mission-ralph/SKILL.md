@@ -18,12 +18,12 @@ Launch the Ralph loop in background. Runs automatically until all tasks complete
 ## Launch Command
 
 ```bash
-bash skills/mission/scripts/ralph.sh FEATURE_ID &
+bash skills/mission-ralph/scripts/ralph.sh FEATURE_ID &
 ```
 
 Or with visible mode (mprocs TUI):
 ```bash
-bash skills/mission/scripts/ralph.sh FEATURE_ID --visible
+bash skills/mission-ralph/scripts/ralph.sh FEATURE_ID --visible
 ```
 
 ## What Ralph Does
