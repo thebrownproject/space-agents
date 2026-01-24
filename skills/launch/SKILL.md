@@ -9,22 +9,15 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style.
 
 ## Process
 
-1. Check `.beads/issues.jsonl` exists
-2. If no epic: `bd create "$(basename $(pwd))" -t epic && bd sync`
-3. Query status:
+1. Run `bd list --tree` to check state
+2. If output contains "no beads database found" → display welcome screen with "not initialized" placeholders
+3. Otherwise, query status:
    ```bash
-   bd list --tree              # Project hierarchy
    bd ready                    # Unblocked work
    bd stats                    # Counts
    ```
 4. Read last CAPCOM entry: `grep -n "^## \[" .space-agents/comms/capcom.md | tail -1` then read from that line
 5. Display welcome screen
-
-## If Not Installed
-
-Display "HOUSTON offline. Beads not initialized." then offer:
-- Install (`bd init`)
-- Cancel
 
 ## Welcome Screen
 
