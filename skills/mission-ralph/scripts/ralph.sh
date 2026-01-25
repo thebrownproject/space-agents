@@ -241,6 +241,9 @@ mark_task_complete() {
 
     # Sync changes
     bd sync || log WARNING "bd sync failed (will retry later)"
+
+    # Allow dependency resolution to propagate before next bd ready check
+    sleep 2
 }
 
 mark_task_failed() {
@@ -265,6 +268,9 @@ mark_task_failed() {
 
     # Sync changes
     bd sync || log WARNING "bd sync failed (will retry later)"
+
+    # Allow dependency resolution to propagate before next bd ready check
+    sleep 2
 }
 
 get_feature_info() {
@@ -391,20 +397,21 @@ spawn_pod_visible() {
     mkdir -p "$(dirname "$prompt_file")"
     echo "$pod_prompt" > "$prompt_file"
 
+    # Signal file for completion detection
+    local signal_file="${signal_dir}/${task_id}.done"
+
     # Build claude command (escape quotes for JSON)
+    # Appends touch to create signal file when claude exits
     local cmd
     if [[ -f "$pod_agent" ]]; then
-        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions --system-prompt \\\"\$(cat ${pod_agent})\\\" \\\"\$(cat ${prompt_file})\\\""
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions --system-prompt \\\"\$(cat ${pod_agent})\\\" \\\"\$(cat ${prompt_file})\\\" ; touch ${signal_file}"
     else
-        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions \\\"\$(cat ${prompt_file})\\\""
+        cmd="cd ${PROJECT_ROOT} && claude --dangerously-skip-permissions \\\"\$(cat ${prompt_file})\\\" ; touch ${signal_file}"
     fi
 
     # Spawn via mprocs ctl (connect to server started by ralph-visible.sh)
     log INFO "Adding Pod to mprocs: Pod-${task_id}"
     mprocs --server 127.0.0.1:4050 --ctl "{\"c\": \"add-proc\", \"cmd\": \"$cmd\", \"name\": \"Pod-${task_id}\"}"
-
-    # Wait for signal file
-    local signal_file="${signal_dir}/${task_id}.done"
     log INFO "Waiting for Pod completion signal: ${signal_file}"
 
     if wait_for_signal "$signal_file" 600; then

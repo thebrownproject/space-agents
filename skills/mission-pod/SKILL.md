@@ -148,7 +148,26 @@ bd close <task_id>
 
 ### 4.3 Exit Success
 
-Exit with code 0.
+Display completion message and exit with code 0:
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  POD COMPLETE                                                  │
+├────────────────────────────────────────────────────────────────┤
+│  Task: <task_id> ✓                                             │
+│  <task_title>                                                  │
+├────────────────────────────────────────────────────────────────┤
+│  SUMMARY                                                       │
+│  <2-3 sentence summary of what was accomplished>               │
+├────────────────────────────────────────────────────────────────┤
+│  FILES                                                         │
+│  + path/to/new-file.ts (created)                               │
+│  ~ path/to/modified.ts (modified)                              │
+├────────────────────────────────────────────────────────────────┤
+│  ISSUES                                                        │
+│  <any warnings or notes, or "None">                            │
+└────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -167,7 +186,25 @@ bd create -t bug --title "Bug in <task_id>: <summary>" --parent <task_id>
 bd update <task_id> --status blocked
 ```
 
-Exit with code 1.
+Display failure message and exit with code 1:
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  POD BLOCKED                                                   │
+├────────────────────────────────────────────────────────────────┤
+│  Task: <task_id> ✗                                             │
+│  <task_title>                                                  │
+├────────────────────────────────────────────────────────────────┤
+│  BLOCKER                                                       │
+│  <what failed and why>                                         │
+├────────────────────────────────────────────────────────────────┤
+│  ATTEMPTED                                                     │
+│  <what was tried before giving up>                             │
+├────────────────────────────────────────────────────────────────┤
+│  NEXT STEPS                                                    │
+│  <suggested fix or action needed>                              │
+└────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

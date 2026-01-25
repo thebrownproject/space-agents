@@ -11,9 +11,12 @@ Launch the Ralph loop in background. Runs automatically until all tasks complete
 
 1. **Validate feature** - Check feature exists and has tasks
 2. **Activate feature** - Run `bd update FEATURE_ID --status in_progress`
-3. **Launch Ralph** - Run script in background
-4. **Inform user** - Tell them how to monitor progress
-5. **Exit** - HOUSTON's job is done, Ralph takes over
+3. **Ask launch mode** - "Start Ralph in mprocs (visible) or background (invisible)?"
+4. **Launch Ralph**:
+   - If **background**: Run the script directly
+   - If **visible**: Print the command for user to run in a new terminal window
+5. **Inform user** - Tell them how to monitor progress
+6. **Exit** - HOUSTON's job is done, Ralph takes over
 
 ## Launch Command
 
@@ -38,8 +41,7 @@ Each Pod includes a Scout phase that gathers codebase context before Worker exec
 
 ## User Communication
 
-After launching:
-
+**If background mode:**
 ```
 HOUSTON: Ralph loop launched for feature FEATURE_ID.
 
@@ -51,6 +53,16 @@ HOUSTON: Ralph loop launched for feature FEATURE_ID.
          - Critical blocker (requires intervention)
 
          Safe to close this session.
+```
+
+**If visible mode:**
+```
+HOUSTON: Run this command in a new terminal window:
+
+         bash skills/mission-ralph/scripts/ralph.sh FEATURE_ID --visible
+
+         This opens mprocs with live task progress.
+         Check status anytime: /capcom
 ```
 
 ## Monitoring

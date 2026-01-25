@@ -634,3 +634,64 @@ Start feature 1.3: Exploration & Planning Workflow. First task is 1.3.1 (Create 
 Write a short README.md for the GitHub repo.
 
 ---
+
+## [2026-01-25 11:15] Session 24
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**1. Fixed /launch skill initialization flow**
+- Changed from checking `.beads/issues.jsonl` file to running `bd list --tree` and detecting "no beads database found" error
+- Removed auto-epic creation - launch now just shows what exists
+- Updated `skills/launch/SKILL.md` with cleaner process
+
+**2. Updated /mission-ralph skill for user confirmation**
+- Added step 3: Ask user "mprocs (visible) or background?"
+- Visible mode: prints command for user to run in new terminal
+- Background mode: runs script directly
+- Updated user communication section with both output formats
+
+**3. Fixed ralph.sh signal file bug**
+- Pod completion wasn't creating signal file, causing 10-minute timeout
+- Added `; touch ${signal_file}` to claude command so signal created on exit
+- Now next pod spawns within 2 seconds instead of timeout
+
+**4. Fixed ralph.sh race condition bug**
+- `bd ready` was called immediately after `bd sync`, before dependency resolution propagated
+- Added `sleep 2` after sync in both `mark_task_complete()` and `mark_task_failed()`
+- Fixes "feature stalled" false positive when tasks should unblock
+
+**5. Updated mission-pod exit message format**
+- Changed from `+----+` style to `┌────┐` style matching welcome screen
+- Added sections: SUMMARY, FILES (with +/~ prefixes), ISSUES
+- Added matching failure format (POD BLOCKED)
+
+**6. Brainstormed ralph modes and logging**
+- Four mission completion styles: solo, orchestrated, ralph, ralph --pod
+- Lightweight ralph: Scout + direct execution + Airlock (~2 agents)
+- Pod ralph: Full crew Scout → Worker → Inspector → Analyst → Airlock (~5 agents)
+- Single ralph.sh with `--pod` flag rather than separate scripts
+- Logging to `.space-agents/comms/logs/ralph-{feature}-{timestamp}.log`
+- Created exploration report: `.space-agents/exploration/ideas/2026-01-25-ralph-modes-and-logging/`
+
+**7. Version bump to 1.1.3**
+
+### Decisions Made
+
+- **Ralph modes as flag, not separate scripts**: `ralph.sh --pod` for heavy mode keeps maintenance simpler
+- **Logging location**: `.space-agents/comms/logs/` keeps all communication together
+- **Signal file mechanism**: Use `;` not `&&` so signal created even on claude error
+
+### Gotchas
+
+- The `bd ready` check happens too fast after `bd sync` - dependency resolution needs time to propagate
+- Signal file in visible mode must be created by the spawned command, not by ralph itself
+
+### Next Action
+
+1. Implement lightweight ralph mode (--pod flag, direct execution prompt)
+2. Add file logging to ralph.sh
+3. Discuss brainstorming report structure skill
+
+---
