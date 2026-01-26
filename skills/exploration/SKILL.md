@@ -31,6 +31,8 @@ Invoke with: `Skill: exploration-brainstorm`, `exploration-plan`, `exploration-r
 exploration/
   ideas/       ← /brainstorm output
   planned/     ← /plan output (has plan.md)
+
+mission/
   staged/      ← /plan output (has Beads)
   complete/    ← /land archives here
 ```

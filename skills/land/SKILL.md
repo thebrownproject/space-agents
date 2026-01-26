@@ -15,9 +15,9 @@ Check for folder/state mismatches and fix them:
 
 | If folder in... | But has... | Move to... |
 |-----------------|------------|------------|
-| `ideas/` | `plan.md` | `planned/` |
-| `planned/` | Beads feature exists | `staged/` |
-| `staged/` | Beads feature closed | `complete/` |
+| `exploration/ideas/` | `plan.md` | `exploration/planned/` |
+| `exploration/planned/` | Beads feature exists | `mission/staged/` |
+| `mission/staged/` | Beads feature closed | `mission/complete/` |
 
 For each mismatch: show user, confirm, then `mv` the folder.
 

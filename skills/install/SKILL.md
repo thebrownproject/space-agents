@@ -44,7 +44,8 @@ Create the full Space-Agents directory structure:
 
 ```bash
 mkdir -p .space-agents/comms
-mkdir -p .space-agents/exploration/{ideas,planned,staged,complete}
+mkdir -p .space-agents/exploration/{ideas,planned}
+mkdir -p .space-agents/mission/{staged,complete}
 ```
 
 **Directory structure:**
@@ -53,9 +54,10 @@ mkdir -p .space-agents/exploration/{ideas,planned,staged,complete}
 .space-agents/
 ├── comms/
 │   └── capcom.md            # Master CAPCOM log (append-only)
-└── exploration/             # Exploration kanban
-    ├── ideas/               # Early brainstorming
-    ├── planned/             # Has plan.md, ready for Beads
+├── exploration/             # Exploration kanban
+│   ├── ideas/               # Early brainstorming
+│   └── planned/             # Has plan.md, ready for Beads
+└── mission/                 # Mission execution tracking
     ├── staged/              # Converted to Beads, ready to execute
     └── complete/            # Done
 ```

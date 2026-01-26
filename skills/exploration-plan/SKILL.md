@@ -17,7 +17,7 @@ Turn ideas into executable plans, and plans into Beads. This skill handles the f
 
 ```
 Which planning mode?
-  • Plan from brainstorm  → reads ideas/<topic>/exploration.md
+  • Plan from brainstorm  → reads ideas/<topic>/spec.md
   • Plan from scratch     → start with just an idea
   • Create Beads from plan → reads planned/<topic>/plan.md
 ```
@@ -26,14 +26,15 @@ Which planning mode?
 
 ## Mode 1: Plan from Brainstorm
 
-**Input:** `exploration/ideas/YYYY-MM-DD-<topic>/exploration.md`
+**Input:** `exploration/ideas/YYYY-MM-DD-<topic>/spec.md`
 **Output:** `plan.md` in same folder, then move to `planned/`
 
 ### Steps
 
 1. **List available explorations** in `exploration/ideas/`
 2. **Confirm selection** with user
-3. **Read exploration.md** - Form your own view first
+3. **Read spec.md** - Form your own view first
+   - *Fallback:* If `spec.md` not found, check for legacy `exploration.md`
 4. **Ask to convene council** - "Ready to send planning agents?"
 5. **Spawn council** - 3 agents analyze in parallel (see Council section)
 6. **Synthesize** - Combine your analysis + council input
@@ -69,7 +70,7 @@ If user says yes to Beads, execute Mode 3.
 ## Mode 3: Create Beads from Plan
 
 **Input:** `exploration/planned/YYYY-MM-DD-<topic>/plan.md`
-**Output:** Beads (feature + tasks), move folder to `staged/`
+**Output:** Beads (feature + tasks), move folder to `mission/staged/`
 
 ### Steps
 
@@ -88,16 +89,40 @@ If user says yes to Beads, execute Mode 3.
    # Get the feature ID just created
    FEATURE_ID=$(bd list -t feature --status open --json | jq -r '.[-1].id')
 
-   # Create tasks under feature
-   bd create "Task 1" -t task --parent "$FEATURE_ID" -p 1
-   bd create "Task 2" -t task --parent "$FEATURE_ID" -p 2
+   # Create tasks under feature with descriptions from plan.md
+   bd create "Task 1" -t task --parent "$FEATURE_ID" -p 1 -d "$(cat <<'EOF'
+   **Goal:** [One sentence goal from plan]
+
+   **Files:**
+   - [file list from plan]
+
+   **Steps:**
+   1. [steps from plan]
+   EOF
+   )"
+
+   bd create "Task 2" -t task --parent "$FEATURE_ID" -p 2 -d "$(cat <<'EOF'
+   **Goal:** [One sentence goal from plan]
+
+   **Files:**
+   - [file list from plan]
+
+   **Steps:**
+   1. [steps from plan]
+   EOF
+   )"
 
    # Set up dependencies if specified in plan
    bd dep add <task-id> <depends-on-id>
 
    bd sync
    ```
-6. **Move folder** - `planned/<topic>/` → `staged/<topic>/`
+
+   **Description format:** Extract from each `### Task:` section in plan.md:
+   - `**Goal:**` from task's Goal line
+   - `**Files:**` from task's Files line
+   - `**Steps:**` from task's Steps list
+6. **Move folder** - `planned/<topic>/` → `mission/staged/<topic>/`
 7. **Confirm** - "Feature ready. Run `/mission` to begin execution."
 
 ---
@@ -172,9 +197,11 @@ Use explicit hierarchy that maps to Beads:
 
 ```
 exploration/
-  ideas/       ← /brainstorm creates exploration.md here
+  ideas/       ← /brainstorm creates spec.md here
   planned/     ← /plan creates plan.md, moves from ideas/
-  staged/      ← /plan creates Beads, moves from planned/
+
+mission/
+  staged/      ← /plan creates Beads, moves from exploration/planned/
   complete/    ← /land moves here when feature closes
 ```
 
