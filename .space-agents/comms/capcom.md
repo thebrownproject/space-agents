@@ -695,3 +695,77 @@ Write a short README.md for the GitHub repo.
 3. Discuss brainstorming report structure skill
 
 ---
+
+## [2026-01-26 16:45] Session 25
+
+**Branch:** main | **Git:** uncommitted (new exploration folder)
+
+### What Happened
+
+**1. Brainstormed mission agent redesign**
+
+Redesigned the Pod agent pipeline from `Worker → Inspector → Analyst` to a cleaner three-agent flow:
+
+| Agent | Role | Source |
+|-------|------|--------|
+| **Pathfinder** | Explores codebase, writes findings to bead comments | New agent (formalizes Pod Phase 2.5) |
+| **Builder** | Writes code using Pathfinder findings + Context7 MCP | Renamed from Worker, stripped of planning |
+| **Inspector** | Two-pass review: requirements check then quality check | Expanded to absorb Analyst's quality checks |
+
+Key insight: Pathfinder finds the path, Builder builds, Inspector inspects. Each name clearly describes what the agent does.
+
+**2. Designed exploration-write-spec skill**
+
+New skill that produces structured `spec.md` from brainstorm conversations:
+- Called at end of `/brainstorm` when user confirms "ready to write spec"
+- Replaces loose `exploration.md` format with consistent structure
+- Sections: Problem, Solution, Requirements, Non-Requirements, Architecture, Constraints, Success Criteria, Open Questions, Next Steps
+
+**3. Fixed exploration-plan bead creation gap**
+
+Discovered that `bd create` in exploration-plan only passes title, not description. Updated spec to require passing Goal, Files, Steps via `-d` flag so Pathfinder and Builder have full task context.
+
+**4. Restructured folder layout**
+
+Split single `exploration/` folder into two that match skill categories:
+
+```
+exploration/           mission/
+  ideas/                 staged/
+  planned/               complete/
+```
+
+Handoff from `exploration/` to `mission/` happens when beads are created - the "ready for execution" boundary.
+
+**5. Defined Pathfinder output format**
+
+Structured bead comment format for Pathfinder findings:
+- Codebase Context (files, patterns, related code)
+- Implementation Guidance (approach, patterns to follow, key interfaces)
+- Risks (unexpected discoveries)
+
+**6. Documented Inspector two-pass mechanism**
+
+- Pass 1: Requirements check (did it do what task asked?)
+- Pass 2: Quality check (is code well-written?) - only runs if Pass 1 succeeds
+
+### Decisions Made
+
+- **Pathfinder/Builder/Inspector naming**: Space-themed but self-explanatory. "Pathfinder finds the path" is immediately clear.
+- **spec.md replaces exploration.md**: New brainstorms create spec.md; existing exploration.md files remain unchanged.
+- **Inspector absorbs Analyst**: Requirements and quality are two lenses on the same question ("is this good enough to ship?"), so one agent with two passes.
+- **Context7 for Builder**: Fresh library docs at execution time prevents outdated API usage.
+- **Folder split**: exploration/ for thinking, mission/ for doing. Cleaner mental model.
+
+### Gotchas
+
+- Current Pod Phase 2.5 already does scouting via generic Explore agent. Pathfinder formalizes this as a proper mission agent.
+- Inspector currently does requirements only. Expanding it to include quality means rewriting, not just renaming.
+- Agent review found the original spec had mismatches with actual codebase - had to verify what Worker/Inspector/Analyst actually do.
+
+### Next Action
+
+1. Run `/plan` on the spec to create implementation tasks
+2. Also have `2026-01-25-ralph-modes-and-logging` exploration ready for planning
+
+---
