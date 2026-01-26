@@ -769,3 +769,55 @@ Structured bead comment format for Pathfinder findings:
 2. Also have `2026-01-25-ralph-modes-and-logging` exploration ready for planning
 
 ---
+
+## [2026-01-26 18:25] Session 26
+
+**Branch:** main | **Git:** uncommitted (staged/ folder)
+
+### What Happened
+
+**1. Planned two explorations from Session 25**
+
+Convened planning council (3 agents in parallel) for:
+- `2026-01-26-mission-agent-redesign/spec.md` - Agent pipeline restructure
+- `2026-01-25-ralph-modes-and-logging/exploration.md` - Ralph lightweight mode
+
+Council agents:
+- Task Planner: broke into 17 tasks across 2 features
+- Sequencer: identified cross-feature dependency (Ralph must wait for Agent Redesign)
+- Implementer: produced TDD breakdowns with exact file edits
+
+**2. Created plan.md for both explorations**
+
+Consolidated council input into implementation plans:
+- `.space-agents/exploration/staged/2026-01-26-mission-agent-redesign/plan.md`
+- `.space-agents/exploration/staged/2026-01-25-ralph-modes-and-logging/plan.md`
+
+**3. Created Beads (2 features, 11 tasks)**
+
+Feature 1: Mission Agent Redesign (space-agents-1.4)
+- 8 tasks: Pathfinder, Builder, Inspector expansion, Pod update, write-spec skill, exploration skill updates, folder restructure
+
+Feature 2: Ralph Modes and Logging (space-agents-1.5)
+- 3 tasks: --pod flag, file logging, documentation
+- Blocked by Feature 1 (agent names change)
+
+**4. Set up dependencies**
+
+- Delete Analyst → depends on Expand Inspector
+- Update Pod Dispatch → depends on all 4 agent tasks
+- Update Exploration Skills → depends on write-spec skill
+- Update Documentation → depends on flag + logging tasks
+- Feature 2 → depends on Feature 1 complete
+
+### Decisions Made
+
+- **Two separate features**: Agent Redesign completes before Ralph Modes (cross-dependency)
+- **Consolidated tasks**: Reduced from 17 (council) to 11 (combined where logical)
+- **5 tasks parallelizable**: Pathfinder, Builder, Inspector, write-spec, folder restructure can all start immediately
+
+### Next Action
+
+Run `/mission` to begin execution. 5 tasks ready with no blockers.
+
+---
