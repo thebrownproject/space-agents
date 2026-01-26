@@ -1,6 +1,6 @@
 ---
 name: mission-pod
-description: "Execute a single task with Worker/Inspector/Analyst crew. Self-fetches work from Beads."
+description: "Execute a single task with Pathfinder/Builder/Inspector crew. Self-fetches work from Beads."
 args: "[task_id]"
 ---
 
@@ -53,48 +53,43 @@ Present the briefing before starting work:
 
 ---
 
-## Phase 2.5: Scout
+## Phase 2.5: Pathfinder
 
-Dispatch Explore agent to gather codebase context for the Worker.
+Dispatch Pathfinder agent to explore codebase and document findings in bead comments.
 
 ```
 Task tool:
-  subagent_type: "Explore"
+  subagent_type: "space-agents:mission-pathfinder"
   prompt: |
-    Scout the codebase for task: [task_title]
-
-    Task: [task_description]
-    Feature: [parent_feature_summary]
-
-    Report ONLY facts - no suggestions or implementation ideas:
-    1. Relevant directories and files
-    2. Files likely needing modification
-    3. Existing patterns in the codebase
-    4. Related code and dependencies
-
-    Just report what you find. Keep it concise.
+    Explore codebase for task [TASK_ID] in feature [FEATURE_ID].
+    Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first.
 ```
 
-Store scout output for Phase 3.
+Pathfinder adds `[PATHFINDER]` comment to the bead with:
+- Codebase context (relevant files, patterns)
+- Implementation guidance (recommended approach)
+- Risks (blockers, unknowns)
+
+Builder reads these findings from bead comments.
 
 ---
 
 ## Phase 3: Execution
 
-Dispatch crew in sequence. Track worker attempts (max 3).
+Dispatch crew in sequence. Track builder attempts (max 3).
 
 ### Execution Flow
 
 ```
-Scout ---> Worker --- [COMPLETE] ---> Inspector --- [PASS] ---> Analyst --- [PASS] ---> Airlock
-             |                           |                         |
-             +-- [FAILED] --> Retry      +-- [FAIL] --> Retry     +-- [FAIL:blocker] --> Exit
-                 (max 3)                     (counts as retry)        [FAIL:warning] --> Continue
+Pathfinder ---> Builder --- [COMPLETE] ---> Inspector --- [PASS] ---> Airlock
+                   |                            |
+                   +-- [FAILED] --> Retry       +-- [FAIL] --> Retry
+                       (max 3)                      (counts as retry)
 ```
 
 ### 3.1 Log Progress Comment
 
-Before dispatching Worker, log the start:
+Before dispatching Builder, log the start:
 
 ```bash
 bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
@@ -106,15 +101,15 @@ bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
 
 | Agent | subagent_type | Prompt must include | On success | On fail |
 |-------|---------------|---------------------|------------|---------|
-| **Worker** | `space-agents:mission-worker` | task_id, feature_id, scout report | → Inspector | Retry (max 3) |
-| **Inspector** | `space-agents:mission-inspector` | task_id, feature_id | → Analyst | → Worker retry |
-| **Analyst** | `space-agents:mission-analyst` | task_id, feature_id | → Airlock | blocker=Exit, warning=Continue |
+| **Pathfinder** | `space-agents:mission-pathfinder` | task_id, feature_id | → Builder | Exit (exploration failed) |
+| **Builder** | `space-agents:mission-builder` | task_id, feature_id | → Inspector | Retry (max 3) |
+| **Inspector** | `space-agents:mission-inspector` | task_id, feature_id | → Airlock | → Builder retry |
 
-Example Worker prompt:
+Example Builder prompt:
 ```
 "Execute task [TASK_ID] for feature [FEATURE_ID].
  Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first.
- Scout report: [scout output]"
+ Pathfinder findings are in bead comments."
 ```
 
 ### 3.3 Run Airlock
@@ -222,7 +217,8 @@ Use these standard prefixes for structured comments:
 
 | Prefix | Purpose |
 |--------|---------|
-| `[ATTEMPT]` | Worker attempt start (includes attempt number) |
+| `[PATHFINDER]` | Codebase exploration findings from Pathfinder |
+| `[ATTEMPT]` | Builder attempt start (includes attempt number) |
 | `[HANDOVER]` | Completion summary for dependent tasks |
 | `[PROGRESS]` | Work log entry during execution |
 | `[BLOCKED]` | Blocker description with context |
@@ -235,13 +231,13 @@ Use these standard prefixes for structured comments:
 **Do:**
 - Display briefing before starting work
 - Read dependency handovers for context
-- Dispatch crew via Task tool
+- Dispatch crew via Task tool (Pathfinder, then Builder, then Inspector)
 - Write handover comment before closing (always!)
 - Log progress with titled comments
 - Stay focused on the single task
 
 **Do NOT:**
-- Write code yourself (dispatch Worker)
+- Write code yourself (dispatch Builder)
 - Skip the handover (dependent tasks need it!)
 - Continue after critical failure
 - Scope creep beyond the task
