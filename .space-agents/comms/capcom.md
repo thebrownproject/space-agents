@@ -874,3 +874,47 @@ Feature space-agents-1.4 is 4/8 tasks complete. Remaining tasks:
 Continue `/mission orchestrated` for space-agents-1.4. Task 5 (Update Pod Dispatch) is ready.
 
 ---
+
+## [2026-01-26 21:51] Session 28
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**Completed feature space-agents-1.4 (Mission Agent Redesign) - 4 remaining tasks:**
+
+1. **space-agents-1.4.5: Update Pod Dispatch**
+   - Updated `skills/mission-pod/SKILL.md` crew table and execution flow
+   - Changed pipeline from Scout→Worker→Inspector→Analyst to Pathfinder→Builder→Inspector→Airlock
+   - Updated all agent references (`mission-worker` → `mission-builder`, removed `mission-analyst`)
+
+2. **space-agents-1.4.6: Create exploration-write-spec Skill**
+   - Created `skills/exploration-write-spec/SKILL.md`
+   - 9-section spec.md template: Problem, Solution, Requirements, Non-Requirements, Architecture, Constraints, Success Criteria, Open Questions, Next Steps
+   - Output location: `.space-agents/exploration/ideas/YYYY-MM-DD-<topic>/spec.md`
+
+3. **space-agents-1.4.7: Update Exploration Skills**
+   - Updated `skills/exploration-brainstorm/SKILL.md`:
+     - Removed exploration.md creation
+     - Added AskUserQuestion: "Ready to create the spec?"
+     - Invokes `/exploration-write-spec` skill on confirm
+   - Updated `skills/exploration-plan/SKILL.md`:
+     - Mode 1 now reads spec.md (with exploration.md fallback for legacy)
+     - Mode 3 adds `-d` flag to `bd create` with Goal/Files/Steps format
+
+4. **space-agents-1.4.8: Folder Restructure**
+   - Created `.space-agents/mission/staged/` and `.space-agents/mission/complete/`
+   - Migrated content from `exploration/staged/` and `exploration/complete/`
+   - Updated path references in: `exploration-plan`, `land`, `exploration`, `install` skills
+   - New structure: `exploration/` for thinking (ideas/, planned/) + `mission/` for doing (staged/, complete/)
+
+### Decisions Made
+
+- **spec.md replaces exploration.md**: User confirmed no need for separate brainstorm doc - the structured spec is the only output from brainstorming
+- **Folder split**: `exploration/` contains thinking phases (ideas, planned), `mission/` contains execution phases (staged, complete)
+
+### Next Action
+
+Start `/mission` for space-agents-1.5 (Ralph Modes and Logging) - now unblocked.
+
+---

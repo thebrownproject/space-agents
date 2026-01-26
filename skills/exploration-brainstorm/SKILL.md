@@ -38,9 +38,14 @@ Spawn with `run_in_background: true`, continue conversation immediately:
 
 ## Output
 
-When exploration reaches clarity, ask user if they want to capture it:
+When exploration reaches clarity, transition to spec creation:
 
-1. **Ask first** - "We've reached a clear direction. Want me to write up an exploration report?"
-2. If yes: Create `.space-agents/exploration/ideas/YYYY-MM-DD-<topic>/exploration.md`
-3. Report sections: architecture, components, data flow, error handling, testing approach
+1. **Ask first** - Use AskUserQuestion: "We've reached a clear direction. Ready to create the spec?"
+2. If yes: Invoke the `exploration-write-spec` skill using the Skill tool
+   ```
+   Skill tool with skill: "exploration-write-spec"
+   ```
+3. The write-spec skill creates `exploration/ideas/YYYY-MM-DD-<topic>/spec.md`
 4. Offer next step: `/plan` when ready to plan implementation
+
+**Note:** Do NOT create `exploration.md` directly. The write-spec skill produces a structured `spec.md` that feeds cleanly into `/plan`.

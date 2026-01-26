@@ -122,7 +122,7 @@ If user says yes to Beads, execute Mode 3.
    - `**Goal:**` from task's Goal line
    - `**Files:**` from task's Files line
    - `**Steps:**` from task's Steps list
-6. **Move folder** - `planned/<topic>/` → `mission/staged/<topic>/`
+6. **Rename and move folder** - Use the feature number (e.g., `1.5` from `space-agents-1.5`) instead of the date: `planned/YYYY-MM-DD-<topic>/` → `mission/staged/<feature-num>-<topic>/`
 7. **Confirm** - "Feature ready. Run `/mission` to begin execution."
 
 ---
