@@ -24,7 +24,9 @@ HOUSTON coordinates execution by spawning fresh agents for each task. Prevents c
 
 ## Spawning Agents
 
-Use Task tool with `run_in_background: false` (wait for completion):
+Use Task tool with `run_in_background: false` (wait for completion).
+
+**CRITICAL:** Always pass task_id and feature_id explicitly. Agents will run `bd show` to fetch authoritative details from Beads.
 
 **Scout** (`subagent_type: "Explore"`):
 ```
@@ -38,21 +40,29 @@ Use Task tool with `run_in_background: false` (wait for completion):
 
 **Worker** (`subagent_type: "space-agents:mission-worker"`):
 ```
-"Execute task TASK_ID for feature FEATURE_ID.
- Task: [title]
- Description: [description]
- Scout report: [output from Scout agent]"
+"Execute task [TASK_ID] for feature [FEATURE_ID].
+
+ Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first to get full context.
+
+ Scout report:
+ [output from Scout agent]"
 ```
 
 **Inspector** (`subagent_type: "space-agents:mission-inspector"`):
 ```
-"Review task TASK_ID implementation.
+"Review task [TASK_ID] for feature [FEATURE_ID].
+
+ Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first to get requirements.
+
  Verify: requirements met, tests pass, acceptance criteria satisfied."
 ```
 
 **Analyst** (`subagent_type: "space-agents:mission-analyst"`):
 ```
-"Analyze task TASK_ID code quality.
+"Analyze task [TASK_ID] for feature [FEATURE_ID].
+
+ Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first to understand scope.
+
  Check: patterns followed, no regressions, maintainable."
 ```
 

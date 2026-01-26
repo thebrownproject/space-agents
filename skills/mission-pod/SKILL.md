@@ -17,15 +17,14 @@ bd ready -t task --limit 1
 # 2. Claim task
 bd update <task_id> --status in_progress
 
-# 3. Load task details (title, description, acceptance criteria, parent ID)
+# 3. Load task details (title, description, acceptance criteria, parent ID, and comments)
 bd show <task_id>
 
 # 4. Load parent feature context (if has parent)
 bd show <parent_id>
-
-# 5. Load dependency handovers (filter for [HANDOVER] prefix)
-bd comments <task_id>
 ```
+
+Note: `bd show` includes comments at the bottom - no separate `bd comments` call needed.
 
 ---
 
@@ -103,11 +102,20 @@ bd comments add <task_id> "[ATTEMPT] Starting implementation - attempt 1"
 
 ### 3.2 Dispatch Crew
 
-| Agent | subagent_type | Context to provide | On success | On fail |
-|-------|---------------|-------------------|------------|---------|
-| **Worker** | `space-agents:mission-worker` | Task details, feature context, dependency handovers, **scout report** | → Inspector | Retry (max 3) |
-| **Inspector** | `space-agents:mission-inspector` | Requirements, files changed, git diff | → Analyst | → Worker retry |
-| **Analyst** | `space-agents:mission-analyst` | Task title, git diff, conventions | → Airlock | blocker=Exit, warning=Continue |
+**CRITICAL:** Always pass `task_id` and `feature_id` (parent_id) explicitly to each agent. Agents will run `bd show` to fetch authoritative details from Beads.
+
+| Agent | subagent_type | Prompt must include | On success | On fail |
+|-------|---------------|---------------------|------------|---------|
+| **Worker** | `space-agents:mission-worker` | task_id, feature_id, scout report | → Inspector | Retry (max 3) |
+| **Inspector** | `space-agents:mission-inspector` | task_id, feature_id | → Analyst | → Worker retry |
+| **Analyst** | `space-agents:mission-analyst` | task_id, feature_id | → Airlock | blocker=Exit, warning=Continue |
+
+Example Worker prompt:
+```
+"Execute task [TASK_ID] for feature [FEATURE_ID].
+ Run `bd show [TASK_ID]` and `bd show [FEATURE_ID]` first.
+ Scout report: [scout output]"
+```
 
 ### 3.3 Run Airlock
 

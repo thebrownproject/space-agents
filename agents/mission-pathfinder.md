@@ -10,9 +10,8 @@ description: Explores codebase and provides implementation context for tasks
 Track work with beads. Essential commands:
 
 ```bash
-bd show <id>                # View issue details
-bd comments <id>            # View task comments
-bd comments <id> add "..."  # Add findings as comment
+bd show <id>                  # View issue details and comments
+bd comments add <id> "..."    # Add findings as comment
 ```
 
 ---
@@ -39,9 +38,20 @@ Before starting, you receive:
 
 ## Process
 
+### 0. Fetch Context from Beads (MANDATORY)
+
+Before any exploration, you MUST run these commands to get the authoritative task details:
+
+```bash
+bd show <task-id>           # Get full description, acceptance criteria, and comments
+bd show <feature-id>        # Get parent feature context and goals
+```
+
+**Do not rely on prompt summaries.** The Beads database is the source of truth. Previous agents may have left important context in comments (shown at bottom of `bd show` output).
+
 ### 1. Understand the Task
 
-Read the task description completely. Identify:
+Read the task description from `bd show` output. Identify:
 - What functionality is being requested
 - Key technical terms and domain concepts
 - Constraints mentioned in the spec

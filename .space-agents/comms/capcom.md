@@ -821,3 +821,56 @@ Feature 2: Ralph Modes and Logging (space-agents-1.5)
 Run `/mission` to begin execution. 5 tasks ready with no blockers.
 
 ---
+
+## [2026-01-26 19:15] Session 27
+
+**Branch:** main | **Git:** uncommitted
+
+### What Happened
+
+**1. Executed Mission Agent Redesign (space-agents-1.4) - 4/8 tasks complete**
+
+Completed tasks:
+- **space-agents-1.4.1**: Created `agents/mission-pathfinder.md` - new agent for codebase exploration, writes findings to bead comments with `[PATHFINDER]` prefix
+- **space-agents-1.4.2**: Renamed `mission-worker.md` → `mission-builder.md` - stripped planning responsibilities, added Context7 MCP for library docs
+- **space-agents-1.4.3**: Expanded `mission-inspector.md` - two-pass review (requirements + quality), absorbed Analyst checks, added AI bloat detection
+- **space-agents-1.4.4**: Deleted `mission-analyst.md` - functionality merged into Inspector
+
+**2. Updated agent workflow to enforce Beads as source of truth**
+
+All mission agents now have mandatory "Fetch Context from Beads" section:
+```bash
+bd show <task-id>     # Get description, acceptance criteria, comments
+bd show <feature-id>  # Get parent feature context
+```
+
+Updated `skills/mission-orchestrated/SKILL.md` and `skills/mission-pod/SKILL.md` to explicitly pass task_id and feature_id to spawned agents.
+
+**3. Fixed redundant bd comments calls**
+
+Discovered `bd show` includes comments at bottom of output. Removed separate `bd comments` calls from all agents.
+
+### Decisions Made
+
+- **Inspector is the quality gate**: Emphasized catching AI bloat, verbose code, unnecessary abstractions, DRY violations
+- **Context7 for verification**: Both Builder (to write correct code) and Inspector (to verify API usage) can use Context7
+- **Agents must fetch from Beads**: Don't rely on prompt summaries - always `bd show` first
+
+### Gotchas
+
+- Worker agent initially didn't run `bd show` before implementing - fixed by adding mandatory Step 0 to all agents
+- Context7 section initially said "include 'use context7' in your prompts" which makes no sense for an agent - fixed to "use the Context7 MCP tool"
+
+### In Progress
+
+Feature space-agents-1.4 is 4/8 tasks complete. Remaining tasks:
+- space-agents-1.4.5: Update Pod Dispatch (remove Analyst references, update to Pathfinder→Builder→Inspector)
+- space-agents-1.4.6: Create exploration-write-spec Skill
+- space-agents-1.4.7: Update Exploration Skills
+- space-agents-1.4.8: Folder Restructure
+
+### Next Action
+
+Continue `/mission orchestrated` for space-agents-1.4. Task 5 (Update Pod Dispatch) is ready.
+
+---
