@@ -21,6 +21,8 @@ Route to the appropriate execution mode for a feature.
 | Orchestrated | `mission-orchestrated` | Medium (4-10 tasks) |
 | Ralph | `mission-ralph` | Large (10+ tasks) |
 
+**Note:** Ralph runs lightweight by default (~50k tokens/task). Use `--pod` flag for full crew execution (~150k+ tokens/task) when tasks need deeper analysis.
+
 Invoke with: `Skill: mission-solo, args: "FEATURE_ID"` (or `mission-orchestrated`, `mission-ralph`)
 
 ## If No Features
