@@ -6,7 +6,7 @@
 # state persists in Beads. Agents are compute, not memory.
 #
 # Usage:
-#   ./ralph.sh <feature_id> [--visible]
+#   ./ralph.sh <feature_id> [--visible] [--pod]
 #
 # Exit codes:
 #   0 - Feature complete (all tasks done)
@@ -25,6 +25,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Visible mode flag (set by --visible-internal when launched from mprocs)
 VISIBLE_MODE=false
+
+# Pod mode flag (--pod enables full Worker/Inspector/Analyst crew, default is lightweight HOUSTON-direct)
+POD_MODE=false
 
 # Find project root (directory containing .beads)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
@@ -432,9 +435,39 @@ spawn_pod() {
 
     log INFO "Spawning Pod for task: $task_title"
 
-    # Simple prompt that invokes the /pod skill
-    # The skill handles context loading, crew dispatch, and handover
-    local pod_prompt="Run /mission-pod ${task_id} ${feature_id}"
+    local pod_prompt=""
+
+    if [[ "$POD_MODE" == "true" ]]; then
+        # Full Pod mode: Worker/Inspector/Analyst crew via /mission-pod skill
+        pod_prompt="Run /mission-pod ${task_id} ${feature_id}"
+    else
+        # Lightweight mode: HOUSTON-direct execution
+        # Fetch task and feature context inline for the prompt
+        local task_json feature_json
+        task_json=$(bd show "$task_id" --json 2>/dev/null || echo "{}")
+        feature_json=$(bd show "$feature_id" --json 2>/dev/null || echo "{}")
+
+        # Extract task description from JSON
+        local task_desc
+        task_desc=$(echo "$task_json" | grep -o '"description": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+
+        # Extract feature title from JSON
+        local feature_title
+        feature_title=$(echo "$feature_json" | grep -o '"title": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+
+        pod_prompt="Execute task ${task_id} for feature ${feature_id}.
+
+Task: ${task_title}
+Description: ${task_desc}
+Feature: ${feature_title}
+
+Steps:
+1. Scout: Read relevant files to understand context
+2. Implement: Make the required changes
+3. Verify: Run /mission-airlock to validate (tests + lint)
+
+On completion, output [COMPLETE] or [FAILED] with summary."
+    fi
 
     local exit_code=0
 
@@ -473,6 +506,10 @@ main() {
                 # Legacy flag, kept for backward compatibility
                 shift
                 ;;
+            --pod)
+                POD_MODE=true
+                shift
+                ;;
             -*)
                 echo "Unknown option: $1"
                 exit 2
@@ -488,11 +525,12 @@ main() {
 
     # Validate arguments
     if [[ -z "$feature_id" ]]; then
-        echo "Usage: ralph.sh <feature_id> [--visible]"
+        echo "Usage: ralph.sh <feature_id> [--visible] [--pod]"
         echo ""
         echo "Options:"
         echo "  feature_id   The Beads ID of the feature to execute"
         echo "  --visible    Run in visible mode (mprocs TUI for real-time pod visibility)"
+        echo "  --pod        Use full Pod crew (Worker/Inspector/Analyst) instead of lightweight HOUSTON-direct"
         exit 2
     fi
 
