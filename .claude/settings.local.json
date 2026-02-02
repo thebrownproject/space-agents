@@ -27,7 +27,8 @@
       "Bash(git push)",
       "Skill(space-agents:mission)",
       "Skill(mission-solo)",
-      "Skill(space-agents:capcom)"
+      "Skill(space-agents:capcom)",
+      "Bash(git -C /Users/fraserbrown/Documents/space-agents commit -m \"$\\(cat <<''EOF''\n[space-agents-1.4.8] Folder restructure: create mission/ directory\n\nMove staged/ and complete/ from exploration/ to new mission/ folder:\n- exploration/ now contains only ideas/ and planned/\n- mission/ now contains staged/ and complete/\n\nUpdated path references in:\n- exploration-plan/SKILL.md \\(Mode 3 moves to mission/staged/\\)\n- land/SKILL.md \\(reconcile table uses mission/ paths\\)\n- exploration/SKILL.md \\(folder diagram\\)\n- install/SKILL.md \\(creates mission/ folders\\)\nEOF\n\\)\")"
     ]
   }
 }

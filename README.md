@@ -76,17 +76,16 @@ This creates the `.space-agents/` directory structure and initializes Beads for 
 
 ## Multi-Agent Execution
 
-In `orchestrated` and `ralph` modes, each task is executed by a 4-agent crew:
+In `orchestrated` and `ralph` modes, each task is executed by a 3-agent crew:
 
 ```
-Scout → Worker → Inspector → Analyst
+Pathfinder → Builder → Inspector
 ```
 
 | Agent | Role |
 |-------|------|
-| **Scout** | Explores codebase, gathers context for the task |
-| **Worker** | Implements the task using TDD approach |
-| **Inspector** | Verifies requirements met, tests pass |
-| **Analyst** | Reviews code quality, patterns, security |
+| **Pathfinder** | Explores codebase, gathers context, identifies patterns and risks |
+| **Builder** | Implements the task using TDD approach |
+| **Inspector** | Two-pass review: requirements verification, then quality/patterns/security |
 
 The Ralph loop spawns these as **Pods** — fresh context each iteration, looping until all tasks complete or a blocker halts execution. When issues are found, bugs are inserted into Beads as blockers; Ralph resolves these before continuing to the next task.

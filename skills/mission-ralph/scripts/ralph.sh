@@ -536,11 +536,39 @@ main() {
 
     # If --visible and not already internal, launch wrapper
     if [[ "$visible_flag" == "true" ]] && [[ "$VISIBLE_MODE" != "true" ]]; then
-        exec "${SCRIPT_DIR}/ralph-visible.sh" "$feature_id"
+        local pod_flag=""
+        if [[ "$POD_MODE" == "true" ]]; then
+            pod_flag="--pod"
+        fi
+        exec "${SCRIPT_DIR}/ralph-visible.sh" "$feature_id" "$pod_flag"
     fi
 
     # Set global FEATURE_ID for use by helper functions
     FEATURE_ID="$feature_id"
+
+    # ----------------------------------------------------------------------------
+    # File Logging Setup
+    # ----------------------------------------------------------------------------
+    # Derive mission folder from feature ID (e.g., "space-agents-1.5" -> "1.5-*")
+    local feature_number
+    feature_number=$(echo "$feature_id" | sed 's/.*-//')  # Extract "1.5" from "space-agents-1.5"
+
+    local staged_dir="${SPACE_AGENTS_DIR}/mission/staged"
+    local mission_folder=""
+
+    # Find the folder that starts with the feature number
+    if [[ -d "$staged_dir" ]]; then
+        mission_folder=$(find "$staged_dir" -maxdepth 1 -type d -name "${feature_number}-*" 2>/dev/null | head -1)
+    fi
+
+    # Set up file logging if mission folder exists
+    if [[ -n "$mission_folder" ]] && [[ -d "$mission_folder" ]]; then
+        LOG_FILE="${mission_folder}/ralph.log"
+        exec > >(tee -a "$LOG_FILE") 2>&1
+        log INFO "Log file: $LOG_FILE"
+    else
+        log WARNING "Mission folder not found for feature ${feature_number}, logging to console only"
+    fi
 
     # Run prerequisites
     check_prerequisites

@@ -2,11 +2,12 @@
 # ralph-visible.sh - Launch Ralph inside mprocs for visible Pod sessions
 
 MISSION_ID="$1"
+EXTRA_FLAGS="$2"
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 SCRIPT_DIR="$(dirname "$0")"
 
 if [[ -z "$MISSION_ID" ]]; then
-    echo "Usage: ralph-visible.sh <mission_id>"
+    echo "Usage: ralph-visible.sh <mission_id> [--pod]"
     exit 2
 fi
 
@@ -15,7 +16,7 @@ CONFIG_FILE="/tmp/mprocs-${MISSION_ID}.yaml"
 cat > "$CONFIG_FILE" << EOF
 procs:
   ralph:
-    shell: "sleep 1 && ${SCRIPT_DIR}/ralph.sh ${MISSION_ID} --visible-internal"
+    shell: "sleep 1 && ${SCRIPT_DIR}/ralph.sh ${MISSION_ID} --visible-internal ${EXTRA_FLAGS}"
     autostart: true
 EOF
 
