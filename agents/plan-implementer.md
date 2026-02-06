@@ -46,7 +46,11 @@ Files:
 - Modify: `exact/path/to/existing.ts`
 - Test: `tests/path/to/test.ts`
 
-Tasks:
+Tests:
+- [ ] [Behavioural test criterion]
+- [ ] [Another verifiable criterion]
+
+Steps:
 
 1. Write failing test
    ```typescript

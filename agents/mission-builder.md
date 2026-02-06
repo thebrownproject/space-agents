@@ -69,8 +69,8 @@ If no Pathfinder findings exist, output a bug and exit:
 ### 2. Write Tests First (TDD)
 
 When applicable:
-- Write failing tests that define success
-- Keep tests focused on the task's acceptance criteria
+- Extract the `**Tests:**` checklist from the task description - these define your test targets
+- Write a failing test for each `**Tests:**` item
 - Run tests to confirm they fail for the right reasons
 
 Skip TDD only when:

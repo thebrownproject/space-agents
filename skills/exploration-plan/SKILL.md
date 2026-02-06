@@ -98,6 +98,9 @@ If user says yes to Beads, execute Mode 3.
 
    **Steps:**
    1. [steps from plan]
+
+   **Tests:**
+   - [ ] [test criteria from plan]
    EOF
    )"
 
@@ -109,6 +112,9 @@ If user says yes to Beads, execute Mode 3.
 
    **Steps:**
    1. [steps from plan]
+
+   **Tests:**
+   - [ ] [test criteria from plan]
    EOF
    )"
 
@@ -122,6 +128,7 @@ If user says yes to Beads, execute Mode 3.
    - `**Goal:**` from task's Goal line
    - `**Files:**` from task's Files line
    - `**Steps:**` from task's Steps list
+   - `**Tests:**` from task's Tests checklist
 6. **Rename and move folder** - Use the feature number (e.g., `1.5` from `space-agents-1.5`) instead of the date: `planned/YYYY-MM-DD-<topic>/` → `mission/staged/<feature-num>-<topic>/`
 7. **Confirm** - "Feature ready. Run `/mission` to begin execution."
 
@@ -164,6 +171,10 @@ Use explicit hierarchy that maps to Beads:
 1. [Step description]
 2. [Step description]
 
+**Tests:**
+- [ ] [Observable behaviour or outcome to verify]
+- [ ] [Another verifiable criterion]
+
 ### Task: [Task 2 Name]
 
 **Goal:** [One sentence]
@@ -173,6 +184,10 @@ Use explicit hierarchy that maps to Beads:
 **Steps:**
 1. [Step description]
 2. [Step description]
+
+**Tests:**
+- [ ] [Observable behaviour or outcome to verify]
+- [ ] [Another verifiable criterion]
 
 ## Sequence
 
@@ -190,6 +205,7 @@ Use explicit hierarchy that maps to Beads:
 - `# Feature:` → Creates Beads feature
 - `### Task:` → Creates Beads task
 - `**Depends on:**` → Sets up `bd dep add`
+- `**Tests:**` → Included in task description for Builder/Inspector
 
 ---
 

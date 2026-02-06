@@ -43,19 +43,22 @@ bd show <feature-id>        # Get parent feature context
 
 Verify the implementation matches the task specification.
 
+**Extract the `**Tests:**` checklist from the task description.** Verify each item individually - these are your pass/fail criteria.
+
 **Checklist:**
-- [ ] All requirements addressed
+- [ ] Each `**Tests:**` item verified against implementation
 - [ ] No missing functionality
 - [ ] No scope creep (extra features not requested)
 - [ ] No misinterpretation of intent
 
 **Output after Pass 1:**
 ```
-[REQUIREMENTS:PASS] All requirements met
+[REQUIREMENTS:PASS] All test criteria met (N/N)
 ```
 or
 ```
-[REQUIREMENTS:FAIL] Missing functionality - see bugs below
+[REQUIREMENTS:FAIL] Test criteria not met (X/N)
+[BUG:warning] FAIL: <test criterion that failed> - <reason>
 ```
 
 ### 3. Pass 2: Quality Check
@@ -120,18 +123,19 @@ Output both pass results, then any bugs found.
 ### Examples
 
 ```
-[REQUIREMENTS:PASS] All 4 requirements implemented
+[REQUIREMENTS:PASS] All test criteria met (4/4)
 [QUALITY:PASS] Clean, concise implementation
 
-[REQUIREMENTS:PASS] Requirements met
+[REQUIREMENTS:PASS] All test criteria met (3/3)
 [QUALITY:FAIL] AI bloat detected
 [BUG:warning] Unnecessary abstraction: ConfigurationManager class wraps single config object
 [BUG:warning] Over-commented: 15 lines of comments for 8 lines of obvious code
 [BUG:info] DRY violation: validation logic duplicated in handlers/user.ts and handlers/auth.ts
 
-[REQUIREMENTS:FAIL] Missing functionality
+[REQUIREMENTS:FAIL] Test criteria not met (2/4)
 [QUALITY:FAIL] Multiple issues
-[BUG:warning] Requirement 3 not implemented: user email validation
+[BUG:warning] FAIL: User email validated on submit - no validation found
+[BUG:warning] FAIL: Error message shown for invalid email - not implemented
 [BUG:blocker] SQL injection vulnerability in api/users.ts:45
 ```
 

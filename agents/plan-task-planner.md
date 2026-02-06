@@ -30,11 +30,15 @@ TASKS:
 
 1. [Name]
    Description: [What to implement]
-   Success: [How to verify complete]
+   Tests:
+   - [ ] [Verifiable outcome]
+   - [ ] [Another verifiable outcome]
 
 2. [Name]
    Description: [What to implement]
-   Success: [How to verify complete]
+   Tests:
+   - [ ] [Verifiable outcome]
+   - [ ] [Another verifiable outcome]
 
 3. [Name]
    ...
