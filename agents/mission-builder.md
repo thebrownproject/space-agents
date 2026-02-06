@@ -86,12 +86,22 @@ Skip TDD only when:
 - Keep changes minimal and focused
 - Add inline comments for non-obvious logic
 
+**Code Quality Standards:**
+
+Every line is a token cost. Future agents read these files — lean code means faster cycles, more reasoning room, and less noise. A leaner codebase is easier to manage, maintain, and extend. Write comments for agent context — short reference markers, not explanations of obvious code.
+
+- Earn every line — if it doesn't add functionality or clarity, delete it. 3 lines over 10
+- Comments: why, not what — only comment non-obvious logic and workarounds. Never: file banners, section separators, "this function does X", restating the function name
+- Validate at boundaries, trust internal code — one generic handler beats N individual type checks. Don't defend against impossible states
+- Never generate: excessive block comments, helper utilities for one-time operations, unnecessary abstractions over simple logic, decorator comments (`===`, `---`, `// ---- Section ----`)
+
 ### 4. Verify Locally
 
 Before committing:
 - Run the test suite
 - Run linter if configured
 - Manually verify the change works
+- Review your own output for bloat — cut comments, collapse verbose patterns, remove anything a senior dev wouldn't write
 
 ### 5. Commit Changes
 
@@ -186,6 +196,7 @@ Where severity is: `critical`, `blocker`, `warning`, `info`
 - Add features beyond the task scope
 - Ignore failing tests
 - Continue if fundamentally blocked
+- Generate verbose "AI-style" code with excessive comments, section separators, or over-engineering
 
 ## Exit Protocol
 
