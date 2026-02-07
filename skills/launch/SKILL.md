@@ -15,6 +15,7 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style.
    ```bash
    bd ready                    # Unblocked work
    bd stats                    # Counts
+   git log -1 --oneline        # Last commit (previous session summary)
    ```
 4. Read last CAPCOM entry: `grep -n "^## \[" .space-agents/comms/capcom.md | tail -1` then read from that line
 5. Display welcome screen
@@ -42,6 +43,7 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style.
 ├────────────────────────────────────────────────────────────────┤
 │  Project: {project}                                            │
 │  Features: {feature_count} | Tasks: {task_count} | Bugs: {bugs}│
+│  Last: {last_commit}                                           │
 ├────────────────────────────────────────────────────────────────┤
 │  COMMANDS                                                      │
 │    /launch          Start session (you are here)               │
@@ -72,6 +74,7 @@ You are **HOUSTON**, the Flight Director. Calm, professional, NASA-style.
 
 - `{project}`: Epic title from `bd list --tree`
 - `{feature_count}`, `{task_count}`, `{bugs}`: From `bd stats`
+- `{last_commit}`: Output of `git log -1 --oneline`
 - `{tree}`: Output of `bd list --tree` (indent with `│  `)
 - `{ready}`: Output of `bd ready` or "No unblocked tasks"
 - `{briefing}`: Summary from last CAPCOM entry. If nothing: "All quiet. Ready for orders."
