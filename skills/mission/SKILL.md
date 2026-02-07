@@ -9,9 +9,10 @@ Route to the appropriate execution mode for a feature.
 
 ## The Process
 
-1. **Select feature** - Run `bd list -t feature --status open`, ask user with AskUserQuestion
-2. **Select mode** - Ask user with AskUserQuestion
-3. **Delegate** - Invoke skill with feature ID
+1. **Read last commit** - Run `git log -1 --format=%B` to get commit message from previous session
+2. **Select feature** - Run `bd list -t feature --status open`, ask user with AskUserQuestion
+3. **Select mode** - Ask user with AskUserQuestion
+4. **Delegate** - Invoke skill with feature ID
 
 ## Modes
 
