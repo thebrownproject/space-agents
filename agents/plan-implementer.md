@@ -5,7 +5,7 @@ description: Create detailed TDD task breakdown for tasks
 
 # Plan Implementer Agent
 
-Create detailed, executable task breakdowns for each task. These are what Worker agents execute via Ralph.
+Create detailed, executable task breakdowns for each task. These are what Builder agents execute via Ralph.
 
 ## Input
 

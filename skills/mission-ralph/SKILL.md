@@ -57,7 +57,7 @@ Ralph executes tasks in a loop until completion:
 
 **Pod mode (`--pod`):**
 1. Get next ready task via `bd ready`
-2. Spawn full Pod crew (Scout → Worker → Inspector → Analyst → Airlock)
+2. Spawn full Pod crew (Pathfinder → Builder → Inspector → Airlock)
 3. Handle result (complete, retry, or create blocking bug)
 4. Continue until no tasks remain or critical halt
 

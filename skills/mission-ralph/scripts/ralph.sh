@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Visible mode flag (set by --visible-internal when launched from mprocs)
 VISIBLE_MODE=false
 
-# Pod mode flag (--pod enables full Worker/Inspector/Analyst crew, default is lightweight HOUSTON-direct)
+# Pod mode flag (--pod enables full Pathfinder/Builder/Inspector crew, default is lightweight HOUSTON-direct)
 POD_MODE=false
 
 # Find project root (directory containing .beads)
@@ -438,7 +438,7 @@ spawn_pod() {
     local pod_prompt=""
 
     if [[ "$POD_MODE" == "true" ]]; then
-        # Full Pod mode: Worker/Inspector/Analyst crew via /mission-pod skill
+        # Full Pod mode: Pathfinder/Builder/Inspector crew via /mission-pod skill
         pod_prompt="Run /mission-pod ${task_id} ${feature_id}"
     else
         # Lightweight mode: HOUSTON-direct execution
@@ -462,7 +462,7 @@ Description: ${task_desc}
 Feature: ${feature_title}
 
 Steps:
-1. Scout: Read relevant files to understand context
+1. Explore: Read relevant files to understand context
 2. Implement: Make the required changes
 3. Verify: Run /mission-airlock to validate (tests + lint)
 
@@ -530,7 +530,7 @@ main() {
         echo "Options:"
         echo "  feature_id   The Beads ID of the feature to execute"
         echo "  --visible    Run in visible mode (mprocs TUI for real-time pod visibility)"
-        echo "  --pod        Use full Pod crew (Worker/Inspector/Analyst) instead of lightweight HOUSTON-direct"
+        echo "  --pod        Use full Pod crew (Pathfinder/Builder/Inspector) instead of lightweight HOUSTON-direct"
         exit 2
     fi
 

@@ -14,7 +14,7 @@ Exploration report with: architecture, components, data flow, error handling, te
 ## Output
 
 Break the feature into tasks. Each task must be:
-- **Pod-sized**: Executed by Worker/Inspector/Analyst crew
+- **Pod-sized**: Executed by Pathfinder/Builder/Inspector crew
 - **Atomic**: One thing, clear success criteria
 - **Testable**: Verifiable outcome
 
