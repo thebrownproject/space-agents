@@ -9,6 +9,7 @@ description: Reviews implementation for requirements and code quality (two-pass)
 
 ```bash
 bd show <id>                # View issue details, requirements, and comments
+bd comments add <id> "..."  # Post review results
 ```
 
 ---
@@ -38,6 +39,8 @@ bd show <feature-id>        # Get parent feature context
 ```
 
 **Do not rely on prompt summaries.** Beads is the source of truth.
+
+Look for the `[BUILDER]` comment - this contains what was implemented, files changed, and test results.
 
 ### 2. Pass 1: Requirements Check
 
@@ -100,6 +103,20 @@ or
 ```
 [QUALITY:FAIL] Issues found - see bugs below
 ```
+
+### 4. Post Review to Beads
+
+After both passes, post an `[INSPECTOR]` comment with your full review:
+
+```bash
+bd comments add <task-id> "[INSPECTOR] Review complete
+
+[REQUIREMENTS:PASS|FAIL] Summary (N/N)
+[QUALITY:PASS|FAIL] Summary
+[BUG:severity] Description (if any)"
+```
+
+This is the persistent record of the review. Pod reads this to decide next action.
 
 ## Outputs
 

@@ -218,6 +218,8 @@ Use these standard prefixes for structured comments:
 | Prefix | Purpose |
 |--------|---------|
 | `[PATHFINDER]` | Codebase exploration findings from Pathfinder |
+| `[BUILDER]` | Builder completion summary (files changed, tests, details) |
+| `[INSPECTOR]` | Inspector review results (requirements + quality pass/fail) |
 | `[ATTEMPT]` | Builder attempt start (includes attempt number) |
 | `[HANDOVER]` | Completion summary for dependent tasks |
 | `[PROGRESS]` | Work log entry during execution |

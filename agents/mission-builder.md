@@ -11,7 +11,7 @@ Track work with beads. Essential commands:
 
 ```bash
 bd show <id>                # View issue details and Pathfinder findings
-bd close <id>               # Mark complete
+bd comments add <id> "..."  # Post completion summary
 bd sync                     # Sync with git remote
 ```
 
@@ -115,12 +115,33 @@ Create atomic commits with clear messages:
 
 Multiple small commits are better than one large commit.
 
+### 6. Post Completion to Beads
+
+After committing, post a `[BUILDER]` comment with your completion summary:
+
+```bash
+bd comments add <task-id> "[BUILDER] <summary>
+
+## Files Changed
+- path/to/file1.ts (created/modified)
+- path/to/file2.ts (modified)
+
+## Tests
+- X/Y passing
+
+## Key Details
+<implementation details the Inspector should verify>"
+```
+
+This is the source of truth for what was implemented. Inspector reads this to verify against the **Tests:** checklist.
+
 ## Outputs
 
 On completion, you produce:
 - Working implementation that meets acceptance criteria
 - Test coverage for new/changed functionality
 - Git commit(s) documenting the changes
+- `[BUILDER]` bead comment with completion details
 - Structured completion message for Pod
 - Bug messages (if issues encountered)
 
@@ -133,8 +154,6 @@ or on failure:
 ```
 [FAILED] Reason for failure
 ```
-
-Pod handles all Beads persistence (status updates, bugs, messages).
 
 ## Reporting Issues
 
@@ -178,7 +197,7 @@ Where severity is: `critical`, `blocker`, `warning`, `info`
 [BUG:info] Consider adding index on users.email for query performance
 ```
 
-**Key principle:** You report TO Pod, Pod handles persistence. Never write directly to Beads.
+**Key principle:** Report bugs TO Pod. Post completion summary directly to Beads via `[BUILDER]` comment.
 
 ## Constraints
 
@@ -201,9 +220,10 @@ Where severity is: `critical`, `blocker`, `warning`, `info`
 ## Exit Protocol
 
 When finished:
-1. Output completion status (`[COMPLETE]` or `[FAILED]`)
-2. Include any bugs discovered during implementation
-3. Exit cleanly for Pod to process
+1. Post `[BUILDER]` comment to Beads with completion details
+2. Output completion status (`[COMPLETE]` or `[FAILED]`)
+3. Include any bugs discovered during implementation
+4. Exit cleanly for Pod to process
 
 **On success:**
 ```
