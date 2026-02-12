@@ -36,7 +36,7 @@ Which planning mode?
 3. **Read spec.md** - Form your own view first
    - *Fallback:* If `spec.md` not found, check for legacy `exploration.md`
 4. **Ask to convene council** - "Ready to send planning agents?"
-5. **Spawn council** - 3 agents analyze in parallel (see Council section)
+5. **Spawn council** - 3 agents analyze sequentially (see Council section)
 6. **Synthesize** - Combine your analysis + council input
 7. **Present for approval** - Feature structure, sequence, implementation approach
 8. **Write plan.md** - In the same folder
@@ -56,7 +56,7 @@ If user says yes to Beads, execute Mode 3.
 
 1. **Discuss the idea** - Ask clarifying questions (use AskUserQuestion)
 2. **Ask to convene council** - Same as Mode 1
-3. **Spawn council** - 3 agents analyze in parallel
+3. **Spawn council** - 3 agents analyze sequentially
 4. **Synthesize** - Combine your analysis + council input
 5. **Present for approval** - Feature structure, sequence, implementation approach
 6. **Create folder** - `exploration/planned/YYYY-MM-DD-<topic>/`
@@ -142,7 +142,7 @@ Advisors, not decision makers. HOUSTON synthesizes and can override.
 - `space-agents:plan-sequencer` - Analyzes dependencies, execution order
 - `space-agents:plan-implementer` - Creates TDD task breakdown per task
 
-Spawn all 3 in parallel with `run_in_background: true`. Continue conversation while they work.
+Spawn all 3 sequentially (NOT as background tasks). Wait for each agent to complete and return results before spawning the next. HOUSTON must have all council input before synthesizing.
 
 ---
 
