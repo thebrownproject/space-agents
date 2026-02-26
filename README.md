@@ -17,10 +17,10 @@ Agent orchestration plugin for Claude Code, powered by [Beads](https://github.co
 
 ## Features
 
-- **Multi-session persistence** — Beads tracks issues, dependencies, and context across sessions
-- **Structured exploration** — Brainstorm ideas, create plans, review code, debug issues
-- **Agent orchestration** — Solo (direct), Orchestrated (agents per task), or Ralph loop (background automation)
-- **Session logging** — CAPCOM log preserves decisions and progress for future sessions
+- **Multi-session persistence** - Beads tracks issues, dependencies, and context across sessions
+- **Structured exploration** - Brainstorm ideas, create plans, review code, debug issues
+- **Agent orchestration** - Solo (direct), Orchestrated (agents per task), or Ralph loop (background automation)
+- **Session logging** - CAPCOM log preserves decisions and progress for future sessions
 
 ## Prerequisites
 
@@ -70,9 +70,9 @@ This creates the `.space-agents/` directory structure and initializes Beads for 
 
 | Mode | Best for |
 |------|----------|
-| `solo` | Small work (1-3 tasks) — HOUSTON executes directly |
-| `orchestrated` | Medium work (4-10 tasks) — Agent per task |
-| `ralph` | Large work (10+ tasks) — Background automation |
+| `solo` | Small work (1-3 tasks) - HOUSTON executes directly |
+| `orchestrated` | Medium work (4-10 tasks) - Agent per task |
+| `ralph` | Large work (10+ tasks) - Background automation |
 
 ## Multi-Agent Execution
 
@@ -88,4 +88,4 @@ Pathfinder → Builder → Inspector
 | **Builder** | Implements the task using TDD approach |
 | **Inspector** | Two-pass review: requirements verification, then quality/patterns/security |
 
-The Ralph loop spawns these as **Pods** — fresh context each iteration, looping until all tasks complete or a blocker halts execution. When issues are found, bugs are inserted into Beads as blockers; Ralph resolves these before continuing to the next task.
+The Ralph loop spawns these as **Pods** - fresh context each iteration, looping until all tasks complete or a blocker halts execution. When issues are found, bugs are inserted into Beads as blockers; Ralph resolves these before continuing to the next task.
